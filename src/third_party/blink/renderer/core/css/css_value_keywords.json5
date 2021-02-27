@@ -631,6 +631,7 @@
     "pre",
     "pre-line",
     "pre-wrap",
+    "-bb-pre-wrap-text",
     "relative",
     "scroll",
     "separate",
@@ -780,6 +781,7 @@
     //
     "break-all",
     "keep-all",
+    "-bb-keep-all-if-korean",
 
     //
     // word-wrap
