@@ -153,6 +153,15 @@ enum class EditingCommandType {
   kYankAndSelect = 138,
   kAlignCenter = 139,
 
+
+
+  // patch section: insert HTML nested (140)
+
+
+  // patch section: indent-block/outdent-block (141,142)
+
+
+
   // Add new commands immediately above this line.
   kNumberOfCommandTypes,
 

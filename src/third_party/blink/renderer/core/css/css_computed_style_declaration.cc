@@ -195,6 +195,16 @@ const CSSPropertyID kComputedPropertyArray[] = {
     CSSPropertyID::kTransitionDelay, CSSPropertyID::kTransitionDuration,
     CSSPropertyID::kTransitionProperty,
     CSSPropertyID::kTransitionTimingFunction, CSSPropertyID::kTranslate,
+
+
+
+    // patch section: lcd-text background
+
+
+    // patch section: rubberband
+
+
+
     CSSPropertyID::kUnicodeBidi, CSSPropertyID::kUserSelect,
     CSSPropertyID::kVectorEffect, CSSPropertyID::kVerticalAlign,
     CSSPropertyID::kVisibility, CSSPropertyID::kWhiteSpace,

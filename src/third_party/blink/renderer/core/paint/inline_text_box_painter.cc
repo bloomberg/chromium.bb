@@ -32,6 +32,15 @@
 #include "third_party/blink/renderer/platform/graphics/paint/paint_shader.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
 
+
+
+// patch section: highlight marker
+
+
+// patch section: color document marker
+
+
+
 namespace blink {
 
 namespace {
