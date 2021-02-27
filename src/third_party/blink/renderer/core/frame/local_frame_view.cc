@@ -4808,11 +4808,13 @@ LocalFrameView::EnsureOverlayInterstitialAdDetector() {
 WTF::Vector<const TransformPaintPropertyNode*>
 LocalFrameView::GetScrollTranslationNodes() {
   WTF::Vector<const TransformPaintPropertyNode*> scroll_translation_nodes;
-  for (auto area : *ScrollableAreas()) {
-    const auto* paint_properties =
-        area->GetLayoutBox()->FirstFragment().PaintProperties();
-    if (paint_properties && paint_properties->Scroll()) {
-      scroll_translation_nodes.push_back(paint_properties->ScrollTranslation());
+  if (scrollable_areas_) {
+    for (auto area : *ScrollableAreas()) {
+      const auto* paint_properties =
+          area->GetLayoutBox()->FirstFragment().PaintProperties();
+      if (paint_properties && paint_properties->Scroll()) {
+        scroll_translation_nodes.push_back(paint_properties->ScrollTranslation());
+      }
     }
   }
   return scroll_translation_nodes;
