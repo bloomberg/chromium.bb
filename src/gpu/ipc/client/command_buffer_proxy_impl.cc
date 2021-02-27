@@ -89,7 +89,9 @@ ContextResult CommandBufferProxyImpl::Initialize(
       AllocateAndMapSharedMemory(sizeof(*shared_state()));
   if (!shared_state_shm_.IsValid()) {
     LOG(ERROR) << "ContextResult::kFatalFailure: "
-                  "AllocateAndMapSharedMemory failed";
+                  "AllocateAndMapSharedMemory failed"
+               << "; Could not allocate shared memory of "
+               << sizeof(*shared_state()) << " bytes.";
     return ContextResult::kFatalFailure;
   }
 
@@ -101,7 +103,8 @@ ContextResult CommandBufferProxyImpl::Initialize(
     // being out of file descriptors, in which case this is a fatal error
     // that won't be recovered from.
     LOG(ERROR) << "ContextResult::kTransientFailure: "
-                  "Shared memory region is not valid";
+                  "Shared memory region is not valid. "
+                  "Failed to share handle with GPU process.";
     return ContextResult::kTransientFailure;
   }
 
