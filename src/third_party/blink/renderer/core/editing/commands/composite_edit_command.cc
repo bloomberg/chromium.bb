@@ -411,7 +411,7 @@ void CompositeEditCommand::RemoveChildrenInRange(Node* node,
 
   size_t size = children.size();
   for (wtf_size_t i = 0; i < size; ++i) {
-    RemoveNode(children[i].Release(), editing_state);
+    RemoveNode(children[i], editing_state);
     if (editing_state->IsAborted())
       return;
   }
@@ -458,8 +458,10 @@ void CompositeEditCommand::MoveRemainingSiblingsToNewParent(
     Node* node,
     Node* past_last_node_to_move,
     Element* new_parent,
-    EditingState* editing_state) {
+    EditingState* editing_state,
+    Node* prpRefChild) {
   NodeVector nodes_to_remove;
+  Node* refChild = prpRefChild;
 
   for (; node && node != past_last_node_to_move; node = node->nextSibling())
     nodes_to_remove.push_back(node);
@@ -468,7 +470,12 @@ void CompositeEditCommand::MoveRemainingSiblingsToNewParent(
     RemoveNode(nodes_to_remove[i], editing_state);
     if (editing_state->IsAborted())
       return;
+    
+    if (refChild)
+      InsertNodeBefore(nodes_to_remove[i], refChild, editing_state);
+    else
     AppendNode(nodes_to_remove[i], new_parent, editing_state);
+
     if (editing_state->IsAborted())
       return;
   }
@@ -1213,7 +1220,7 @@ void CompositeEditCommand::CloneParagraphUnderNewElement(
     // Clone every node between start.anchorNode() and outerBlock.
 
     for (wtf_size_t i = ancestors.size(); i != 0; --i) {
-      Node* item = ancestors[i - 1].Get();
+      Node* item = ancestors[i - 1];
       Node* child = item->cloneNode(IsDisplayInsideTable(item));
       AppendNode(child, To<Element>(last_node), editing_state);
       if (editing_state->IsAborted())
