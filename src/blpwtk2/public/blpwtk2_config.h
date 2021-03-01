@@ -56,6 +56,7 @@
 // feature 12
 // feature 13
 // feature 14
+#define BLPWTK2_FEATURE_DISCARDABLE_SHAREDMEM
 // feature 15
 // feature 16
 // feature 17
