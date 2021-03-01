@@ -68,6 +68,7 @@
 #include <content/public/renderer/render_thread.h>
 #include <content/browser/browser_main_loop.h>
 #include <mojo/public/cpp/system/wait_set.h>
+#include <content/browser/browser_thread_impl.h>
 #include <sandbox/win/src/win_utils.h>
 #include <services/service_manager/public/cpp/service_executable/switches.h>
 #include <services/service_manager/sandbox/switches.h>
@@ -90,6 +91,7 @@
 #include <windows.h>
 
 // patch section: embedder ipc
+#include <gin/v8_initializer.h>
 
 
 // patch section: multi-heap tracer
@@ -518,6 +520,7 @@ ToolkitImpl::ToolkitImpl(const std::string&              dictionaryPath,
                          const std::string&              hostChannel,
                          const std::vector<std::string>& cmdLineSwitches,
                          bool                            isolated,
+                         bool                            browserV8Enabled,
                          const std::string&              profileDir)
     : d_mainDelegate(false)
 {
@@ -615,6 +618,26 @@ ToolkitImpl::ToolkitImpl(const std::string&              dictionaryPath,
         }
     }
 
+    else if (isHost && browserV8Enabled && Statics::isOriginalThreadMode()) {
+#ifdef V8_USE_EXTERNAL_STARTUP_DATA
+        gin::V8Initializer::LoadV8Snapshot();
+#endif
+        gin::IsolateHolder::Initialize(gin::IsolateHolder::kNonStrictMode,
+                                       gin::ArrayBufferAllocator::SharedInstance());
+
+        auto taskRunner = content::BrowserThreadImpl::GetTaskRunnerForThread(
+                                                    content::BrowserThread::UI);
+
+        d_isolateHolder.reset(new gin::IsolateHolder(taskRunner, gin::IsolateHolder::IsolateType::kBlinkMainThread));
+        d_isolateHolder->isolate()->Enter();
+
+#if defined(BLPWTK2_FEATURE_MULTIHEAPTRACER)
+        d_multiHeapTracerForBrowserV8.reset(new gin::MultiHeapTracer());
+        d_isolateHolder->isolate()->SetEmbedderHeapTracer(d_multiHeapTracerForBrowserV8.get());
+#endif
+    }
+
+    ui::InitializeInputMethod();
     setDefaultLocaleIfWindowsLocaleIsNotSupported();
 }
 
@@ -653,6 +676,12 @@ ToolkitImpl::~ToolkitImpl()
         InProcessRenderer::cleanup();
 
     d_messagePump->cleanup();
+
+    if (d_isolateHolder) {
+        DCHECK(Statics::isOriginalThreadMode());
+        d_isolateHolder->isolate()->Exit();
+        d_isolateHolder.reset();
+    }
 
     if (Statics::isRendererMainThreadMode()) {
         d_renderMainMessageLoop.reset();
@@ -772,6 +801,15 @@ void ToolkitImpl::setTraceThreshold(unsigned int timeoutMS)
 
 
 // patch section: embedder ipc
+void ToolkitImpl::opaqueMessageToRendererAsync(int pid, const StringRef &message)
+{
+    ProcessHostImpl::opaqueMessageToRendererAsync(pid, message);
+}
+
+void ToolkitImpl::setIPCDelegate(ProcessHostDelegate *delegate)
+{
+    ProcessHostImpl::setIPCDelegate(delegate);
+}
 
 
 // patch section: expose v8 platform
@@ -785,6 +823,5 @@ void ToolkitImpl::setTraceThreshold(unsigned int timeoutMS)
 
 
 }  // close namespace blpwtk2
-
 // vim: ts=4 et
 
