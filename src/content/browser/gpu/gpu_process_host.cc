@@ -81,6 +81,7 @@
 #include "ui/gl/gl_switches.h"
 #include "ui/latency/latency_info.h"
 
+#include <atomic>
 #if defined(OS_WIN)
 #include "base/win/win_util.h"
 #include "sandbox/policy/win/sandbox_win.h"
@@ -220,6 +221,8 @@ GpuTerminationStatus ConvertToGpuTerminationStatus(
   NOTREACHED();
   return GpuTerminationStatus::ABNORMAL_TERMINATION;
 }
+
+std::atomic<bool> g_has_in_process{false};
 
 // Command-line switches to propagate to the GPU process.
 static const char* const kSwitchNames[] = {
@@ -528,6 +531,11 @@ bool GpuProcessHost::ValidateHost(GpuProcessHost* host) {
   return false;
 }
 
+//static
+bool GpuProcessHost::HasInProcess() {
+  return g_has_in_process;
+}
+
 // static
 GpuProcessHost* GpuProcessHost::Get(GpuProcessKind kind, bool force_create) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -699,6 +707,7 @@ GpuProcessHost::GpuProcessHost(int host_id, GpuProcessKind kind)
           switches::kSingleProcess) ||
       base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kInProcessGPU)) {
+    g_has_in_process = true;
     in_process_ = true;
   }
 #if !defined(OS_ANDROID)
@@ -1228,6 +1237,7 @@ bool GpuProcessHost::LaunchGpuProcess() {
     delegate->DisableAppContainer();
 #endif  // defined(OS_WIN)
 
+  LOG(INFO) << "Launch GPU process with commandline = " << cmd_line->GetCommandLineString();
   // Do not call process_->Launch() here.
   // AppendExtraCommandLineSwitches will be called again in process_->Launch(),
   // Call LaunchWithoutExtraCommandLineSwitches() so the command line switches

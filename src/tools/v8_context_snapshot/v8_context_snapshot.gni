@@ -10,6 +10,7 @@
 import("//build/config/chromecast_build.gni")
 import("//build/config/v8_target_cpu.gni")
 import("//v8/gni/v8.gni")
+import("//blpwtk2/blpwtk2.gni")
 
 declare_args() {
   # TODO(crbug.com/764576): Enable the feature on more environments.
@@ -28,8 +29,10 @@ declare_args() {
     } else if (v8_target_cpu == "arm64") {
       v8_context_snapshot_filename = "v8_context_snapshot.arm64.bin"
     }
-  } else {
+  } else if (bb_version == "") {
     v8_context_snapshot_filename = "v8_context_snapshot.bin"
+  } else {
+    v8_context_snapshot_filename = "v8_context_snapshot.$bb_version.bin"
   }
 }
 

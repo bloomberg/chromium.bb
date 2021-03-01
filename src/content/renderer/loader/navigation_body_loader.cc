@@ -31,7 +31,8 @@ void NavigationBodyLoader::FillNavigationParamsResponseAndBodyLoader(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     RenderFrameImpl* render_frame_impl,
     bool is_main_frame,
-    blink::WebNavigationParams* navigation_params) {
+    blink::WebNavigationParams* navigation_params,
+    LoaderCreator loader_creator) {
   std::unique_ptr<blink::ResourceLoadInfoNotifierWrapper>
       resource_load_info_notifier_wrapper =
           render_frame_impl
@@ -90,7 +91,13 @@ void NavigationBodyLoader::FillNavigationParamsResponseAndBodyLoader(
   if (url.SchemeIs(url::kDataScheme))
     navigation_params->response.SetHttpStatusCode(200);
 
-  if (url_loader_client_endpoints) {
+  if(loader_creator) {
+    BodyLoaderRequestInfoProvider request_info(
+        *common_params, *commit_params, url_loader_client_endpoints,
+        task_runner, render_frame_id, resource_load_info);
+    navigation_params->body_loader = loader_creator(request_info);
+  }
+  if (!navigation_params->body_loader && url_loader_client_endpoints) {
     navigation_params->body_loader.reset(new NavigationBodyLoader(
         original_url, std::move(response_head), std::move(response_body),
         std::move(url_loader_client_endpoints), task_runner,

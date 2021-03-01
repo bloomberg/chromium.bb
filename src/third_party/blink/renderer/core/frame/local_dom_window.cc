@@ -107,6 +107,7 @@
 #include "third_party/blink/renderer/core/loader/appcache/application_cache.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/origin_trials/origin_trial_context.h"
+#include "third_party/blink/renderer/core/page/bb_window_hooks.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/create_window.h"
 #include "third_party/blink/renderer/core/page/page.h"
@@ -938,6 +939,17 @@ Navigator* LocalDOMWindow::navigator() {
   if (!navigator_)
     navigator_ = MakeGarbageCollected<Navigator>(this);
   return navigator_.Get();
+}
+
+BBWindowHooks* LocalDOMWindow::bbWindowHooks() const
+{
+    if (!IsCurrentlyDisplayedInFrame())
+        return nullptr;
+    if (!bb_window_hooks_)
+        bb_window_hooks_ = BBWindowHooks::Create(GetFrame());
+    if (bb_window_hooks_)
+      return bb_window_hooks_.Get();
+    return nullptr;
 }
 
 void LocalDOMWindow::SchedulePostMessage(
@@ -2048,6 +2060,7 @@ void LocalDOMWindow::Trace(Visitor* visitor) const {
   visitor->Trace(spell_checker_);
   visitor->Trace(text_suggestion_controller_);
   visitor->Trace(isolated_world_csp_map_);
+  visitor->Trace(bb_window_hooks_);
   DOMWindow::Trace(visitor);
   ExecutionContext::Trace(visitor);
   Supplementable<LocalDOMWindow>::Trace(visitor);

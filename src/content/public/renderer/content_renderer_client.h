@@ -23,6 +23,7 @@
 #include "content/public/renderer/url_loader_throttle_provider.h"
 #include "content/public/renderer/websocket_handshake_throttle_provider.h"
 #include "media/base/audio_parameters.h"
+#include "content/renderer/loader/resource_loader_bridge.h"
 #include "media/base/supported_types.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
@@ -68,9 +69,16 @@ namespace mojo {
 class BinderMap;
 }
 
+namespace network {
+struct ResourceRequest;
+}
+
 namespace content {
 class RenderFrame;
 class RenderView;
+struct RequestInfo;
+class ResourceLoaderBridge;
+class ResourceRequestBodyImpl;
 
 // Embedder API for participating in renderer logic.
 class CONTENT_EXPORT ContentRendererClient {
@@ -172,6 +180,11 @@ class CONTENT_EXPORT ContentRendererClient {
   // returns NULL then none will be used.
   virtual std::unique_ptr<WebSocketHandshakeThrottleProvider>
   CreateWebSocketHandshakeThrottleProvider();
+
+  // Allows the embedder to override the ResourceLoaderBridge used.
+  // If it returns NULL, the content layer will use the default loader.
+  virtual std::unique_ptr<ResourceLoaderBridge> OverrideResourceLoaderBridge(
+      const ResourceRequestInfoProvider& request_info);
 
   // Called on the main-thread immediately after the io thread is
   // created.

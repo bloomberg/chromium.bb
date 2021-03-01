@@ -5,6 +5,7 @@
 import("//build/config/python.gni")
 import("//remoting/build/config/remoting_build.gni")
 import("//remoting/host/installer/win/generate_clsids.gni")
+import("//blpwtk2/blpwtk2.gni")
 
 # TODO(crbug.com/1112471): Get this to run cleanly under Python 3.
 python2_action("remoting_me2me_host_archive") {
@@ -65,8 +66,18 @@ python2_action("remoting_me2me_host_archive") {
     "$root_out_dir/remoting/com.google.chrome.remote_assistance-firefox.json",
     "$root_out_dir/remoting/com.google.chrome.remote_desktop.json",
     "$root_out_dir/remoting/com.google.chrome.remote_desktop-firefox.json",
-    "$root_out_dir/icudtl.dat",
   ]
+
+  if (bb_version == "") {
+    inputs += [
+      "$root_out_dir/icudtl.dat"
+    ]
+
+  } else {
+    inputs += [
+      "$root_out_dir/icudtl.$bb_version.dat"
+    ]
+  }
 
   _generated_files = rebase_path(inputs, root_build_dir)
   _generated_files +=

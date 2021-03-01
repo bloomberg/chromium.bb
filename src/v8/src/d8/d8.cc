@@ -21,7 +21,7 @@
 #include "src/third_party/vtune/v8-vtune.h"
 #endif
 
-#include "include/libplatform/libplatform.h"
+#include "include/v8-default-platform.h"
 #include "include/libplatform/v8-tracing.h"
 #include "include/v8-inspector.h"
 #include "include/v8-profiler.h"
@@ -2783,7 +2783,8 @@ class InspectorClient : public v8_inspector::V8InspectorClient {
     if (!connect) return;
     isolate_ = context->GetIsolate();
     channel_.reset(new InspectorFrontend(context));
-    inspector_ = v8_inspector::V8Inspector::create(isolate_, this);
+    inspector_ = std::unique_ptr<v8_inspector::V8Inspector>(
+        v8_inspector::V8Inspector::create(isolate_, this));
     session_ =
         inspector_->connect(1, channel_.get(), v8_inspector::StringView());
     context->SetAlignedPointerInEmbedderData(kInspectorClientIndex, this);
@@ -4060,7 +4061,9 @@ void Shell::WaitForRunningWorkers() {
 }
 
 int Shell::Main(int argc, char* argv[]) {
+#if defined(USING_V8_BASE_SHARED)
   v8::base::EnsureConsoleOutput();
+#endif
   if (!SetOptions(argc, argv)) return 1;
 
   v8::V8::InitializeICUDefaultLocation(argv[0], options.icu_data_file);
@@ -4109,9 +4112,9 @@ int Shell::Main(int argc, char* argv[]) {
   }
 
   platform::tracing::TracingController* tracing_controller = tracing.get();
-  g_platform = v8::platform::NewDefaultPlatform(
+  g_platform = std::unique_ptr<v8::Platform>(v8::platform::NewDefaultPlatform(
       options.thread_pool_size, v8::platform::IdleTaskSupport::kEnabled,
-      in_process_stack_dumping, std::move(tracing));
+      in_process_stack_dumping, tracing.release()));
   g_default_platform = g_platform.get();
   if (i::FLAG_verify_predictable) {
     g_platform = MakePredictablePlatform(std::move(g_platform));

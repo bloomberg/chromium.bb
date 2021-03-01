@@ -645,9 +645,11 @@ void GpuDataManagerImplPrivate::RequestDxDiagNodeData() {
       manager->UpdateDxDiagNodeRequestStatus(false);
       return;
     }
-
-    GpuProcessHost* host = GpuProcessHost::Get(GPU_PROCESS_KIND_INFO_COLLECTION,
-                                               true /* force_create */);
+    
+    auto kind = GpuProcessHost::HasInProcess()
+                    ? GPU_PROCESS_KIND_SANDBOXED
+                    : GPU_PROCESS_KIND_INFO_COLLECTION;
+    GpuProcessHost* host = GpuProcessHost::Get(kind, true /* force_create */);
     if (!host) {
       manager->UpdateDxDiagNodeRequestStatus(false);
       return;

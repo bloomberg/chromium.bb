@@ -13,6 +13,7 @@ import("//third_party/icu/config.gni")
 import("//tools/v8_context_snapshot/v8_context_snapshot.gni")
 import("//ui/base/ui_features.gni")
 import("//v8/gni/v8.gni")
+import("//blpwtk2/blpwtk2.gni")
 
 declare_args() {
   # The Chrome archive is compressed in official builds to reduce the size of
@@ -225,20 +226,31 @@ template("generate_mini_installer") {
     }
 
     if (icu_use_data_file) {
-      inputs += [ "$root_out_dir/icudtl.dat" ]
+      if (bb_version == "") {
+        inputs += [
+          "$root_out_dir/icudtl.dat"
+        ]
+      } else {
+        inputs += [
+          "$root_out_dir/icudtl.$bb_version.dat"
+        ]
+      }
+
     } else {
       inputs += [ "$root_out_dir/icudt.dll" ]
     }
 
     if (v8_use_external_startup_data) {
       deps += [ "//v8" ]
-      if (use_v8_context_snapshot) {
-        inputs += [ "$root_out_dir/$v8_context_snapshot_filename" ]
-        deps += [ "//tools/v8_context_snapshot" ]
-      } else {
-        inputs += [ "$root_out_dir/snapshot_blob.bin" ]
+      inputs += [
+        "$root_out_dir/$v8_context_snapshot_filename",
+      ]
+
+      if (bb_version != "") {
         args += [ "--include_snapshotblob=1" ]
       }
+
+      deps += [ "//v8" ]
     }
 
     depfile = "$target_gen_dir/archive.d"

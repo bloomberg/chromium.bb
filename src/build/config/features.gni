@@ -16,6 +16,7 @@
 
 import("//build/config/chrome_build.gni")
 import("//build/config/chromecast_build.gni")
+import("//blpwtk2/blpwtk2.gni")
 
 declare_args() {
   # Enables proprietary codecs and demuxers; e.g. H264, AAC, MP3, and MP4.

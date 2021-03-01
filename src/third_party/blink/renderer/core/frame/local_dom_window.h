@@ -52,6 +52,7 @@ namespace blink {
 
 class ApplicationCache;
 class BarProp;
+class BBWindowHooks;
 class CSSStyleDeclaration;
 class CustomElementRegistry;
 class Document;
@@ -205,6 +206,8 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
   BarProp* toolbar();
   Navigator* navigator();
   Navigator* clientInformation() { return navigator(); }
+
+  BBWindowHooks* bbWindowHooks() const;
 
   bool offscreenBuffering() const;
 
@@ -461,6 +464,7 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
   mutable Member<BarProp> toolbar_;
   mutable Member<Navigator> navigator_;
   mutable Member<StyleMedia> media_;
+  mutable Member<BBWindowHooks> bb_window_hooks_;
   mutable Member<CustomElementRegistry> custom_elements_;
   // We store reference to Modulator here to have it TraceWrapper-ed.
   // This is wrong, as Modulator is per-context, where as LocalDOMWindow is

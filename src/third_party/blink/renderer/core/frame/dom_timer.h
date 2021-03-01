@@ -75,6 +75,10 @@ class CORE_EXPORT DOMTimer final : public GarbageCollected<DOMTimer>,
   const char* NameInHeapSnapshot() const override { return "DOMTimer"; }
 
   void Stop() override;
+ 
+  // The following are essentially constants. All intervals are in seconds.
+  static void SetHiddenPageAlignmentInterval(double);
+  static double HiddenPageAlignmentInterval();
 
  private:
   void Fired() override;

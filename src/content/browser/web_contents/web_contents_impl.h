@@ -1428,7 +1428,8 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   };
 
   // See WebContents::Create for a description of these parameters.
-  explicit WebContentsImpl(BrowserContext* browser_context);
+  explicit WebContentsImpl(BrowserContext* browser_context,
+                           int render_process_affinity = SiteInstance::kNoProcessAffinity);
 
   // Covariant return type alternative for WebContents::Create(). Avoids
   // need for casting of objects inside the content layer.

@@ -47,4 +47,9 @@ void SingleThreadTaskExecutor::SetWorkBatchSize(size_t work_batch_size) {
   sequence_manager_->SetWorkBatchSize(work_batch_size);
 }
 
+sequence_manager::SequenceManager*
+SingleThreadTaskExecutor::GetMessageLoopBase() {
+  return sequence_manager_.get();
+}
+
 }  // namespace base

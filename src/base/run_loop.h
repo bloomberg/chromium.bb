@@ -20,6 +20,7 @@
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "base/message_loop/message_pump.h"
 
 namespace base {
 
@@ -154,7 +155,16 @@ class BASE_EXPORT RunLoop {
   // Safe to call before RegisterDelegateForCurrentThread().
   static bool IsNestedOnCurrentThread();
 
-  // A NestingObserver is notified when a nested RunLoop begins and ends.
+  // Return false to abort the Run.
+  bool BeforeRun();
+  void AfterRun();
+
+  // Get the MessagePump::Delegate if it exist. Otherwise return nullptr
+  MessagePump::Delegate* GetPumpDelegate();
+
+  // A NestingObserver is notified when a nested RunLoop begins. The observers
+  // are notified before the current thread's RunLoop::Delegate::Run() is
+  // invoked and nested work begins.
   class BASE_EXPORT NestingObserver {
    public:
     // Notified before a nested loop starts running work on the current thread.
@@ -242,6 +252,11 @@ class BASE_EXPORT RunLoop {
   // on forever bound to that thread (including its destruction).
   static void RegisterDelegateForCurrentThread(Delegate* delegate);
 
+  // Registers MessagePump::Delegate on the current thread. Must be called once
+  // and only once per thread. See GetPumpDelegate.
+  static void RegisterMessagePumpDelegateForCurrentThread(MessagePump::Delegate* delegate);
+
+
   // Quits the active RunLoop (when idle) -- there must be one. These were
   // introduced as prefered temporary replacements to the long deprecated
   // MessageLoop::Quit(WhenIdle)(Closure) methods. Callers should properly plumb
@@ -307,10 +322,6 @@ class BASE_EXPORT RunLoop {
 
   static void SetTimeoutForCurrentThread(const RunLoopTimeout* timeout);
   static const RunLoopTimeout* GetTimeoutForCurrentThread();
-
-  // Return false to abort the Run.
-  bool BeforeRun();
-  void AfterRun();
 
   // A cached reference of RunLoop::Delegate for the thread driven by this
   // RunLoop for quick access without using TLS (also allows access to state

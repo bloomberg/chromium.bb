@@ -112,6 +112,7 @@ FrameTreeNode::FrameTreeNode(
     FrameTree* frame_tree,
     RenderFrameHostImpl* parent,
     blink::mojom::TreeScopeType scope,
+    int render_process_affinity,
     const std::string& name,
     const std::string& unique_name,
     bool is_created_by_script,
@@ -119,7 +120,7 @@ FrameTreeNode::FrameTreeNode(
     const blink::mojom::FrameOwnerProperties& frame_owner_properties,
     blink::mojom::FrameOwnerElementType owner_type)
     : frame_tree_(frame_tree),
-      render_manager_(this, frame_tree->manager_delegate()),
+      render_manager_(this, frame_tree->manager_delegate(), render_process_affinity),
       frame_tree_node_id_(next_frame_tree_node_id_++),
       parent_(parent),
       depth_(parent ? parent->frame_tree_node()->depth_ + 1 : 0u),

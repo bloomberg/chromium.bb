@@ -18,6 +18,10 @@ import("../../swiftshader.gni")
 # Need a separate config to ensure the warnings are added to the end.
 config("swiftshader_libEGL_private_config") {
   defines = [ "EGL_EGLEXT_PROTOTYPES" ]
+  defines += [
+    "SWIFT_EGL_LIBRARY_NAME=\"blpcr_egl${optional_bb_suffix}.dll\"",
+    "SWIFT_GLESV2_LIBRARY_NAME=\"blpcr_glesv2${optional_bb_suffix}.dll\"",
+  ]
 
   if (is_win) {
     cflags = [
@@ -49,7 +53,7 @@ config("swiftshader_libEGL_private_config") {
 
 swiftshader_shared_library("swiftshader_libEGL") {
   if (!is_mac && !is_fuchsia) {
-    output_name = "libEGL"
+    output_name = "blpcr_egl${optional_bb_suffix}"
     output_dir = "$root_out_dir/swiftshader"
   }
 
@@ -96,9 +100,20 @@ swiftshader_shared_library("swiftshader_libEGL") {
 
   configs = [ ":swiftshader_libEGL_private_config" ]
 
+  if (bb_generate_map_files) {
+    configs += [ "//blpwtk2:blpwtk2_gen_map" ]
+  }
+  public_configs = [
+    "//blpwtk2:blpwtk2_public",
+  ]
+
   include_dirs = [
     "../../../include",
     "../..",
     "..",
+  ]
+
+  public_deps = [
+    "//blpwtk2:blpwtk2_generate_sources",
   ]
 }

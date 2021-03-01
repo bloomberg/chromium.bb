@@ -36,6 +36,8 @@
 #endif
 #endif  // V8_USE_EXTERNAL_STARTUP_DATA
 
+#include <blpwtk2_products.h>  // For BLPWTK2_NATIVES_BLOB_NAME, BLPWTK2_SNAPSHOT_BLOB_NAME
+
 namespace gin {
 
 namespace {
@@ -79,7 +81,7 @@ const char kSnapshotFileName32[] = "snapshot_blob_32.bin";
 #if defined(USE_V8_CONTEXT_SNAPSHOT)
 const char kV8ContextSnapshotFileName[] = V8_CONTEXT_SNAPSHOT_FILENAME;
 #endif
-const char kSnapshotFileName[] = "snapshot_blob.bin";
+const char kSnapshotFileName[] = BLPWTK2_SNAPSHOT_BLOB_NAME;
 #endif  // defined(OS_ANDROID)
 
 const char* GetSnapshotFileName(

@@ -5,11 +5,9 @@
 #include "content/renderer/in_process_renderer_thread.h"
 
 #include "build/build_config.h"
-#include "content/renderer/render_process.h"
-#include "content/renderer/render_process_impl.h"
-#include "content/renderer/render_thread_impl.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/scheduler/web_thread_scheduler.h"
+#include "content/public/renderer/render_thread.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/jni_android.h"
@@ -43,16 +41,11 @@ void InProcessRendererThread::Init() {
   std::unique_ptr<blink::scheduler::WebThreadScheduler> main_thread_scheduler =
       blink::scheduler::WebThreadScheduler::CreateMainThreadScheduler();
 
-  render_process_ = RenderProcessImpl::Create();
-  // RenderThreadImpl doesn't currently support a proper shutdown sequence
-  // and it's okay when we're running in multi-process mode because renderers
-  // get killed by the OS. In-process mode is used for test and debug only.
-  new RenderThreadImpl(params_, renderer_client_id_,
-                       std::move(main_thread_scheduler));
+  RenderThread::InitInProcessRenderer(params_, std::move(main_thread_scheduler), renderer_client_id_);
 }
 
 void InProcessRendererThread::CleanUp() {
-  render_process_.reset();
+  RenderThread::CleanUpInProcessRenderer();
 
   // It's a little lame to manually set this flag.  But the single process
   // RendererThread will receive the WM_QUIT.  We don't need to assert on

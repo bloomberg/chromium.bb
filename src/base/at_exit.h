@@ -74,12 +74,10 @@ class BASE_EXPORT AtExitManager {
   AtExitManager* const next_manager_;
 };
 
-#if defined(UNIT_TEST)
 class ShadowingAtExitManager : public AtExitManager {
  public:
   ShadowingAtExitManager() : AtExitManager(true) {}
 };
-#endif  // defined(UNIT_TEST)
 
 }  // namespace base
 

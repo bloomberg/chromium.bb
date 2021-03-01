@@ -232,12 +232,12 @@ void BrowserChildProcessHostImpl::TerminateAll() {
 
 // static
 void BrowserChildProcessHostImpl::CopyFeatureAndFieldTrialFlags(
-    base::CommandLine* cmd_line) {
+    base::CommandLine* cmd_line, base::ProcessHandle child_process) {
   // If we run base::FieldTrials, we want to pass to their state to the
   // child process so that it can act in accordance with each state.
   base::FieldTrialList::CopyFieldTrialStateToFlags(
       switches::kFieldTrialHandle, switches::kEnableFeatures,
-      switches::kDisableFeatures, cmd_line);
+      switches::kDisableFeatures, cmd_line, child_process);
 }
 
 // static

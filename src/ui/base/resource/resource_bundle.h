@@ -159,6 +159,9 @@ class COMPONENT_EXPORT(UI_BASE) ResourceBundle {
   // Initialize the ResourceBundle using given data pack path for testing.
   static void InitSharedInstanceWithPakPath(const base::FilePath& path);
 
+  // Initialize an empty ResourceBundle.
+  static void InitSharedInstance();
+
   // Delete the ResourceBundle for this process if it exists.
   static void CleanupSharedInstance();
 
@@ -179,6 +182,9 @@ class COMPONENT_EXPORT(UI_BASE) ResourceBundle {
 
   // Check if the .pak for the given locale exists.
   static bool LocaleDataPakExists(const std::string& locale);
+
+  // Add the resources from the resource data DLL.
+  void AddDLLResources();
 
   // Registers additional data pack files with this ResourceBundle.  When
   // looking for a DataResource, we will search these files after searching the

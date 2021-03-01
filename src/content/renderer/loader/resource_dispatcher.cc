@@ -23,6 +23,8 @@
 #include "build/build_config.h"
 #include "content/common/inter_process_time_ticks_converter.h"
 #include "content/common/navigation_params.h"
+#include "content/public/common/content_client.h"
+#include "content/public/renderer/content_renderer_client.h"
 #include "content/public/renderer/request_peer.h"
 #include "content/public/renderer/resource_dispatcher_delegate.h"
 #include "content/renderer/loader/sync_load_context.h"
@@ -323,8 +325,9 @@ bool ResourceDispatcher::RemovePendingRequest(
   if (it == pending_requests_.end())
     return false;
 
+  bool is_external_loader = !!(it->second.get()->bridge);
   PendingRequestInfo* info = it->second.get();
-  if (info->net_error == net::ERR_IO_PENDING) {
+  if (info->net_error == net::ERR_IO_PENDING && !is_external_loader) {
     info->net_error = net::ERR_ABORTED;
     info->resource_load_info_notifier_wrapper->NotifyResourceLoadCanceled(
         info->net_error);
@@ -335,6 +338,9 @@ bool ResourceDispatcher::RemovePendingRequest(
   // Clear URLLoaderClient to stop receiving further Mojo IPC from the browser
   // process.
   info->url_loader_client = nullptr;
+
+  if (is_external_loader)
+    it->second.get()->bridge.reset(nullptr);
 
   // Always delete the pending_request asyncly so that cancelling the request
   // doesn't delete the request context info while its response is still being
@@ -351,6 +357,11 @@ void ResourceDispatcher::Cancel(
   auto it = pending_requests_.find(request_id);
   if (it == pending_requests_.end()) {
     DLOG(ERROR) << "unknown request";
+    return;
+  }
+
+  if (it->second.get()->bridge) {
+    it->second.get()->bridge->Cancel();
     return;
   }
 
@@ -389,7 +400,12 @@ void ResourceDispatcher::DidChangePriority(int request_id,
     return;
   }
 
-  request_info->url_loader->SetPriority(new_priority, intra_priority_value);
+  // blpwtk2: Null-check before we attempt to use the throttling loader. This
+  // check is needed because we bail out very early in the StartAsync function
+  // if the embedder's URL loader is used, and we never give the chance for
+  // the throttling loader to be installed later in the function.
+  if (request_info->url_loader)
+    request_info->url_loader->SetPriority(new_priority, intra_priority_value);
 }
 
 void ResourceDispatcher::OnTransferSizeUpdated(int request_id,
@@ -426,12 +442,14 @@ void ResourceDispatcher::SetCorsExemptHeaderList(
 ResourceDispatcher::PendingRequestInfo::PendingRequestInfo(
     std::unique_ptr<RequestPeer> peer,
     network::mojom::RequestDestination request_destination,
+    std::unique_ptr<ResourceLoaderBridge> bridge,
     int render_frame_id,
     const GURL& request_url,
     std::unique_ptr<blink::ResourceLoadInfoNotifierWrapper>
         resource_load_info_notifier_wrapper)
     : peer(std::move(peer)),
       request_destination(request_destination),
+      bridge(std::move(bridge)),
       render_frame_id(render_frame_id),
       url(request_url),
       response_url(request_url),
@@ -455,6 +473,15 @@ void ResourceDispatcher::StartSync(
     std::unique_ptr<RequestPeer> peer,
     std::unique_ptr<blink::ResourceLoadInfoNotifierWrapper>
         resource_load_info_notifier_wrapper) {
+  PeerRequestInfoProvider request_info(request.get());
+  std::unique_ptr<ResourceLoaderBridge> bridge(
+      GetContentClient()->renderer()->OverrideResourceLoaderBridge(
+          request_info));
+  if (bridge.get()) {
+    bridge->SyncLoad(response);
+    return;
+  }
+
   CheckSchemeForReferrerPolicy(*request);
 
   DCHECK(loader_options & network::mojom::kURLLoadOptionSynchronous);
@@ -536,8 +563,30 @@ int ResourceDispatcher::StartAsync(
 
   // Compute a unique request_id for this renderer process.
   int request_id = MakeRequestID();
+
+  std::unique_ptr<ResourceLoaderBridge> bridge =
+      GetContentClient()->renderer()->OverrideResourceLoaderBridge(
+          PeerRequestInfoProvider(request.get()));
+
+  if (bridge) {
+    bridge->Start(std::make_unique<RequestPeerReceiver>(peer.get(), request_id,
+                                                        loading_task_runner));
+    pending_requests_[request_id] = std::make_unique<PendingRequestInfo>(
+        std::move(peer), request->destination, std::move(bridge),
+        request->render_frame_id, request->url,
+        std::move(response_override_params));
+
+    pending_requests_[request_id]->url_loader_client =
+        std::make_unique<URLLoaderClientImpl>(
+            request_id, this, loading_task_runner,
+            true /* bypass_redirect_checks */, request->url);
+    return request_id;
+  }
+
+  CheckSchemeForReferrerPolicy(*request);
+
   pending_requests_[request_id] = std::make_unique<PendingRequestInfo>(
-      std::move(peer), request->destination, request->render_frame_id,
+      std::move(peer), request->destination, std::move(bridge), request->render_frame_id,
       request->url, std::move(resource_load_info_notifier_wrapper));
   PendingRequestInfo* pending_request = pending_requests_[request_id].get();
 

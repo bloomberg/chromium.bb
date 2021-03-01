@@ -193,7 +193,7 @@ class SuicideOnChannelErrorFilter : public IPC::MessageFilter {
 
 #endif  // OS(POSIX)
 
-mojo::IncomingInvitation InitializeMojoIPCChannel() {
+mojo::IncomingInvitation InitializeMojoIPCChannel(int file_descriptor) {
   TRACE_EVENT0("startup", "InitializeMojoIPCChannel");
   mojo::PlatformChannelEndpoint endpoint;
 #if defined(OS_WIN)
@@ -201,6 +201,10 @@ mojo::IncomingInvitation InitializeMojoIPCChannel() {
           mojo::PlatformChannel::kHandleSwitch)) {
     endpoint = mojo::PlatformChannel::RecoverPassedEndpointFromCommandLine(
         *base::CommandLine::ForCurrentProcess());
+  } else if (file_descriptor) {
+    endpoint = mojo::PlatformChannelEndpoint(mojo::PlatformHandle(
+        base::win::ScopedHandle(LongToHandle(file_descriptor))));
+    DCHECK(endpoint.is_valid());
   } else {
     // If this process is elevated, it will have a pipe path passed on the
     // command line.
@@ -412,7 +416,8 @@ ChildThread* ChildThread::Get() {
   return ChildThreadImpl::current();
 }
 
-ChildThreadImpl::Options::Options() : connect_to_browser(false) {}
+ChildThreadImpl::Options::Options()
+    : connect_to_browser(false), mojo_controller_handle(0) {}
 
 ChildThreadImpl::Options::Options(const Options& other) = default;
 
@@ -427,6 +432,7 @@ ChildThreadImpl::Options::Builder::InBrowserProcess(
     const InProcessChildThreadParams& params) {
   options_.browser_process_io_runner = params.io_runner();
   options_.mojo_invitation = params.mojo_invitation();
+  options_.mojo_controller_handle = params.mojo_controller_handle();
   return *this;
 }
 
@@ -573,7 +579,8 @@ void ChildThreadImpl::Init(const Options& options) {
           mojo_ipc_task_runner,
           mojo::core::ScopedIPCSupport::ShutdownPolicy::FAST);
     }
-    mojo::IncomingInvitation invitation = InitializeMojoIPCChannel();
+    mojo::IncomingInvitation invitation =
+        InitializeMojoIPCChannel(options.mojo_controller_handle);
     child_process_pipe_for_receiver =
         invitation.ExtractMessagePipe(kChildProcessReceiverAttachmentName);
     child_process_host_pipe_for_remote =

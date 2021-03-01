@@ -27,13 +27,18 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/version.h"
 #include "build/branding_buildflags.h"
+#include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/child_process_logging.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
+
+#if !defined(BLPWTK2_IMPLEMENTATION)
 #include "chrome/common/crash_keys.h"
+#endif
+
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/common_resources.h"
 #include "components/crash/core/common/crash_key.h"
@@ -45,7 +50,11 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
 #include "extensions/buildflags/buildflags.h"
+
+#if defined(USE_EXTENSIONS)
 #include "extensions/common/constants.h"
+#endif
+
 #include "gpu/config/gpu_info.h"
 #include "gpu/config/gpu_util.h"
 #include "media/base/decrypt_config.h"
@@ -354,16 +363,20 @@ void ChromeContentClient::SetPDFEntryFunctions(
 
 void ChromeContentClient::SetActiveURL(const GURL& url,
                                        std::string top_origin) {
+#if !defined(BLPWTK2_IMPLEMENTATION)
   static crash_reporter::CrashKeyString<1024> active_url("url-chunk");
   active_url.Set(url.possibly_invalid_spec());
 
   // Use a large enough size for Origin::GetDebugString.
   static crash_reporter::CrashKeyString<128> top_origin_key("top-origin");
   top_origin_key.Set(top_origin);
+#endif
 }
 
 void ChromeContentClient::SetGpuInfo(const gpu::GPUInfo& gpu_info) {
+#if !defined(BLPWTK2_IMPLEMENTATION)  
   gpu::SetKeysForCrashLogging(gpu_info);
+#endif  
 }
 
 #if BUILDFLAG(ENABLE_PLUGINS)
@@ -439,7 +452,7 @@ void ChromeContentClient::AddContentDecryptionModules(
 #endif  // BUILDFLAG(ENABLE_WIDEVINE) && (defined(OS_LINUX) ||
         // defined(OS_CHROMEOS))
 
-#if BUILDFLAG(ENABLE_LIBRARY_CDMS)
+#if BUILDFLAG(ENABLE_LIBRARY_CDMS) && !defined(BLPWTK2_IMPLEMENTATION)
     // Register Clear Key CDM if specified in command line.
     base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
     base::FilePath clear_key_cdm_path =
@@ -503,8 +516,14 @@ void ChromeContentClient::AddContentDecryptionModules(
 // Example standard schemes: https://, chrome-extension://, chrome://, file://
 // Example nonstandard schemes: mailto:, data:, javascript:, about:
 static const char* const kChromeStandardURLSchemes[] = {
-    extensions::kExtensionScheme, chrome::kChromeNativeScheme,
-    chrome::kChromeSearchScheme,  dom_distiller::kDomDistillerScheme,
+#if defined(ENABLE_EXTENSIONS)  
+    extensions::kExtensionScheme,
+#endif    
+    chrome::kChromeNativeScheme,
+    chrome::kChromeSearchScheme,
+#if defined(ENABLE_DOM_DISTILLER)    
+    dom_distiller::kDomDistillerScheme,
+#endif    
 #if defined(OS_ANDROID)
     chrome::kAndroidAppScheme,
 #endif
@@ -521,18 +540,23 @@ void ChromeContentClient::AddAdditionalSchemes(Schemes* schemes) {
   schemes->referrer_schemes.push_back(chrome::kAndroidAppScheme);
 #endif
 
+#if defined(ENABLE_EXTENSIONS)  
   schemes->savable_schemes.push_back(extensions::kExtensionScheme);
+#endif  
   schemes->savable_schemes.push_back(chrome::kChromeSearchScheme);
+#if defined(ENABLE_DOM_DISTILLER)     
   schemes->savable_schemes.push_back(dom_distiller::kDomDistillerScheme);
+#endif  
 
   // chrome-search: resources shouldn't trigger insecure content warnings.
   schemes->secure_schemes.push_back(chrome::kChromeSearchScheme);
 
+#if defined(ENABLE_EXTENSIONS)  
   // Treat as secure because communication with them is entirely in the browser,
   // so there is no danger of manipulation or eavesdropping on communication
   // with them by third parties.
   schemes->secure_schemes.push_back(extensions::kExtensionScheme);
-
+#endif
   // chrome-native: is a scheme used for placeholder navigations that allow
   // UIs to be drawn with platform native widgets instead of HTML.  These pages
   // should be treated as empty documents that can commit synchronously.
@@ -604,6 +628,7 @@ std::string ChromeContentClient::GetProcessTypeNameInEnglish(int type) {
 }
 
 blink::OriginTrialPolicy* ChromeContentClient::GetOriginTrialPolicy() {
+#if !defined(BLPWTK2_IMPLEMENTATION)  
   // Prevent initialization race (see crbug.com/721144). There may be a
   // race when the policy is needed for worker startup (which happens on a
   // separate worker thread).
@@ -612,6 +637,9 @@ blink::OriginTrialPolicy* ChromeContentClient::GetOriginTrialPolicy() {
     origin_trial_policy_ =
         std::make_unique<embedder_support::OriginTrialPolicyImpl>();
   return origin_trial_policy_.get();
+#else
+  return nullptr;
+#endif
 }
 
 #if defined(OS_ANDROID)

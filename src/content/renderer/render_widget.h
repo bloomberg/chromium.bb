@@ -163,6 +163,8 @@ class CONTENT_EXPORT RenderWidget
   // the new value will be sent to the browser process.
   void UpdateSelectionBounds();
 
+  void bbHandleInputEvent(const blink::WebInputEvent& event);
+
  protected:
   // Destroy the RenderWidget. The |widget| is the owning pointer of |this|.
   virtual void Close(std::unique_ptr<RenderWidget> widget);
@@ -224,12 +226,15 @@ class CONTENT_EXPORT RenderWidget
   // that are not for a frame (eg popups) and excludes the widget for the main
   // frame (which is attached to the RenderViewImpl).
   bool for_child_local_root_frame_ = false;
+
   // RenderWidgets are created for frames and  popups. In the
   // former case, the caller frame takes ownership and eventually passes the
   // unique_ptr back in Close(). In the latter cases, the browser process takes
   // ownership via IPC.  These booleans exist to allow us to confirm than an IPC
   // message to kill the render widget is coming for a popup.
   bool for_popup_ = false;
+
+  bool bb_OnHandleInputEvent_no_ack_{false};
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidget);
 };

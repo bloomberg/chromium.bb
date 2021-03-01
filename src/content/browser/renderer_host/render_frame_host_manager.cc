@@ -197,8 +197,11 @@ void AppendReason(std::string* reason, const char* value) {
 }  // namespace
 
 RenderFrameHostManager::RenderFrameHostManager(FrameTreeNode* frame_tree_node,
-                                               Delegate* delegate)
-    : frame_tree_node_(frame_tree_node), delegate_(delegate) {
+                                               Delegate* delegate,
+                                               int render_process_affinity)
+    : frame_tree_node_(frame_tree_node),
+      delegate_(delegate),
+      render_process_affinity_(render_process_affinity) {
   DCHECK(frame_tree_node_);
 }
 
@@ -218,6 +221,12 @@ RenderFrameHostManager::~RenderFrameHostManager() {
 
 void RenderFrameHostManager::InitRoot(SiteInstance* site_instance,
                                       bool renderer_initiated_creation) {
+
+  // If we have affinity to a particular render process, then get the process
+  // now, or forever hold your peace.
+  if (render_process_affinity_ != SiteInstance::kNoProcessAffinity)
+    site_instance->GetProcess(render_process_affinity_);
+
   SetRenderFrameHost(CreateRenderFrameHost(
       CreateFrameCase::kInitRoot, site_instance,
       /*frame_routing_id=*/MSG_ROUTING_NONE, base::UnguessableToken::Create(),
@@ -1609,6 +1618,11 @@ RenderFrameHostManager::GetSiteInstanceForNavigation(
       new_instance_impl, frame_tree_node_->IsMainFrame(), dest_url,
       cross_origin_isolated_info, is_speculative));
 
+  // If we have affinity to a particular process, get it now or forever hold
+  // your peace.
+  if (render_process_affinity_ != SiteInstance::kNoProcessAffinity)
+    new_instance->GetProcess(render_process_affinity_);
+
   // If |should_swap| is true, we must use a different SiteInstance than the
   // current one. If we didn't, we would have two RenderFrameHosts in the same
   // SiteInstance and the same frame, breaking lookup of RenderFrameHosts by
@@ -2632,6 +2646,13 @@ RenderFrameHostManager::GetSiteInstanceForNavigationRequest(
     NavigationRequest* request,
     std::string* reason) {
   SiteInstance* current_site_instance = render_frame_host_->GetSiteInstance();
+
+  bool v = true;
+  if (v) {
+    // blpwtk2: Enforce renderer affinity at the webview level by always using
+    //          the same site instance
+    return base::WrapRefCounted(current_site_instance);
+  }
 
   // All children of MHTML documents must be MHTML documents. They all live in
   // the same process.

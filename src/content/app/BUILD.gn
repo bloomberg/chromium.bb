@@ -82,6 +82,9 @@ source_set("content_main_runner_app") {
            "//content/renderer",
            "//content/utility",
            "//content/zygote",
+           # blpwtk2: Added this so that we can initialize V8's ICU in
+           #          content_main_runner.           
+           "//v8",
          ]
 }
 

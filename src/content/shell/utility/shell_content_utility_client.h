@@ -33,6 +33,7 @@ class ShellContentUtilityClient : public ContentUtilityClient {
   bool register_sandbox_status_helper_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(ShellContentUtilityClient);
+  bool OnMessageReceived(const IPC::Message& message) override;  
 };
 
 }  // namespace content

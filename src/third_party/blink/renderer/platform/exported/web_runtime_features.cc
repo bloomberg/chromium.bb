@@ -159,6 +159,10 @@ void WebRuntimeFeatures::EnableCompositedSelectionUpdate(bool enable) {
   RuntimeEnabledFeatures::SetCompositedSelectionUpdateEnabled(enable);
 }
 
+void WebRuntimeFeatures::EnableCSS3Text(bool enable) {
+  RuntimeEnabledFeatures::SetCSS3TextEnabled(enable);
+}
+
 void WebRuntimeFeatures::EnableCSSHexAlphaColor(bool enable) {
   RuntimeEnabledFeatures::SetCSSHexAlphaColorEnabled(enable);
 }

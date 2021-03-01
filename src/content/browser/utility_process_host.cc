@@ -47,10 +47,21 @@
 namespace content {
 
 UtilityMainThreadFactoryFunction g_utility_main_thread_factory = nullptr;
+static bool g_run_utility_in_process_ = false;
 
 void UtilityProcessHost::RegisterUtilityMainThreadFactory(
     UtilityMainThreadFactoryFunction create) {
   g_utility_main_thread_factory = create;
+}
+
+// static
+bool UtilityProcessHost::RunUtilityInProcess() {
+  return g_run_utility_in_process_;
+}
+
+// static
+void UtilityProcessHost::SetRunUtilityInProcess(bool value) {
+  g_run_utility_in_process_ = value;
 }
 
 UtilityProcessHost::UtilityProcessHost()
@@ -156,7 +167,7 @@ bool UtilityProcessHost::StartProcess() {
   process_->SetMetricsName(metrics_name_);
   process_->GetHost()->CreateChannelMojo();
 
-  if (RenderProcessHost::run_renderer_in_process()) {
+  if (UtilityProcessHost::RunUtilityInProcess()) {
     DCHECK(g_utility_main_thread_factory);
     // See comment in RenderProcessHostImpl::Init() for the background on why we
     // support single process mode this way.

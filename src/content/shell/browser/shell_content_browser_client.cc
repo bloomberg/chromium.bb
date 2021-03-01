@@ -19,8 +19,13 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/sequence_local_storage_slot.h"
+#include <base/task/post_task.h>
+#include <base/task/task_traits.h>
+#include "base/threading/thread.h"
 #include "build/build_config.h"
 #include "components/performance_manager/embedder/performance_manager_registry.h"
+#include <content/public/browser/browser_task_traits.h>
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/client_certificate_delegate.h"
 #include "content/public/browser/login_delegate.h"
 #include "content/public/browser/navigation_throttle.h"
@@ -32,6 +37,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/user_agent.h"
+#include "content/renderer/in_process_renderer_thread.h"
 #include "content/shell/browser/shell.h"
 #include "content/shell/browser/shell_browser_context.h"
 #include "content/shell/browser/shell_browser_main_parts.h"
@@ -83,6 +89,7 @@ namespace content {
 namespace {
 
 ShellContentBrowserClient* g_browser_client = nullptr;
+base::Thread* g_in_process_renderer_thread = 0;
 
 bool g_enable_expect_ct_for_testing = false;
 
@@ -243,6 +250,46 @@ void ShellContentBrowserClient::AppendExtraCommandLineSwitches(
 
 std::string ShellContentBrowserClient::GetAcceptLangs(BrowserContext* context) {
   return GetShellLanguage();
+}
+
+bool ShellContentBrowserClient::SupportsInProcessRenderer()
+{
+#if !defined(OS_IOS) && (!defined(GOOGLE_CHROME_BUILD) || defined(OS_ANDROID))
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess);
+#else
+  // Single-process is an unsupported and not fully tested mode, so don't
+  // enable it for official Chrome builds (except on Android).
+  return false;
+#endif
+}
+
+void ShellContentBrowserClient::StartInProcessRendererThread(
+    mojo::OutgoingInvitation* broker_client_invitation,
+    int renderer_client_id) {
+  DCHECK(!g_in_process_renderer_thread);
+
+  g_in_process_renderer_thread =
+      CreateInProcessRendererThread(InProcessChildThreadParams(
+          base::CreateSingleThreadTaskRunner({BrowserThread::IO}),
+          broker_client_invitation), renderer_client_id);
+
+  base::Thread::Options options;
+#if defined(OS_WIN) && !defined(OS_MACOSX)
+  // In-process plugins require this to be a UI message loop.
+  options.message_pump_type = base::MessagePumpType::UI;
+#else
+  // We can't have multiple UI loops on Linux and Android, so we don't support
+  // in-process plugins.
+  options.message_pump_type = base::MessagePumpType::DEFAULT;
+#endif
+
+  g_in_process_renderer_thread->StartWithOptions(options);
+}
+
+void ShellContentBrowserClient::StopInProcessRendererThread() {
+  DCHECK(g_in_process_renderer_thread);
+  delete g_in_process_renderer_thread;
+  g_in_process_renderer_thread = 0;
 }
 
 std::string ShellContentBrowserClient::GetDefaultDownloadName() {

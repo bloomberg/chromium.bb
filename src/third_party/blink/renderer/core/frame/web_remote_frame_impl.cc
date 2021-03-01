@@ -362,6 +362,12 @@ WebString WebRemoteFrameImpl::UniqueName() const {
   return GetFrame()->UniqueName();
 }
 
+v8::Isolate* WebRemoteFrameImpl::ScriptIsolate() const
+{
+  NOTREACHED();
+  return nullptr;
+}
+
 WebRemoteFrameImpl::WebRemoteFrameImpl(
     mojom::blink::TreeScopeType scope,
     WebRemoteFrameClient* client,

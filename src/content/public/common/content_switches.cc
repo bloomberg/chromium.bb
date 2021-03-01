@@ -301,6 +301,9 @@ const char kDumpBlinkRuntimeCallStats[] = "dump-blink-runtime-call-stats";
 // Enables LCD text.
 const char kEnableLCDText[]                 = "enable-lcd-text";
 
+// Enables CSS3 Text.
+const char kEnableCSS3Text[] = "enable-css3-text";
+
 // Enable one or more Blink runtime-enabled features.
 // Use names from runtime_enabled_features.json5, separated by commas.
 // Applied before kDisableBlinkFeatures, and after other flags that change these

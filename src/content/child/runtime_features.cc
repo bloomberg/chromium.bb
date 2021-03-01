@@ -95,6 +95,9 @@ void SetRuntimeFeatureDefaultsForPlatform(
 #endif
   WebRuntimeFeatures::EnableWebGLImageChromium(enable_web_gl_image_chromium);
 
+  if (command_line.HasSwitch(switches::kEnableCSS3Text))
+    WebRuntimeFeatures::EnableCSS3Text(true);
+
 #if defined(OS_ANDROID)
   if (command_line.HasSwitch(switches::kDisableMediaSessionAPI))
     WebRuntimeFeatures::EnableMediaSession(false);

@@ -21,6 +21,18 @@ class Isolate;
 
 namespace internal {
 
+// https://en.wikipedia.org/wiki/Microsoft_Visual_C%2B%2B
+// MSVC++ 12.0  _MSC_VER == 1800 (Visual Studio 2013 version 12.0)
+// MSVC++ 14.0  _MSC_VER == 1900 (Visual Studio 2015 version 14.0)
+#if defined(_MSC_VER) && _MSC_VER >= 1900
+  #define MSVC_2015_PLUS
+  #define constexpr_func constexpr
+#else
+  #pragma warning( disable : 4251)
+  #define constexpr const
+  #define constexpr_func V8_INLINE static
+#endif
+
 class Isolate;
 
 typedef uintptr_t Address;
@@ -106,11 +118,11 @@ const int kApiTaggedSize = kApiInt32Size;
 const int kApiTaggedSize = kApiSystemPointerSize;
 #endif
 
-constexpr bool PointerCompressionIsEnabled() {
+constexpr_func bool PointerCompressionIsEnabled() {
   return kApiTaggedSize != kApiSystemPointerSize;
 }
 
-constexpr bool HeapSandboxIsEnabled() {
+constexpr_func bool HeapSandboxIsEnabled() {
 #ifdef V8_HEAP_SANDBOX
   return true;
 #else
@@ -149,8 +161,8 @@ const int kSmiShiftSize = PlatformSmiTagging::kSmiShiftSize;
 const int kSmiValueSize = PlatformSmiTagging::kSmiValueSize;
 const int kSmiMinValue = static_cast<int>(PlatformSmiTagging::kSmiMinValue);
 const int kSmiMaxValue = static_cast<int>(PlatformSmiTagging::kSmiMaxValue);
-constexpr bool SmiValuesAre31Bits() { return kSmiValueSize == 31; }
-constexpr bool SmiValuesAre32Bits() { return kSmiValueSize == 32; }
+constexpr_func bool SmiValuesAre31Bits() { return kSmiValueSize == 31; }
+constexpr_func bool SmiValuesAre32Bits() { return kSmiValueSize == 32; }
 
 V8_INLINE static constexpr internal::Address IntToSmi(int value) {
   return (static_cast<Address>(value) << (kSmiTagSize + kSmiShiftSize)) |

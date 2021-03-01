@@ -49,9 +49,9 @@
 
 namespace v8_inspector {
 
-std::unique_ptr<V8Inspector> V8Inspector::create(v8::Isolate* isolate,
+V8Inspector* V8Inspector::create(v8::Isolate* isolate,
                                                  V8InspectorClient* client) {
-  return std::unique_ptr<V8Inspector>(new V8InspectorImpl(isolate, client));
+  return new V8InspectorImpl(isolate, client);
 }
 
 V8InspectorImpl::V8InspectorImpl(v8::Isolate* isolate,
@@ -470,5 +470,26 @@ protocol::Response V8InspectorImpl::EvaluateScope::setTimeout(double timeout) {
       std::make_unique<TerminateTask>(m_isolate, m_cancelToken), timeout);
   return protocol::Response::Success();
 }
+
+V8Inspector::Channel::Channel() = default;
+
+V8Inspector::Channel::~Channel() {
+}
+
+StringView::StringView() : m_is8Bit(true), m_length(0), m_characters8(nullptr) {}
+
+StringView::StringView(const uint8_t* characters, size_t length)
+    : m_is8Bit(true), m_length(length), m_characters8(characters) {}
+
+StringView::StringView(const uint16_t* characters, size_t length)
+    : m_is8Bit(false), m_length(length), m_characters16(characters) {}
+
+bool StringView::is8Bit() const { return m_is8Bit; }
+size_t StringView::length() const { return m_length; }
+
+// TODO(dgozman): add DCHECK(m_is8Bit) to accessors once platform can be used
+// here.
+const uint8_t* StringView::characters8() const { return m_characters8; }
+const uint16_t* StringView::characters16() const { return m_characters16; }
 
 }  // namespace v8_inspector

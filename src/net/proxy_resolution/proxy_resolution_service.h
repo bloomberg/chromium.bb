@@ -15,6 +15,7 @@
 #include "net/base/network_isolation_key.h"
 #include "net/base/proxy_server.h"
 #include "net/log/net_log_with_source.h"
+#include "net/proxy_resolution/proxy_config_service.h"
 #include "net/proxy_resolution/proxy_info.h"
 #include "url/gurl.h"
 
@@ -71,6 +72,14 @@ class NET_EXPORT ProxyResolutionService {
   // ProxyResolutionService was created with is torn down, if it's torn down
   // before the ProxyResolutionService itself.
   virtual void OnShutdown() = 0;
+
+  // blpwtk2: Keep ResetConfigService existing in Chromium 74
+  // Tells this ProxyResolutionService to start using a new ProxyConfigService
+  // to retrieve its ProxyConfig from. The new ProxyConfigService will
+  // immediately be queried for new config info which will be used for all
+  // subsequent ResolveProxy calls.
+  virtual void ResetConfigService(
+      std::unique_ptr<ProxyConfigService> new_proxy_config_service) {}
 
   // Explicitly trigger proxy fallback for the given |results| by updating our
   // list of bad proxies to include the first entry of |results|, and,

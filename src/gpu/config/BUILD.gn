@@ -8,6 +8,13 @@ import("//build/config/chromeos/ui_mode.gni")
 import("//build/config/python.gni")
 import("//build/config/ui.gni")
 import("//gpu/vulkan/features.gni")
+import("//build/config/win/manifest.gni")
+
+windows_manifest("gpu_manifest") {
+  sources = [
+    default_compatibility_manifest,  # Want the normal OS compat list.
+  ]
+}
 
 if (is_android) {
   import("//build/config/android/rules.gni")
@@ -177,6 +184,7 @@ source_set("config_sources") {
 
   deps = [
     ":process_json",
+    ":gpu_manifest",
     "//base",
     "//build:branding_buildflags",
     "//build:chromecast_buildflags",

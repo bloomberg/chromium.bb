@@ -28,6 +28,8 @@
 #include "content/browser/indexed_db/indexed_db_pending_connection.h"
 #include "content/browser/indexed_db/indexed_db_tracing.h"
 #include "content/browser/indexed_db/transaction_impl.h"
+#include "content/public/browser/content_browser_client.h"
+#include "content/public/common/content_client.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "net/base/net_errors.h"
 #include "storage/browser/blob/blob_impl.h"

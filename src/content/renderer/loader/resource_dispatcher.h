@@ -19,6 +19,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "content/common/content_export.h"
+#include "content/renderer/loader/resource_loader_bridge.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/net_errors.h"
@@ -190,6 +191,7 @@ class CONTENT_EXPORT ResourceDispatcher {
   struct PendingRequestInfo {
     PendingRequestInfo(std::unique_ptr<RequestPeer> peer,
                        network::mojom::RequestDestination request_destination,
+                       std::unique_ptr<ResourceLoaderBridge> bridge,
                        int render_frame_id,
                        const GURL& request_url,
                        std::unique_ptr<blink::ResourceLoadInfoNotifierWrapper>
@@ -199,6 +201,7 @@ class CONTENT_EXPORT ResourceDispatcher {
 
     std::unique_ptr<RequestPeer> peer;
     network::mojom::RequestDestination request_destination;
+    std::unique_ptr<ResourceLoaderBridge> bridge;
     int render_frame_id;
     blink::WebURLLoader::DeferType is_deferred =
         blink::WebURLLoader::DeferType::kNotDeferred;

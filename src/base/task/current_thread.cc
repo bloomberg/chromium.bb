@@ -91,7 +91,9 @@ CurrentThread::ScopedAllowApplicationTasksInNativeNestedLoop::
 
 CurrentThread::ScopedAllowApplicationTasksInNativeNestedLoop::
     ~ScopedAllowApplicationTasksInNativeNestedLoop() {
-  sequence_manager_->SetTaskExecutionAllowed(previous_state_);
+  if (GetCurrentSequenceManagerImpl()) {
+    sequence_manager_->SetTaskExecutionAllowed(previous_state_);
+  }
   TRACE_EVENT_END0("base", "ScopedNestableTaskAllower");
 }
 

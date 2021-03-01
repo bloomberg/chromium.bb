@@ -51,6 +51,10 @@ namespace remoting {
 class GstaticJsonFetcher;
 }
 
+namespace blpwtk2 {
+class DevToolsFrontendHostDelegateImpl;
+}
+
 namespace net {
 class HttpResponseHeaders;
 class URLFetcherDelegate;
@@ -351,6 +355,7 @@ class NET_EXPORT URLFetcher {
   friend class cr_fuchsia::DevToolsListFetcher;
   friend class device::UsbTestGadgetImpl;
   friend class remoting::GstaticJsonFetcher;
+  friend class blpwtk2::DevToolsFrontendHostDelegateImpl;
 
   // The unannotated Create() methods are not available on desktop Linux +
   // Windows. They are available on other platforms, since we only audit network

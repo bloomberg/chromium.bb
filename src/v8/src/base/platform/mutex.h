@@ -40,7 +40,7 @@ namespace base {
 // |TryLock()|. The behavior of a program is undefined if a mutex is destroyed
 // while still owned by some thread. The Mutex class is non-copyable.
 
-class V8_BASE_EXPORT Mutex final {
+class BLPV8_BASE_EXPORT Mutex final {
  public:
   Mutex();
   Mutex(const Mutex&) = delete;

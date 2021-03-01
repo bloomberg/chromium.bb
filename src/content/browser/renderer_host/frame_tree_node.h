@@ -79,6 +79,7 @@ class CONTENT_EXPORT FrameTreeNode {
       FrameTree* frame_tree,
       RenderFrameHostImpl* parent,
       blink::mojom::TreeScopeType scope,
+      int render_process_affinity,
       const std::string& name,
       const std::string& unique_name,
       bool is_created_by_script,
