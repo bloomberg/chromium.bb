@@ -1523,4 +1523,10 @@ gfx::RectF WidgetBase::BlinkSpaceToDIPs(const gfx::RectF& rect) {
   return gfx::ScaleRect(rect, reverse);
 }
 
+void WidgetBase::ResetWidgetHostInterface(
+  CrossVariantMojoAssociatedRemote<mojom::blink::WidgetHostInterfaceBase> widgetHost) {
+  widget_host_.reset();
+  widget_host_.Bind(std::move(widgetHost));
+}
+
 }  // namespace blink
