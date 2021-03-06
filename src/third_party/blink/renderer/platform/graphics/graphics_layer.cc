@@ -65,7 +65,7 @@
 
 namespace blink {
 
-GraphicsLayer::GraphicsLayer(GraphicsLayerClient& client)
+GraphicsLayer::GraphicsLayer(GraphicsLayerClient& client, bool use_nearest_neighbor_filter)
     : client_(client),
       prevent_contents_opaque_changes_(false),
       draws_content_(false),
@@ -76,6 +76,7 @@ GraphicsLayer::GraphicsLayer(GraphicsLayerClient& client)
       raster_invalidated_(false),
       should_create_layers_after_paint_(false),
       repainted_(false),
+      use_nearest_neighbor_filter_(use_nearest_neighbor_filter),
       painting_phase_(kGraphicsLayerPaintAllWithOverflowClip),
       parent_(nullptr),
       raster_invalidation_function_(
@@ -725,6 +726,10 @@ size_t GraphicsLayer::ApproximateUnsharedMemoryUsageRecursive() const {
   for (auto* child : Children())
     result += child->ApproximateUnsharedMemoryUsageRecursive();
   return result;
+}
+
+bool GraphicsLayer::NearestNeighbor() const {
+  return use_nearest_neighbor_filter_;
 }
 
 }  // namespace blink

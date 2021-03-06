@@ -520,6 +520,7 @@ class CanvasResourceProviderSharedImage : public CanvasResourceProvider {
 
     ri->RasterCHROMIUM(list.get(), GetOrCreateCanvasImageProvider(), size,
                        full_raster_rect, playback_rect, post_translate,
+                       1.f,
                        1.f /* post_scale */, false /* requires_clear */,
                        &max_op_size_hint);
 

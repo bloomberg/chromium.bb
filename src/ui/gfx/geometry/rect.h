@@ -306,9 +306,15 @@ inline Rect ScaleToEnclosingRect(const Rect& rect,
   return Rect(x, y, r - x, b - y);
 }
 
+#ifndef DISALLOW_UNIFORM_SCALE_ENFORCEMENT
+// blpwtk2: This function is commented out so that we can catch accidental
+//          calls to it at compile time.  We always want the
+//          ScaleToEnclosingRect(rect,x,y) version to be called.
+
 inline Rect ScaleToEnclosingRect(const Rect& rect, float scale) {
   return ScaleToEnclosingRect(rect, scale, scale);
 }
+#endif
 
 // ScaleToEnclosingRect but clamping instead of asserting if the resulting rect
 // would overflow.

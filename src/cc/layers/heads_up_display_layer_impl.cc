@@ -351,8 +351,8 @@ void HeadsUpDisplayLayerImpl::UpdateHudTexture(
           gpu::raster::RasterInterface::kDefaultMaxOpSizeHint;
       ri->RasterCHROMIUM(display_item_list.get(), &image_provider, size,
                          gfx::Rect(size), gfx::Rect(size), post_translate,
-                         1.f /* post_scale */, false /* requires_clear */,
-                         &max_op_size_limit);
+                         1.f /* post_scale_w */, 1.f /* post_scale_h */,
+                         false /* requires_clear */, &max_op_size_limit);
       ri->EndRasterCHROMIUM();
       backing->mailbox_sync_token =
           viz::ClientResourceProvider::GenerateSyncTokenHelper(ri);

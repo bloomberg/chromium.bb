@@ -28,6 +28,22 @@
 #include "ui/gfx/geometry/size_conversions.h"
 
 namespace cc {
+namespace {
+// The math is similar to gfx::Rect::ManhattanInternalDistance except that each
+// component is scaled by the specified |scale|.
+float ComputeScaledManhattanInternalDistance(const gfx::Rect& a,
+                                             const gfx::Rect& b,
+                                             const gfx::SizeF& scale) {
+  gfx::Rect combined(a);
+  combined.Union(b);
+
+  float x =
+      scale.width() * std::max(0, combined.width() - a.width() - b.width() + 1);
+  float y = scale.height() *
+            std::max(0, combined.height() - a.height() - b.height() + 1);
+  return x + y;
+}
+}  // namespace
 
 PictureLayerTiling::PictureLayerTiling(
     WhichTree tree,
@@ -52,7 +68,7 @@ PictureLayerTiling::PictureLayerTiling(
 
 #if DCHECK_IS_ON()
   gfx::SizeF scaled_source_size(gfx::ScaleSize(
-      gfx::SizeF(raster_source_->GetSize()), raster_transform.scale()));
+      gfx::SizeF(raster_source_->GetSize()), raster_transform.scale().width()));
   gfx::Size floored_size = gfx::ToFlooredSize(scaled_source_size);
   bool is_width_empty =
       !floored_size.width() &&
@@ -395,19 +411,23 @@ PictureLayerTiling::CoverageIterator::CoverageIterator(
     const PictureLayerTiling* tiling,
     float coverage_scale,
     const gfx::Rect& coverage_rect)
-    : tiling_(tiling),
-      coverage_rect_(coverage_rect),
-      coverage_to_content_(tiling->raster_transform().scale() / coverage_scale,
-                           tiling->raster_transform().translation()) {
+    : tiling_(tiling), coverage_rect_(coverage_rect),
+      coverage_to_content_(tiling->raster_transform().scale().width()  / coverage_scale,
+                           tiling->raster_transform().scale().height() /
+                           (coverage_scale * tiling->raster_transform().scale_ratio()),
+                           gfx::Vector2dF(0.f, 0.f)) {
   DCHECK(tiling_);
   // In order to avoid artifacts in geometry_rect scaling and clamping to ints,
   // the |coverage_scale| should always be at least as big as the tiling's
   // raster scales.
-  DCHECK_GE(coverage_scale, tiling_->raster_transform_.scale());
+  DCHECK_GE(coverage_scale, tiling_->raster_transform_.scale().width());
+  DCHECK_GE(coverage_scale * tiling->raster_transform().scale_ratio(), tiling_->raster_transform_.scale().height());
 
   // Clamp |coverage_rect| to the bounds of this tiling's raster source.
   coverage_rect_max_bounds_ =
-      gfx::ScaleToCeiledSize(tiling->raster_source_->GetSize(), coverage_scale);
+      gfx::ScaleToCeiledSize(
+          tiling->raster_source_->GetSize(),
+          coverage_scale, coverage_scale * tiling->raster_transform().scale_ratio());
   coverage_rect_.Intersect(gfx::Rect(coverage_rect_max_bounds_));
   if (coverage_rect_.IsEmpty())
     return;
@@ -605,8 +625,9 @@ void PictureLayerTiling::ComputeTilePriorityRects(
     set_all_tiles_done(false);
   }
 
-  const float content_to_screen_scale =
-      ideal_contents_scale / raster_transform_.scale();
+  gfx::SizeF content_to_screen_scale(
+      ideal_contents_scale / raster_transform_.scale().width(),
+      (ideal_contents_scale * raster_transform_.scale_ratio()) / raster_transform_.scale().height());
 
   const gfx::Rect* input_rects[] = {
       &visible_rect_in_layer_space, &skewport_in_layer_space,
@@ -625,7 +646,7 @@ void PictureLayerTiling::ComputeTilePriorityRects(
 }
 
 void PictureLayerTiling::SetTilePriorityRects(
-    float content_to_screen_scale,
+    const gfx::SizeF& content_to_screen_scale,
     const gfx::Rect& visible_rect_in_content_space,
     const gfx::Rect& skewport,
     const gfx::Rect& soon_border_rect,
@@ -648,13 +669,15 @@ void PictureLayerTiling::SetTilePriorityRects(
   // Note that we use the largest skewport extent from the viewport as the
   // "skewport extent". Also note that this math can't produce negative numbers,
   // since skewport.Contains(visible_rect) is always true.
-  max_skewport_extent_in_screen_space_ =
-      current_content_to_screen_scale_ *
-      std::max(
-          {current_visible_rect_.x() - current_skewport_rect_.x(),
-           current_skewport_rect_.right() - current_visible_rect_.right(),
-           current_visible_rect_.y() - current_skewport_rect_.y(),
-           current_skewport_rect_.bottom() - current_visible_rect_.bottom()});
+  max_skewport_extent_in_screen_space_ = std::max(
+      current_content_to_screen_scale_.width() *
+          std::max(
+              current_visible_rect_.x() - current_skewport_rect_.x(),
+              current_skewport_rect_.right() - current_visible_rect_.right()),
+      current_content_to_screen_scale_.height() *
+          std::max(current_visible_rect_.y() - current_skewport_rect_.y(),
+                   current_skewport_rect_.bottom() -
+                       current_visible_rect_.bottom()));
 }
 
 void PictureLayerTiling::SetLiveTilesRect(
@@ -940,10 +963,10 @@ TilePriority PictureLayerTiling::ComputePriorityForTile(
 
   gfx::Rect tile_bounds =
       tiling_data_.TileBounds(tile->tiling_i_index(), tile->tiling_j_index());
-  DCHECK_GT(current_content_to_screen_scale_, 0.f);
-  float distance_to_visible =
-      current_content_to_screen_scale_ *
-      current_visible_rect_.ManhattanInternalDistance(tile_bounds);
+  DCHECK_GT(current_content_to_screen_scale_.width(), 0.f);
+  DCHECK_GT(current_content_to_screen_scale_.height(), 0.f);
+  float distance_to_visible = ComputeScaledManhattanInternalDistance(
+      current_visible_rect_, tile_bounds, current_content_to_screen_scale_);
 
   return TilePriority(resolution_, priority_bin, distance_to_visible);
 }
@@ -985,9 +1008,10 @@ void PictureLayerTiling::AsValueInto(
   state->SetDouble("content_scale", contents_scale_key());
 
   state->BeginArray("raster_transform");
-  state->AppendDouble(raster_transform_.scale());
   state->AppendDouble(raster_transform_.translation().x());
   state->AppendDouble(raster_transform_.translation().y());
+  state->AppendDouble(raster_transform_.scale().width());
+  state->AppendDouble(raster_transform_.scale().height());
   state->EndArray();
 
   MathUtil::AddToTracedValue("visible_rect", current_visible_rect_, state);

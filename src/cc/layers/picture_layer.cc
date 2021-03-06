@@ -19,6 +19,7 @@
 #include "cc/trees/layer_tree_impl.h"
 #include "cc/trees/transform_node.h"
 #include "third_party/skia/include/core/SkPictureRecorder.h"
+#include "cc/trees/property_tree.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 
 namespace cc {
@@ -33,6 +34,7 @@ scoped_refptr<PictureLayer> PictureLayer::Create(ContentLayerClient* client) {
 
 PictureLayer::PictureLayer(ContentLayerClient* client)
     : instrumentation_object_tracker_(id()), update_source_frame_number_(-1) {
+  picture_layer_inputs_.nearest_neighbor = client->NearestNeighbor();
   picture_layer_inputs_.client = client;
 }
 
@@ -152,7 +154,7 @@ bool PictureLayer::Update() {
     // Clear out previous directly composited image state - if the layer
     // qualifies we'll set up the state below.
     picture_layer_inputs_.directly_composited_image_size = base::nullopt;
-    picture_layer_inputs_.nearest_neighbor = false;
+    picture_layer_inputs_.nearest_neighbor = picture_layer_inputs_.client->NearestNeighbor();
     base::Optional<DisplayItemList::DirectlyCompositedImageResult> result =
         picture_layer_inputs_.display_list->GetDirectlyCompositedImageResult(
             bounds());
