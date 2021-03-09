@@ -619,6 +619,7 @@ bool WebViewFrameWidget::UpdateScreenRects(
   if (!device_emulator_)
     return false;
   device_emulator_->OnUpdateScreenRects(widget_screen_rect, window_screen_rect);
+  web_view_->DidChangeWindowRect();
   return true;
 }
 
