@@ -217,7 +217,7 @@ void LayerImpl::PopulateTransformedSharedQuadState(
 
   EffectNode* effect_node = GetEffectTree().Node(effect_tree_index_);
   state->SetAll(scaled_draw_transform, gfx::Rect(scaled_bounds),
-                scaled_visible_layer_rect, draw_properties().rounded_corner_bounds,
+                scaled_visible_layer_rect, draw_properties().mask_filter_info,
                 draw_properties().clip_rect,
                 draw_properties().is_clipped, contents_opaque, draw_properties().opacity,
                 effect_node->HasRenderSurface() ? SkBlendMode::kSrcOver

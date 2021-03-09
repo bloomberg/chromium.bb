@@ -48,9 +48,10 @@ void RasterSource::ClearForOpaqueRaster(
     const gfx::Rect& canvas_playback_rect) const {
   gfx::Rect outer_rect;
   gfx::Rect inner_rect;
-  float scale = raster_transform.scale() / recording_scale_factor_;
+  float scaleX = raster_transform.scale().width() / recording_scale_factor_;
+  float scaleY = raster_transform.scale().height() / recording_scale_factor_;
   if (!CalculateClearForOpaqueRasterRects(
-          raster_transform.translation(), gfx::SizeF(scale, scale),
+          raster_transform.translation(), gfx::SizeF(scaleX, scaleY),
           content_size, canvas_bitmap_rect, canvas_playback_rect, outer_rect,
           inner_rect))
     return;

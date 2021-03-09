@@ -226,11 +226,13 @@ void PictureLayerImpl::AppendQuads(viz::CompositorRenderPass* render_pass,
 
     // The downstream CA layers use shared_quad_state to generate resources of
     // the right size even if it is a solid color picture layer.
+    gfx::Vector2dF raster_translation;
+    CalculateRasterTranslation(raster_translation);
     PopulateTransformedSharedQuadState(
         shared_quad_state,
         gfx::AxisTransform2d(max_contents_scale,
                              max_contents_scale * scale_aspect_ratio_,
-                             CalculateRasterTranslation(max_contents_scale)),
+                             raster_translation),
         contents_opaque());
 
     AppendDebugBorderQuad(render_pass, gfx::Rect(bounds()), shared_quad_state,
@@ -255,11 +257,13 @@ void PictureLayerImpl::AppendQuads(viz::CompositorRenderPass* render_pass,
   // to-screen-space mapping.
   float max_contents_scale =
       tilings_->num_tilings() ? MaximumTilingContentsScale() : 1.f;
+  gfx::Vector2dF raster_translation;
+  CalculateRasterTranslation(raster_translation);
   PopulateTransformedSharedQuadState(
       shared_quad_state,
       gfx::AxisTransform2d(max_contents_scale,
                            max_contents_scale * scale_aspect_ratio_,
-                           CalculateRasterTranslation(max_contents_scale)),
+                           raster_translation),
       contents_opaque());
   if (directly_composited_image_size_) {
     // Directly composited images should be clipped to the layer's content rect.
@@ -1201,8 +1205,18 @@ PictureLayerTiling* PictureLayerImpl::AddTiling(
   // DCHECK_GE(raster_transform.scale(), MinimumContentsScale());
   // DCHECK_LE(raster_transform.scale(), MaximumContentsScale());
   DCHECK(raster_source_->HasRecordings());
+
+  // Same threshold as that in ::CalculateRasterTranslation()
+  static constexpr float kPixelErrorThreshold = 0.001f;
+  static constexpr float kScaleErrorThreshold = kPixelErrorThreshold / 10000;
+  bool isScaleXEqual = std::abs(raster_transform.scale().width() -
+                                raster_contents_scale_) <= kScaleErrorThreshold;
+  bool isScaleYEqual = std::abs(raster_transform.scale().height() -
+                                raster_contents_scale_ * scale_aspect_ratio_) <=
+                       kScaleErrorThreshold;
+
   bool tiling_can_use_lcd_text =
-      can_use_lcd_text() && raster_transform.scale() == raster_contents_scale_;
+      can_use_lcd_text() && isScaleXEqual && isScaleYEqual;
   return tilings_->AddTiling(raster_transform, raster_source_,
                              tiling_can_use_lcd_text);
 }
@@ -1783,7 +1797,6 @@ void PictureLayerImpl::UpdateIdealScales() {
 
   ideal_device_scale_ = layer_tree_impl()->device_scale_factor();
   ideal_page_scale_ = 1.f;
-  float ideal_contents_scale = 0.f;
   std::tie(ideal_contents_scale_, scale_aspect_ratio_) =
       GetIdealContentsScaleAndAspectRatio();
 
