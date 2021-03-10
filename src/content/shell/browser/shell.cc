@@ -213,6 +213,21 @@ Shell* Shell::CreateNewWindow(BrowserContext* browser_context,
   }
   std::unique_ptr<WebContents> web_contents =
       WebContents::Create(create_params);
+
+  #if defined(OS_LINUX) || defined(OS_ANDROID) || defined(OS_WIN)
+    static const gfx::FontRenderParams& fontRenderParams =
+        gfx::GetFontRenderParams(gfx::FontRenderParamsQuery(), NULL);
+
+    blink::mojom::RendererPreferences *prefs = web_contents->GetMutableRendererPrefs();
+
+    prefs->should_antialias_text    = fontRenderParams.antialiasing;
+    prefs->use_subpixel_positioning = fontRenderParams.subpixel_positioning;
+    prefs->hinting                  = fontRenderParams.hinting;
+    prefs->use_autohinter           = fontRenderParams.autohinter;
+    prefs->use_bitmaps              = fontRenderParams.use_bitmaps;
+    prefs->subpixel_rendering       = fontRenderParams.subpixel_rendering;
+  #endif
+
   Shell* shell =
       CreateShell(std::move(web_contents), AdjustWindowSize(initial_size),
                   true /* should_set_delegate */);

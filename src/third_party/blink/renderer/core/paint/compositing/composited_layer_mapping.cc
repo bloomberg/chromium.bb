@@ -698,6 +698,11 @@ void CompositedLayerMapping::UpdateGraphicsLayerGeometry(
     owning_layer_.GetScrollableArea()->PositionOverflowControls();
 
   UpdateContentsRect();
+
+  UpdateLCDBackgroundColor(
+    compositing_container ?
+    compositing_container->GetCompositedLayerMapping() : nullptr);
+
   UpdateDrawsContentAndPaintsHitTest();
   UpdateElementId();
   UpdateContentsOpaque();
@@ -1289,6 +1294,88 @@ CompositedLayerMapping::PaintingPhaseForPrimaryLayer() const {
   }
 
   return static_cast<GraphicsLayerPaintingPhase>(phase);
+}
+
+void CompositedLayerMapping::UpdateLCDBackgroundColor(
+    CompositedLayerMapping *containerLayerMapping) {
+  // Update the cached inheritedBackgroundColor:
+  Color inheritedBackgroundColor = Color::kTransparent;
+
+  LayoutObject *object    = &GetLayoutObject(),
+               *objectEnd = containerLayerMapping?
+                 &containerLayerMapping->GetLayoutObject() :
+                 nullptr;
+
+  for (; object != objectEnd; object = object->Parent()) {
+    inheritedBackgroundColor = object->ResolveColor(GetCSSPropertyBackgroundColor());
+
+    if (inheritedBackgroundColor.Alpha() == 0xFF) {
+      break;
+    }
+    if (object->Style()->HasBackgroundImage()) {
+      break;
+    }
+  }
+
+  if (inheritedBackgroundColor.Alpha() != 0xFF &&
+      object == objectEnd                      &&
+      containerLayerMapping) {
+    inheritedBackgroundColor =
+      containerLayerMapping->inherited_background_color;
+  }
+
+  inherited_background_color = inheritedBackgroundColor;
+
+  // Determine the lcdBackgroundColor from the "-bb-lcd-background-color"
+  // CSS property:
+  Color lcdBackgroundColor = Color::kTransparent;
+
+  ELcdBackgroundColorSource source =
+      GetLayoutObject().Style()->LcdBackgroundColorSource();
+
+  if (source == ELcdBackgroundColorSource::kAuto) {
+    lcdBackgroundColor = inherited_background_color;
+  }
+  else if (source == ELcdBackgroundColorSource::kColor) {
+    lcdBackgroundColor = GetLayoutObject().Style()->BbLcdBackgroundColor();
+  }
+
+  // Apply lcdBackgroundColor to relevant GraphicsLayers:
+  graphics_layer_->setDefaultLCDBackgroundColor(lcdBackgroundColor);
+
+  if (layer_for_horizontal_scrollbar_) {
+    layer_for_horizontal_scrollbar_->setDefaultLCDBackgroundColor(lcdBackgroundColor);
+  }
+  if (layer_for_vertical_scrollbar_) {
+    layer_for_vertical_scrollbar_->setDefaultLCDBackgroundColor(lcdBackgroundColor);
+  }
+  if (scrolling_layer_) {
+    scrolling_layer_->setDefaultLCDBackgroundColor(lcdBackgroundColor);
+  }
+  if (scrolling_contents_layer_) {
+    scrolling_contents_layer_->setDefaultLCDBackgroundColor(lcdBackgroundColor);
+  }
+  if (mask_layer_) {
+    mask_layer_->setDefaultLCDBackgroundColor(lcdBackgroundColor);
+  }
+  if (foreground_layer_) {
+    foreground_layer_->setDefaultLCDBackgroundColor(lcdBackgroundColor);
+  }
+  if (layer_for_scroll_corner_) {
+    layer_for_scroll_corner_->setDefaultLCDBackgroundColor(lcdBackgroundColor);
+  }
+  if (overflow_controls_host_layer_) {
+    overflow_controls_host_layer_->setDefaultLCDBackgroundColor(lcdBackgroundColor);
+  }
+  if (squashing_containment_layer_) {
+    squashing_containment_layer_->setDefaultLCDBackgroundColor(lcdBackgroundColor);
+  }
+  if (decoration_outline_layer_) {
+    decoration_outline_layer_->setDefaultLCDBackgroundColor(lcdBackgroundColor);
+  }
+  if (squashing_layer_) {
+    squashing_layer_->setDefaultLCDBackgroundColor(lcdBackgroundColor);
+  }
 }
 
 bool CompositedLayerMapping::PaintsChildren() const {

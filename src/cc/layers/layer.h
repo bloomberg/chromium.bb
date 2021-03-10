@@ -355,6 +355,9 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   void SetHitTestable(bool should_hit_test);
   virtual bool HitTestable() const;
 
+  virtual void SetContentsOpaqueForLCDText(bool opaque);
+  bool contents_opaque_for_lcd_text() const { return inputs_.contents_opaque_for_lcd_text; }
+
   // For layer tree mode only.
   // Set or get the transform to be used when compositing this layer into its
   // target. The transform is inherited by this layers children.
@@ -836,6 +839,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
 
     bool contents_opaque : 1;
     bool contents_opaque_for_text : 1;
+    bool contents_opaque_for_lcd_text : 1;
     bool is_drawable : 1;
 
     bool double_sided : 1;

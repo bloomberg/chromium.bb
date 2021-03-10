@@ -357,6 +357,7 @@ class CORE_EXPORT CompositedLayerMapping final : public GraphicsLayerClient {
   // Returns true if this layer has content that needs to be displayed by
   // painting into the backing store.
   bool ContainsPaintedContent() const;
+  void UpdateLCDBackgroundColor(CompositedLayerMapping *containerLayerMapping);
 
   void UpdateContentsRect();
   void UpdateCompositingReasons();
@@ -459,9 +460,9 @@ class CORE_EXPORT CompositedLayerMapping final : public GraphicsLayerClient {
   PhysicalRect composited_bounds_;
 
   unsigned pending_update_scope_ : 2;
-
   bool draws_background_onto_content_layer_;
 
+  Color inherited_background_color = Color::kTransparent;
   friend class CompositedLayerMappingTest;
 };
 

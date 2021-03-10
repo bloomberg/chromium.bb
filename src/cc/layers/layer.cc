@@ -80,6 +80,7 @@ Layer::Inputs::Inputs(int layer_id)
       hit_testable(false),
       contents_opaque(false),
       contents_opaque_for_text(false),
+      contents_opaque_for_lcd_text(false),
       is_drawable(false),
       double_sided(true),
       background_color(0) {}
@@ -813,6 +814,14 @@ void Layer::SetContentsOpaqueForText(bool opaque) {
   SetNeedsCommit();
 }
 
+void Layer::SetContentsOpaqueForLCDText(bool opaque) {
+  DCHECK(IsPropertyChangeAllowed());
+  if (inputs_.contents_opaque_for_lcd_text == opaque)
+    return;
+  inputs_.contents_opaque_for_lcd_text = opaque;
+  SetNeedsCommit();
+}
+
 void Layer::SetPosition(const gfx::PointF& position) {
   DCHECK(!layer_tree_host_ || !layer_tree_host_->IsUsingLayerLists());
 
@@ -1337,6 +1346,7 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
 
   layer->SetContentsOpaque(inputs_.contents_opaque);
   layer->SetContentsOpaqueForText(inputs_.contents_opaque_for_text);
+  layer->SetContentsOpaqueForLCDText(inputs_.contents_opaque_for_lcd_text);
   layer->SetShouldCheckBackfaceVisibility(should_check_backface_visibility_);
 
   layer->UpdateScrollable();

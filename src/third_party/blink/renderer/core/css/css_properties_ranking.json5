@@ -696,6 +696,7 @@
         "content-visibility",
         "origin-trial-test-property",
         "overflow-clip-margin",
+        "-bb-lcd-background-color",
     ],
     "properties": {}
 }

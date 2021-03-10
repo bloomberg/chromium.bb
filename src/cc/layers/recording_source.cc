@@ -118,6 +118,10 @@ void RecordingSource::SetBackgroundColor(SkColor background_color) {
   background_color_ = background_color;
 }
 
+void RecordingSource::SetDefaultLCDBackgroundColor(SkColor default_lcd_background_color) {
+  default_lcd_background_color_ = default_lcd_background_color;
+}
+
 void RecordingSource::SetRequiresClear(bool requires_clear) {
   requires_clear_ = requires_clear;
 }

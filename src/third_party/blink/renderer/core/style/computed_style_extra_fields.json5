@@ -540,6 +540,14 @@
       include_paths: ["third_party/blink/renderer/platform/geometry/float_size.h"],
     },
     {
+      name: "LcdBackgroundColorSource",
+      inherited: true,
+      field_template: "keyword",
+      default_value: "none",
+      keywords: ["none", "auto", "color"],
+      field_group: "*",
+    },
+    {
       name: "OutlineStyleIsAuto",
       field_template: "primitive",
       type_name: "bool",

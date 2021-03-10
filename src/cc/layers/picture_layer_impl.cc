@@ -845,7 +845,7 @@ LCDTextDisallowedReason PictureLayerImpl::ComputeLCDTextDisallowedReason(
     return LCDTextDisallowedReason::kNone;
   if (!layer_tree_impl()->settings().can_use_lcd_text)
     return LCDTextDisallowedReason::kSetting;
-  if (!contents_opaque_for_text()) {
+  if (!contents_opaque_for_text() && !contents_opaque_for_lcd_text()) {
     if (SkColorGetA(background_color()) != SK_AlphaOPAQUE)
       return LCDTextDisallowedReason::kBackgroundColorNotOpaque;
     return LCDTextDisallowedReason::kContentsNotOpaque;
