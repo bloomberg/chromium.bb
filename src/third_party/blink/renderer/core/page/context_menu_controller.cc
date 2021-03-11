@@ -38,6 +38,7 @@
 #include "third_party/blink/public/web/web_text_check_client.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/element_traversal.h"
+#include "third_party/blink/renderer/core/dom/events/custom_event.h"
 #include "third_party/blink/renderer/core/dom/node.h"
 #include "third_party/blink/renderer/core/editing/editing_tri_state.h"
 #include "third_party/blink/renderer/core/editing/editor.h"
@@ -72,6 +73,7 @@
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/page/scrolling/text_fragment_selector_generator.h"
 #include "third_party/blink/renderer/platform/exported/wrapped_resource_response.h"
+#include "v8/include/v8.h"
 
 namespace blink {
 
@@ -203,6 +205,9 @@ static WebRect ComputeSelectionRect(LocalFrame* selected_frame) {
 
   return WebRect(left, top, right - left, bottom - top);
 }
+
+// Forward declare this, it is implemented at the end of this file.
+static bool FireBbContextMenuEvent(const HitTestResult& hitTestResult, const WebContextMenuData& data);
 
 bool ContextMenuController::ShouldShowContextMenuFromTouch(
     const WebContextMenuData& data) {
@@ -515,8 +520,10 @@ bool ContextMenuController::ShowContextMenu(LocalFrame* frame,
   if (!selected_web_frame || !selected_web_frame->Client())
     return false;
 
+  if (!FireBbContextMenuEvent(result, data)) {
   selected_web_frame->Client()->ShowContextMenu(data,
                                                 host_context_menu_location);
+  }
 
   return true;
 }
@@ -531,6 +538,81 @@ void ContextMenuController::UpdateTextFragmentSelectorGenerator(
   EphemeralRangeInFlatTree selection_range(selection.Start(), selection.End());
   selected_frame->GetTextFragmentSelectorGenerator()->UpdateSelection(
       selected_frame, selection_range);
+}
+
+static void ExposeInt(v8::Isolate* isolate, const v8::Handle<v8::Object>& obj, const char* name, int value)
+{
+  obj->Set(obj->CreationContext(), v8::String::NewFromUtf8(isolate, name).ToLocalChecked(), v8::Integer::New(isolate, value)).Check();
+}
+
+static void ExposeBool(v8::Isolate* isolate, const v8::Handle<v8::Object>& obj, const char* name, bool value)
+{
+  obj->Set(obj->CreationContext(), v8::String::NewFromUtf8(isolate, name).ToLocalChecked(), v8::Boolean::New(isolate, value)).Check();
+}
+
+static void ExposeString(v8::Isolate* isolate, const v8::Handle<v8::Object>& obj, const char* name, const std::string& value)
+{
+  obj->Set(obj->CreationContext(),
+           v8::String::NewFromUtf8(isolate, name).ToLocalChecked(),
+           v8::String::NewFromUtf8(isolate, value.data(), v8::NewStringType::kNormal, value.length()).ToLocalChecked()).Check();
+}
+
+static void ExposeStringVector(v8::Isolate* isolate, const v8::Handle<v8::Object>& obj, const char* name, const blink::WebVector<blink::WebString>& value)
+{
+  v8::Handle<v8::Array> array = v8::Array::New(isolate);
+  v8::Handle<v8::Context> context = obj->CreationContext();
+
+  for (unsigned i = 0; i < value.size(); ++i) {
+    std::string item = value[i].Utf8();
+    array->Set(context, i, v8::String::NewFromUtf8(isolate, item.data(), v8::NewStringType::kNormal, item.length()).ToLocalChecked()).Check();
+  }
+  obj->Set(context, v8::String::NewFromUtf8(isolate, name).ToLocalChecked(), array).Check();
+}
+
+static bool FireBbContextMenuEvent(const HitTestResult& hitTestResult, const WebContextMenuData& data)
+{
+  LocalFrame* frame = hitTestResult.InnerNodeFrame();
+
+  v8::Isolate* isolate = v8::Isolate::GetCurrent();
+  v8::HandleScope handle_scope(isolate);
+  v8::Handle<v8::Context> context = ToV8Context(frame, DOMWrapperWorld::MainWorld());
+  v8::Context::Scope context_scope(context);
+
+  v8::Handle<v8::ObjectTemplate> templ = v8::ObjectTemplate::New(isolate);
+  v8::Handle<v8::Object> detail_obj = templ->NewInstance(context).ToLocalChecked();
+
+  ExposeBool(isolate, detail_obj, "canUndo", data.edit_flags & kCanUndo);
+  ExposeBool(isolate, detail_obj, "canRedo", data.edit_flags & kCanRedo);
+  ExposeBool(isolate, detail_obj, "canCut", data.edit_flags & kCanCut);
+  ExposeBool(isolate, detail_obj, "canCopy", data.edit_flags & kCanCopy);
+  ExposeBool(isolate, detail_obj, "canPaste", data.edit_flags & kCanPaste);
+  ExposeBool(isolate, detail_obj, "canDelete", data.edit_flags & kCanDelete);
+  ExposeBool(isolate, detail_obj, "canSelectAll", data.edit_flags & kCanSelectAll);
+  ExposeBool(isolate, detail_obj, "canTranslate", data.edit_flags & kCanTranslate);
+
+  ExposeInt(isolate, detail_obj, "mediaType", static_cast<int>(data.media_type));
+  ExposeString(isolate, detail_obj, "misspelledWord", data.misspelled_word.Utf8());
+  ExposeBool(isolate, detail_obj, "isSpellCheckingEnabled", data.is_spell_checking_enabled);
+  ExposeStringVector(isolate, detail_obj, "dictionarySuggestions", data.dictionary_suggestions);
+  ExposeString(isolate, detail_obj, "selectedText", data.selected_text.Utf8());
+  ExposeInt(isolate, detail_obj, "mousePositionX", data.mouse_position.x());
+  ExposeInt(isolate, detail_obj, "mousePositionY", data.mouse_position.y());
+  ExposeString(isolate, detail_obj, "linkURL", data.link_url.GetString().Utf8());
+  ExposeBool(isolate, detail_obj, "isEditable", data.is_editable);
+  ExposeString(isolate, detail_obj, "frameEncoding", data.frame_encoding.Utf8());
+  ExposeBool(isolate, detail_obj, "hasImageContents", data.has_image_contents);
+  ExposeString(isolate, detail_obj, "srcURL", data.src_url.GetString().Utf8());
+  ExposeBool(isolate, detail_obj, "fromContextMenuKey", data.source_type == kMenuSourceContextMenuKey);
+
+  CustomEvent* event = CustomEvent::Create();
+  ScriptState* script_state = ToScriptStateForMainWorld(frame);
+  event->initCustomEvent(script_state,
+                         "bbContextMenu",
+                         true,
+                         true,
+                         ScriptValue(isolate, detail_obj));
+  hitTestResult.InnerNodeOrImageMapImage()->DispatchEvent(*event);
+  return event->defaultPrevented();
 }
 
 }  // namespace blink
