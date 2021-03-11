@@ -12,13 +12,68 @@
 #include "include/core/SkMath.h"
 #include "include/core/SkRect.h"
 #include "include/core/SkSize.h"
-#include "include/core/SkColor.h"
 
 #include "include/private/SkTFitsIn.h"
 #include "include/private/SkTo.h"
 
 class SkReadBuffer;
 class SkWriteBuffer;
+
+//blpwtk2: Definitions moved from SkColor.h
+
+/** 32-bit ARGB color value, unpremultiplied. Color components are always in
+    a known order. This is different from SkPMColor, which has its bytes in a configuration
+    dependent order, to match the format of kBGRA_8888_SkColorType bitmaps. SkColor
+    is the type used to specify colors in SkPaint and in gradients.
+
+    Color that is premultiplied has the same component values as color
+    that is unpremultiplied if alpha is 255, fully opaque, although may have the
+    component values in a different order.
+*/
+typedef uint32_t SkColor;
+
+/** Returns color value from 8-bit component values. Asserts if SK_DEBUG is defined
+    if a, r, g, or b exceed 255. Since color is unpremultiplied, a may be smaller
+    than the largest of r, g, and b.
+
+    @param a  amount of alpha, from fully transparent (0) to fully opaque (255)
+    @param r  amount of red, from no red (0) to full red (255)
+    @param g  amount of green, from no green (0) to full green (255)
+    @param b  amount of blue, from no blue (0) to full blue (255)
+    @return   color and alpha, unpremultiplied
+*/
+static constexpr inline SkColor SkColorSetARGB(U8CPU a, U8CPU r, U8CPU g, U8CPU b) {
+    return SkASSERT(a <= 255 && r <= 255 && g <= 255 && b <= 255),
+           (a << 24) | (r << 16) | (g << 8) | (b << 0);
+}
+
+/** Represents fully transparent SkColor. May be used to initialize a destination
+    containing a mask or a non-rectangular image.
+*/
+constexpr SkColor SK_ColorTRANSPARENT = SkColorSetARGB(0x00, 0x00, 0x00, 0x00);
+
+/** \enum SkAlphaType
+    Describes how to interpret the alpha component of a pixel. A pixel may
+    be opaque, or alpha, describing multiple levels of transparency.
+
+    In simple blending, alpha weights the draw color and the destination
+    color to create a new color. If alpha describes a weight from zero to one:
+
+    new color = draw color * alpha + destination color * (1 - alpha)
+
+    In practice alpha is encoded in two or more bits, where 1.0 equals all bits set.
+
+    RGB may have alpha included in each component value; the stored
+    value is the original RGB multiplied by alpha. Premultiplied color
+    components improve performance.
+*/
+enum SkAlphaType {
+    kUnknown_SkAlphaType,                          //!< uninitialized
+    kOpaque_SkAlphaType,                           //!< pixel is opaque
+    kPremul_SkAlphaType,                           //!< pixel components are premultiplied by alpha
+    kUnpremul_SkAlphaType,                         //!< pixel components are independent of alpha
+    kLastEnum_SkAlphaType = kUnpremul_SkAlphaType, //!< last valid value
+};
 
 /** Returns true if SkAlphaType equals kOpaque_SkAlphaType.
 

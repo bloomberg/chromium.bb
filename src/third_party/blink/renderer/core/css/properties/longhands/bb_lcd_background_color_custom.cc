@@ -6,7 +6,7 @@
 
 #include "third_party/blink/renderer/core/css/css_color_value.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser_context.h"
-#include "third_party/blink/renderer/core/css/parser/css_property_parser_helpers.h"
+#include "third_party/blink/renderer/core/css/properties/css_parsing_utils.h"
 #include "third_party/blink/renderer/core/css/resolver/style_builder_converter.h"
 #include "third_party/blink/renderer/core/css/resolver/style_resolver_state.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
@@ -20,8 +20,8 @@ const CSSValue* BbLcdBackgroundColor::ParseSingleValue(
     const CSSParserLocalContext&) const {
   // Allow the special focus color even in HTML Standard parsing mode.
   if (range.Peek().Id() == CSSValueID::kAuto || range.Peek().Id() == CSSValueID::kNone)
-    return css_property_parser_helpers::ConsumeIdent(range);
-  return css_property_parser_helpers::ConsumeColor(range, context);
+    return css_parsing_utils::ConsumeIdent(range);
+  return css_parsing_utils::ConsumeColor(range, context);
 }
 
 const CSSValue* BbLcdBackgroundColor::CSSValueFromComputedStyleInternal(
