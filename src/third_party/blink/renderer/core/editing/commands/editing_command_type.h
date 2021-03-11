@@ -159,6 +159,8 @@ enum class EditingCommandType {
 
 
   // patch section: indent-block/outdent-block (141,142)
+  kIndentBlock,
+  kOutdentBlock,
 
 
 
