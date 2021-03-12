@@ -26,7 +26,6 @@
 #include <base/task/post_task.h>
 #include <base/threading/thread_task_runner_handle.h>
 #include <content/public/browser/browser_task_traits.h>
-#include <content/public/browser/cors_exempt_headers.h>
 #include <content/public/browser/network_service_instance.h>
 #include <content/public/browser/resource_context.h>
 #include <mojo/public/cpp/bindings/receiver.h>
@@ -190,7 +189,7 @@ RequestContextManager::CreateSystemContext()
 
   network_service->CreateNetworkContext(
       manager->system_context_.InitWithNewPipeAndPassReceiver(),
-      manager->CreateNetworkContextParams(/* is_system = */ true, ""));
+      manager->CreateNetworkContextParams(""));
 
   return manager;
 }
@@ -213,13 +212,11 @@ RequestContextManager::~RequestContextManager()
 }
 
 void RequestContextManager::ConfigureNetworkContextParams(
-    bool is_system,
     std::string user_agent,
     network::mojom::NetworkContextParams* context_params)
 {
   context_params->accept_language = "en-us,en";
   context_params->user_agent = std::move(user_agent);
-  context_params->primary_network_context = is_system;
 
   // TODO(https://crbug.com/458508): Allow
   // context_params->http_auth_static_network_context_params->allow_default_credentials
@@ -233,14 +230,13 @@ void RequestContextManager::ConfigureNetworkContextParams(
   } else {
     proxy_config_monitor_->AddToNetworkContextParams(context_params);
   }
-  content::UpdateCorsExemptHeader(context_params);
 }
 
 network::mojom::NetworkContextParamsPtr
-RequestContextManager::CreateNetworkContextParams(bool is_system, std::string user_agent)
+RequestContextManager::CreateNetworkContextParams(std::string user_agent)
 {
   auto context_params = ::network::mojom::NetworkContextParams::New();
-  ConfigureNetworkContextParams(is_system, user_agent, context_params.get());
+  ConfigureNetworkContextParams(user_agent, context_params.get());
   return context_params;
 }
 

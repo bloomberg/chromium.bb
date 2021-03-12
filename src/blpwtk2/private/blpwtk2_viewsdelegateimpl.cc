@@ -61,10 +61,10 @@ bool ViewsDelegateImpl::IsWindowInMetro(gfx::NativeWindow window) const
 }
 #endif
 
-views::NonClientFrameView* ViewsDelegateImpl::CreateDefaultNonClientFrameView(
+std::unique_ptr<views::NonClientFrameView> ViewsDelegateImpl::CreateDefaultNonClientFrameView(
         views::Widget* widget)
 {
-    return NULL;
+    return nullptr;
 }
 
 void ViewsDelegateImpl::OnBeforeWidgetInit(

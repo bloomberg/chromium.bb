@@ -51,7 +51,6 @@ class RequestContextManager {
   ~RequestContextManager();
 
   void ConfigureNetworkContextParams(
-    bool is_system,
     std::string user_agent,
     network::mojom::NetworkContextParams* network_context_params);
 
@@ -64,8 +63,7 @@ class RequestContextManager {
   void SetCustomProxyConfig(const net::ProxyConfig& custom_proxy_config);
 
  private:
-  network::mojom::NetworkContextParamsPtr CreateNetworkContextParams(bool is_system,
-                                                                     std::string user_agent);
+  network::mojom::NetworkContextParamsPtr CreateNetworkContextParams(std::string user_agent);
   std::unique_ptr<net::ProxyConfig> proxy_config_;
   std::unique_ptr<ProxyConfigMonitor> proxy_config_monitor_;
 

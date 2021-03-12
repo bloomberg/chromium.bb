@@ -38,7 +38,7 @@
 #include <blpwtk2_processhostimpl.h>
 
 #include <base/bind.h>
-#include <base/message_loop/message_loop.h>
+#include <base/task/single_thread_task_executor.h>
 #include <base/strings/utf_string_conversions.h>
 #include <chrome/browser/printing/print_view_manager.h>
 #include <components/printing/renderer/print_render_frame_helper.h>
@@ -53,8 +53,6 @@
 #include <content/public/browser/render_widget_host.h>
 #include <content/public/browser/web_contents.h>
 #include <content/public/browser/site_instance.h>
-#include <content/public/common/file_chooser_file_info.h>
-#include <content/public/common/web_preferences.h>
 #include <content/public/renderer/render_view.h>
 #include <content/renderer/render_view_impl.h>
 #include <third_party/blink/public/mojom/frame/find_in_page.mojom.h>
@@ -117,7 +115,7 @@ WebViewImpl::WebViewImpl(WebViewDelegate          *delegate,
     static const base::NoDestructor<gfx::FontRenderParams> fontRenderParams(
                     gfx::GetFontRenderParams(gfx::FontRenderParamsQuery(), NULL));
 
-    blink::mojom::RendererPreferences *prefs = d_webContents->GetMutableRendererPrefs();
+    blink::RendererPreferences *prefs = d_webContents->GetMutableRendererPrefs();
 
     prefs->should_antialias_text    = fontRenderParams->antialiasing;
     prefs->use_subpixel_positioning = fontRenderParams->subpixel_positioning;
@@ -193,7 +191,7 @@ void WebViewImpl::handleFindRequest(const FindOnPageRequest& request)
     DCHECK(!d_wasDestroyed);
 
     auto options = blink::mojom::FindOptions::New();
-    options->find_next = request.findNext;
+    options->new_session = !request.findNext;
     options->forward = request.forward;
     options->match_case = request.matchCase;
     d_webContents->Find(request.reqId,
@@ -201,7 +199,7 @@ void WebViewImpl::handleFindRequest(const FindOnPageRequest& request)
                         std::move(options));
 }
 
-void WebViewImpl::overrideWebkitPrefs(content::WebPreferences *prefs)
+void WebViewImpl::overrideWebkitPrefs(blink::web_pref::WebPreferences *prefs)
 {
     prefs->dom_paste_enabled = d_properties.domPasteEnabled;
     prefs->javascript_can_access_clipboard = d_properties.javascriptCanAccessClipboard;
@@ -685,9 +683,20 @@ void WebViewImpl::RequestMediaAccessPermission(
     class DummyMediaStreamUI final : public content::MediaStreamUI {
       public:
         gfx::NativeViewId OnStarted(base::OnceClosure stop,
-                                   SourceCallback source) override {
-        return 0;
-       }
+                                   SourceCallback source,
+                                   const std::string& label,
+                                   std::vector<content::DesktopMediaID> screen_capture_ids,
+                                   content::MediaStreamUI::StateChangeCallback state_change) override {
+          return 0;
+        }
+
+
+        void OnDeviceStopped(const std::string& label,
+                             const content::DesktopMediaID& media_id) override {
+        }
+
+        void SetStopCallback(base::OnceClosure stop) override {
+        }
     };
 
     const blink::MediaStreamDevices& audioDevices =

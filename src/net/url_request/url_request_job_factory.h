@@ -63,6 +63,7 @@ class NET_EXPORT URLRequestJobFactory {
   // Protected for (test-only) subclasses.
   THREAD_CHECKER(thread_checker_);
 
+ public:
   // Sets a global URLRequestInterceptor for testing purposes.  The interceptor
   // is given the chance to intercept any request before the corresponding
   // ProtocolHandler. If an interceptor is set, the old interceptor must be

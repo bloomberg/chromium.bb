@@ -1493,16 +1493,10 @@ int RenderProcessHost::GetCurrentRenderProcessCountForTesting() {
 RenderProcessHost* RenderProcessHost::CreateProcessHost(
     std::shared_ptr<base::Process> process,
     content::BrowserContext* browserContext) {
-  DCHECK(browserContext);
-
-  content::StoragePartition* partition =
-      content::BrowserContext::GetDefaultStoragePartition(browserContext);
-  content::StoragePartitionImpl* partitionImpl =
-      static_cast<content::StoragePartitionImpl*>(partition);
 
   const int host_id = content::RenderProcessHostImpl::GenerateUniqueId();
   return RenderProcessHostImpl::CreateRenderProcessHost(
-      host_id, std::move(process), browserContext, partitionImpl, nullptr);
+      host_id, std::move(process), browserContext, nullptr);
 }
 
 // static

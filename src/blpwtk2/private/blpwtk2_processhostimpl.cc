@@ -37,6 +37,7 @@
 #include <mojo/core/embedder/embedder.h>
 #include <mojo/public/cpp/bindings/interface_request.h>
 #include <mojo/public/cpp/bindings/strong_binding.h>
+#include <mojo/public/cpp/bindings/self_owned_receiver.h>
 #include "mojo/public/cpp/system//invitation.h"
 
 #include <base/command_line.h>
@@ -293,9 +294,9 @@ std::string ProcessHostImpl::createHostChannel(
 // static
 void ProcessHostImpl::create(
     const scoped_refptr<base::SingleThreadTaskRunner>& runner,
-    mojo::InterfaceRequest<mojom::ProcessHost> request) {
+    mojo::PendingReceiver<mojom::ProcessHost> receiver) {
   std::unique_ptr<ProcessHostImpl> processHost(new ProcessHostImpl(runner));
-  mojo::MakeStrongBinding(std::move(processHost), std::move(request));
+  mojo::MakeSelfOwnedReceiver(std::move(processHost), std::move(receiver));
 }
 
 // static

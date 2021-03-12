@@ -95,7 +95,7 @@ class ProcessHostImpl final : public mojom::ProcessHost
 
     static void create(
             const scoped_refptr<base::SingleThreadTaskRunner>& runner,
-            mojo::InterfaceRequest<mojom::ProcessHost>         request);
+            mojo::PendingReceiver<mojom::ProcessHost>          receiver);
         // Create an instance of process host in response to a Mojo service
         // call.
 

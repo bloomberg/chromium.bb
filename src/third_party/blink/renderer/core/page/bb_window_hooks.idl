@@ -21,7 +21,7 @@
  */
 
 [
-    NoInterfaceObject
+    LegacyNoInterfaceObject
 ] interface BBWindowHooks {
 
     DOMString listPumpSchedulers();

@@ -177,7 +177,7 @@ BrowserContextImpl::~BrowserContextImpl()
         // allow IO during deletion of temporary directory
         base::ThreadRestrictions::ScopedAllowIO allowIO;
         DCHECK(base::PathExists(d_requestContextGetter->path()));
-        base::DeleteFile(d_requestContextGetter->path(), true);
+        base::DeletePathRecursively(d_requestContextGetter->path());
     }
 
     d_requestContextGetter = nullptr;
@@ -191,7 +191,7 @@ void BrowserContextImpl::ConfigureNetworkContextParams(
     network::mojom::NetworkContextParams* network_context_params)
 {
     return d_requestContextManager->ConfigureNetworkContextParams(
-        false, user_agent, network_context_params);
+        user_agent, network_context_params);
 }
 
 URLRequestContextGetterImpl* BrowserContextImpl::requestContextGetter() const

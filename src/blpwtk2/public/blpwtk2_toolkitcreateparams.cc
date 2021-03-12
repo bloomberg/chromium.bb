@@ -26,7 +26,7 @@
 #include <blpwtk2_products.h>
 #include <blpwtk2_stringref.h>
 
-#include <base/logging.h>  // for DCHECK
+#include <base/check.h>  // for DCHECK
 #include <content/public/common/content_switches.h>
 
 #include <string>

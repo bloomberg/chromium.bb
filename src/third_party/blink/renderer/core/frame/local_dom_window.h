@@ -207,7 +207,7 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
   Navigator* navigator();
   Navigator* clientInformation() { return navigator(); }
 
-  BBWindowHooks* bbWindowHooks() const;
+  BBWindowHooks* bbWindowHooks();
 
   bool offscreenBuffering() const;
 

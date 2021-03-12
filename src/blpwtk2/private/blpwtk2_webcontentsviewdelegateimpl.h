@@ -25,6 +25,7 @@
 
 #include <blpwtk2_config.h>
 
+#include <base/macros.h>
 #include <content/public/browser/web_contents_view_delegate.h>
 
 namespace content {

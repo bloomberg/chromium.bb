@@ -26,8 +26,8 @@
 #include <blpwtk2_config.h>
 
 #include <base/message_loop/message_pump_win.h>
-#include <base/message_loop/message_loop.h>
-#include <base/message_loop/message_loop_current.h>
+#include <base/task/single_thread_task_executor.h>
+#include <base/task/current_thread.h>
 
 namespace base {
 class RunLoop;
@@ -57,7 +57,7 @@ class MainMessagePump final : public base::MessagePumpForUI {
     // DATA
     NativeView d_window;
     std::unique_ptr<base::RunLoop> d_runLoop;
-    std::unique_ptr<base::MessageLoopCurrent::ScopedNestableTaskAllower> d_scopedNestedTaskAllower;
+    std::unique_ptr<base::CurrentThread::ScopedNestableTaskAllower> d_scopedNestedTaskAllower;
     RunState d_runState;
     bool d_isInsideModalLoop;
     LONG d_isInsideMainLoop;

@@ -574,7 +574,7 @@ int ResourceDispatcher::StartAsync(
     pending_requests_[request_id] = std::make_unique<PendingRequestInfo>(
         std::move(peer), request->destination, std::move(bridge),
         request->render_frame_id, request->url,
-        std::move(response_override_params));
+        std::move(resource_load_info_notifier_wrapper));
 
     pending_requests_[request_id]->url_loader_client =
         std::make_unique<URLLoaderClientImpl>(

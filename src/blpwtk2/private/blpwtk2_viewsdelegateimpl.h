@@ -60,7 +60,7 @@ private:
     HICON GetSmallWindowIcon() const override;
     bool IsWindowInMetro(gfx::NativeWindow window) const override;
 #endif
-    views::NonClientFrameView* CreateDefaultNonClientFrameView(
+    std::unique_ptr<views::NonClientFrameView> CreateDefaultNonClientFrameView(
         views::Widget* widget) override;
     void AddRef() override { }
     void ReleaseRef() override { }

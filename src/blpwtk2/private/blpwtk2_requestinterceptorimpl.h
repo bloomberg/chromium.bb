@@ -33,9 +33,8 @@ class RequestInterceptorImpl final : public net::URLRequestInterceptor {
   ~RequestInterceptorImpl() final;
 
   // net::URLRequestInterceptor methods.
-  net::URLRequestJob* MaybeInterceptRequest(
-          net::URLRequest* request,
-          net::NetworkDelegate* network_delegate) const override;
+  std::unique_ptr<net::URLRequestJob> MaybeInterceptRequest(
+          net::URLRequest* request) const override;
 
   DISALLOW_COPY_AND_ASSIGN(RequestInterceptorImpl);
 };

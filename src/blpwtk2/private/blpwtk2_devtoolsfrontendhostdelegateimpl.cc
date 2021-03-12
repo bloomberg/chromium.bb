@@ -139,7 +139,7 @@ DevToolsFrontendHostDelegateImpl::~DevToolsFrontendHostDelegateImpl()
     if (d_requestContextGetter.get()) {
         base::ThreadRestrictions::ScopedAllowIO allowIO;
         DCHECK(base::PathExists(d_requestContextGetter->path()));
-        base::DeleteFile(d_requestContextGetter->path(), true);
+        base::DeletePathRecursively(d_requestContextGetter->path());
         d_requestContextGetter = nullptr;
     }
 }

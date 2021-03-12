@@ -48,7 +48,7 @@
 namespace base {
 class FilePath;
 class Thread;
-class MessageLoop;
+class SingleThreadTaskExecutor;
 }  // close namespace base
 
 namespace content {
@@ -92,7 +92,7 @@ class ToolkitImpl : public Toolkit {
         // Only used for the ORIGINAL thread mode.  This is needed to run the
         // browser code in the application thread.
 
-    std::unique_ptr<base::MessageLoop> d_renderMainMessageLoop;
+    std::unique_ptr<base::SingleThreadTaskExecutor> d_renderMainMessageLoop;
 
 
 

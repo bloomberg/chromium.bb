@@ -47,14 +47,6 @@ void ContentUtilityClientImpl::ExposeInterfacesToBrowser(mojo::BinderMap* binder
   chrome_utility_client_->ExposeInterfacesToBrowser(binders);
 }
 
-mojo::ServiceFactory* ContentUtilityClientImpl::GetMainThreadServiceFactory() {
-  return chrome_utility_client_->GetMainThreadServiceFactory();
-}
-
-mojo::ServiceFactory* ContentUtilityClientImpl::GetIOThreadServiceFactory() {
-  return chrome_utility_client_->GetIOThreadServiceFactory();
-}
-
 }  // close namespace blpwtk2
 
 // vim: ts=4 et

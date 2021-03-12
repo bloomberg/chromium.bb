@@ -27,7 +27,8 @@
 
 #include <base/run_loop.h>
 #include <base/lazy_instance.h>
-#include <base/message_loop/message_loop.h>
+#include <base/task/single_thread_task_executor.h>
+#include <base/task/current_thread.h>
 #include <base/threading/thread_local.h>
 #include <base/win/wrapped_window_proc.h>
 #include <base/time/time.h>
@@ -323,7 +324,7 @@ void MainMessagePump::modalLoop(bool enabled)
 
         if (enabled) {
             d_scopedNestedTaskAllower =
-                std::make_unique<base::MessageLoopCurrent::ScopedNestableTaskAllower>();
+                std::make_unique<base::CurrentThread::ScopedNestableTaskAllower>();
 
             SetTimer(d_window,
                      reinterpret_cast<WPARAM>(this),

@@ -45,7 +45,7 @@
 #include "base/base_switches.h"
 #include "base/feature_list.h"
 #include <base/command_line.h>
-#include <base/message_loop/message_loop.h>
+#include <base/task/single_thread_task_executor.h>
 #include <base/path_service.h>
 #include <base/process/memory.h>
 #include <base/synchronization/waitable_event.h>
@@ -69,8 +69,8 @@
 #include <content/browser/browser_main_loop.h>
 #include <mojo/public/cpp/system/wait_set.h>
 #include <sandbox/win/src/win_utils.h>
+#include <sandbox/policy/switches.h>
 #include <services/service_manager/public/cpp/service_executable/switches.h>
-#include <services/service_manager/sandbox/switches.h>
 #include <third_party/blink/public/platform/web_security_origin.h>
 //#include <third_party/blink/public/web/blink.h>
 #include <third_party/blink/public/web/web_security_policy.h>
@@ -200,7 +200,7 @@ static void setupSandbox(sandbox::SandboxInterfaceInfo *info,
         // Since both 'broker_services' and 'target_services' are be null in
         // our SandboxInterfaceInfo, we don't want chromium to touch it.  This
         // flag prevents chromium from trying to use these services.
-        switches->push_back(service_manager::switches::kNoSandbox);
+        switches->push_back(sandbox::policy::switches::kNoSandbox);
     }
 }
 
@@ -307,7 +307,6 @@ static void startRenderer(
 
   LOG(INFO) << "Initializing InProcessRenderer";
   InProcessRenderer::init(isHost, ioTaskRunner, broker_client_invitation,
-                          channelInfo.getMojoServiceToken(),
                           channelInfo.getMojoControllerHandle(), 0);
 }
 
@@ -383,7 +382,7 @@ static void appendCommandLine(const std::vector<std::string>& argv)
 void ToolkitImpl::initializeContent(const sandbox::SandboxInterfaceInfo& sandboxInfo)
 {
     // Create a ContentMainRunner
-    d_mainRunner.reset(content::ContentMainRunner::Create());
+    d_mainRunner = content::ContentMainRunner::Create();
     content::ContentMainParams mainParams(&d_mainDelegate);
 
     // We needn't worry about passing a pointer to an object on the stack
@@ -440,7 +439,7 @@ void ToolkitImpl::startMessageLoop(const sandbox::SandboxInterfaceInfo& sandboxI
         // that was installed above.  Once a message loop is created, it
         // places a reference to itself in TLS.  It can be looked up by
         // calling MessageLoop::current().
-        d_renderMainMessageLoop = std::make_unique<base::MessageLoop>(base::MessagePumpType::UI);
+        d_renderMainMessageLoop = std::make_unique<base::SingleThreadTaskExecutor>(base::MessagePumpType::UI);
     }
     else {
         DCHECK(Statics::isOriginalThreadMode());

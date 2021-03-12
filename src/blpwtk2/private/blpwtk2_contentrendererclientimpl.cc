@@ -42,7 +42,6 @@
 #include <net/base/net_errors.h>
 #include <mojo/public/cpp/bindings/binder_map.h>
 #include "services/service_manager/public/cpp/bind_source_info.h"
-#include "services/service_manager/public/cpp/service_binding.h"
 #include <skia/ext/fontmgr_default.h>
 #include <third_party/skia/include/core/SkFontMgr.h>
 #include <third_party/blink/public/platform/platform.h>

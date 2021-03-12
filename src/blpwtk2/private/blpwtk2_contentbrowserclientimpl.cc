@@ -33,7 +33,7 @@
 #include <blpwtk2_requestinterceptorimpl.h>
 
 #include <base/json/json_reader.h>
-#include <base/message_loop/message_loop.h>
+#include <base/task/single_thread_task_executor.h>
 #include <base/threading/thread.h>
 #include <base/threading/platform_thread.h>
 #include <content/public/browser/browser_main_parts.h>
@@ -44,10 +44,9 @@
 #include <content/public/common/service_names.mojom.h>
 #include <content/public/common/url_constants.h>
 #include <content/public/common/user_agent.h>
-#include "chrome/app/chrome_content_browser_overlay_manifest.h"
 #include <chrome/grit/browser_resources.h>
 #include "mojo/public/cpp/bindings/remote.h"
-#include <net/url_request/url_request_job_factory_impl.h>
+#include <net/url_request/url_request_job_factory.h>
 #include <services/service_manager/public/cpp/connector.h>
 #include <ui/base/resource/resource_bundle.h>
 
@@ -64,12 +63,12 @@ namespace blpwtk2 {
 ContentBrowserClientImpl::ContentBrowserClientImpl() :
     d_interceptor(std::make_unique<RequestInterceptorImpl>())
 {
-    net::URLRequestJobFactoryImpl::SetInterceptorForTesting(d_interceptor.get());
+    net::URLRequestJobFactory::SetInterceptorForTesting(d_interceptor.get());
 }
 
 ContentBrowserClientImpl::~ContentBrowserClientImpl()
 {
-    net::URLRequestJobFactoryImpl::SetInterceptorForTesting(nullptr);
+    net::URLRequestJobFactory::SetInterceptorForTesting(nullptr);
 }
 
 std::unique_ptr<content::BrowserMainParts>
@@ -93,7 +92,7 @@ void ContentBrowserClientImpl::RenderProcessWillLaunch(
 
 void ContentBrowserClientImpl::OverrideWebkitPrefs(
     content::RenderViewHost *render_view_host,
-    content::WebPreferences *prefs)
+    blink::web_pref::WebPreferences *prefs)
 {
     content::WebContents* webContents =
         content::WebContents::FromRenderViewHost(render_view_host);
@@ -170,15 +169,6 @@ ContentBrowserClientImpl::GetExtraServiceManifests()
     return std::vector<service_manager::Manifest>{};
 }
 
-base::Optional<service_manager::Manifest> ContentBrowserClientImpl::GetServiceManifestOverlay(
-        base::StringPiece name)
-{
-  if (name == content::mojom::kBrowserServiceName) {
-    return GetChromeContentBrowserOverlayManifest();
-  }
-  return base::nullopt;
-}
-
 std::string ContentBrowserClientImpl::GetUserAgent()
 {
     // include Chrome in our user-agent because some sites actually look for
@@ -202,12 +192,6 @@ void ContentBrowserClientImpl::ConfigureNetworkContextParams(
     DCHECK(context);
     BrowserContextImpl* pContextImpl = static_cast<BrowserContextImpl*>(context);
     return pContextImpl->ConfigureNetworkContextParams(GetUserAgent(), network_context_params);
-}
-
-bool ContentBrowserClientImpl::ShouldLockToOrigin(content::BrowserContext* browser_context,
-	                                              const GURL& effective_url)
-{
-    return false;
 }
 
 }  // close namespace blpwtk2

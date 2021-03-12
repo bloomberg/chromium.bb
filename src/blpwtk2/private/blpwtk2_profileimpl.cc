@@ -30,7 +30,7 @@
 #include <blpwtk2_mainmessagepump.h>
 
 #include <base/bind.h>
-#include <base/message_loop/message_loop.h>
+#include <base/task/single_thread_task_executor.h>
 #include <ipc/ipc_sender.h>
 #include <ipc/ipc_sync_channel.h>
 #include <content/public/common/service_manager_connection.h>

@@ -30,6 +30,7 @@
 #include <content/public/browser/render_process_host.h>
 #include <net/url_request/url_request_job_factory.h>
 #include <services/service_manager/public/cpp/binder_registry.h>
+#include <third_party/blink/public/common/web_preferences/web_preferences.h>
 
 #include <atomic>
 
@@ -74,7 +75,7 @@ class ContentBrowserClientImpl : public content::ContentBrowserClient {
         // BrowserMainLoop::PreShutdown() assumes a non-nullptr
 
     void OverrideWebkitPrefs(content::RenderViewHost *render_view_host,
-                             content::WebPreferences *prefs) override;
+                             blink::web_pref::WebPreferences *prefs) override;
         // Called by WebContents to override the WebKit preferences that are
         // used by the renderer. The content layer will add its own settings,
         // and then it's up to the embedder to update it if it wants.
@@ -126,9 +127,6 @@ class ContentBrowserClientImpl : public content::ContentBrowserClient {
 
     mojo::OutgoingInvitation* GetClientInvitation() const;
 
-    base::Optional<service_manager::Manifest> GetServiceManifestOverlay(
-            base::StringPiece name) override;
-
     // Returns the user agent.  Content may cache this value.
     std::string GetUserAgent() override;
 
@@ -142,9 +140,6 @@ class ContentBrowserClientImpl : public content::ContentBrowserClient {
       network::mojom::NetworkContextParams* network_context_params,
       network::mojom::CertVerifierCreationParams*
           cert_verifier_creation_params) override;
-
-  bool ShouldLockToOrigin(content::BrowserContext* browser_context,
-                          const GURL& effective_url) override;
 };
 
 }  // close namespace blpwtk2

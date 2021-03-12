@@ -4,6 +4,7 @@
 
 import("//printing/buildflags/buildflags.gni")
 import("//testing/test.gni")
+import("//blpwtk2/blpwtk2.gni")
 
 source_set("lib") {
   sources = [
@@ -23,7 +24,7 @@ source_set("lib") {
     "//ui/gfx",
   ]
 
-  if (enable_print_preview) {
+  if (enable_print_preview || is_blpwtk2) {
     deps += [ "//components/pwg_encoder" ]
   }
 

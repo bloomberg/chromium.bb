@@ -137,7 +137,7 @@ void RenderWidget::UpdateTextInputState() {
 void RenderWidget::bbHandleInputEvent(const blink::WebInputEvent& event) {
   ui::LatencyInfo latency_info;
   bb_OnHandleInputEvent_no_ack_ = true;
-  input_handler_->HandleInputEvent(blink::WebCoalescedInputEvent(event, latency_info), {});
+  GetWebWidget()->HandleInputEvent(blink::WebCoalescedInputEvent(event, latency_info));
   bb_OnHandleInputEvent_no_ack_ = false;
 }
 

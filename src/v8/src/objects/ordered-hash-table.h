@@ -750,7 +750,9 @@ class V8_EXPORT_PRIVATE OrderedHashSetHandler
       Isolate* isolate, Handle<SmallOrderedHashSet> table);
 };
 
-class V8_EXPORT_PRIVATE OrderedNameDictionary
+// blpwtk2: Remove V8_EXPORT_PRIVATE to avoid DLL export in static build.
+// V8_EXPORT_PRIVATE requires extra dependencies resulting static build failure.
+class OrderedNameDictionary
     : public OrderedHashTable<OrderedNameDictionary, 3> {
   using Base = OrderedHashTable<OrderedNameDictionary, 3>;
 

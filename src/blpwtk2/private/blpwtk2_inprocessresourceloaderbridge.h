@@ -47,7 +47,7 @@ class InProcessResourceLoaderBridge : public content::ResourceLoaderBridge {
   // While deferred, no more data will be read and no notifications
   // will be called on the client. This method can be called
   // multiples times, at any moment.
-  void SetDefersLoading(bool defers) override;
+  void SetDefersLoading(blink::WebURLLoader::DeferType defers) override;
 
   // Starts loading the body. Client must be non-null, and will receive
   // the body, code cache and final result.
@@ -57,7 +57,7 @@ class InProcessResourceLoaderBridge : public content::ResourceLoaderBridge {
   // Override of the rest functions in content::ResourceLoaderBridge
   void Start(std::unique_ptr<content::ResourceReceiver> receiver) override;
   void Cancel() override;
-  void SyncLoad(content::SyncLoadResponse* response) override;
+  void SyncLoad(blink::SyncLoadResponse* response) override;
 
  private:
   class InProcessURLRequest;

@@ -24,7 +24,7 @@
 
 #include <blpwtk2_statics.h>
 
-#include <base/message_loop/message_loop.h>
+#include <base/task/single_thread_task_executor.h>
 #include <content/common/in_process_child_thread_params.h>
 #include <content/public/renderer/render_thread.h>
 #include <content/renderer/render_process_impl.h>
@@ -55,7 +55,6 @@ class InProcessRendererThread : public base::Thread {
     // DATA
     scoped_refptr<base::SingleThreadTaskRunner> d_browserIOTaskRunner;
     mojo::OutgoingInvitation* d_broker_client_invitation;
-    std::string d_serviceToken;
     int d_mojoHandle;
     const int32_t d_renderer_client_id;
 
@@ -71,7 +70,6 @@ public:
     InProcessRendererThread(
             const scoped_refptr<base::SingleThreadTaskRunner>& browserIOTaskRunner,
             mojo::OutgoingInvitation*                          broker_client_invitation,
-            const std::string&                                 serviceToken,
             int                                                mojoHandle,
             const int32_t                                      renderer_client_id);
     ~InProcessRendererThread() final;
@@ -108,13 +106,11 @@ void InProcessRendererThread::CleanUp()
 InProcessRendererThread::InProcessRendererThread(
         const scoped_refptr<base::SingleThreadTaskRunner>& browserIOTaskRunner,
         mojo::OutgoingInvitation*                          broker_client_invitation,
-        const std::string&                                 serviceToken,
         int                                                mojoHandle,
         const int32_t                                      renderer_client_id)
 : base::Thread("BlpInProcRenderer")
 , d_browserIOTaskRunner(browserIOTaskRunner)
 , d_broker_client_invitation(broker_client_invitation)
-, d_serviceToken(serviceToken)
 , d_mojoHandle(mojoHandle)
 , d_renderer_client_id(renderer_client_id)
 {
@@ -139,7 +135,6 @@ void InProcessRenderer::init(
         bool                                               isHost,
         const scoped_refptr<base::SingleThreadTaskRunner>& browserIOTaskRunner,
         mojo::OutgoingInvitation* broker_client_invitation,
-        const std::string&                                 serviceToken,
         int                                                mojoHandle,
         const int32_t                                      renderer_client_id)
 {
@@ -152,7 +147,6 @@ void InProcessRenderer::init(
         g_inProcessRendererThread =
             new InProcessRendererThread(browserIOTaskRunner,
                                         broker_client_invitation,
-                                        serviceToken,
                                         mojoHandle,
                                         renderer_client_id);
     }

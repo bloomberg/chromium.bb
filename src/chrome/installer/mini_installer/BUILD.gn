@@ -242,15 +242,14 @@ template("generate_mini_installer") {
 
     if (v8_use_external_startup_data) {
       deps += [ "//v8" ]
-      inputs += [
-        "$root_out_dir/$v8_context_snapshot_filename",
-      ]
 
-      if (bb_version != "") {
+      if (use_v8_context_snapshot) {
+        inputs += [ "$root_out_dir/$v8_context_snapshot_filename" ]
+        deps += [ "//tools/v8_context_snapshot" ]
+      } else {
+        inputs += [ "$root_out_dir/snapshot_blob.bin" ]
         args += [ "--include_snapshotblob=1" ]
       }
-
-      deps += [ "//v8" ]
     }
 
     depfile = "$target_gen_dir/archive.d"

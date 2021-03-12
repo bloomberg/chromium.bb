@@ -32,7 +32,7 @@
 #include <blpwtk2_blob.h>
 #include <blpwtk2_rendererutil.h>
 
-#include <base/message_loop/message_loop.h>
+#include <base/task/single_thread_task_executor.h>
 #include <content/renderer/render_view_impl.h>
 #include <content/public/renderer/render_frame.h>
 #include <content/public/renderer/render_view.h>

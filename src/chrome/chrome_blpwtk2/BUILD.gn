@@ -58,7 +58,6 @@ static_library("chrome_blpwtk2") {
   ]
 
   deps = [
-     "//chrome/app:chrome_service_manifests",
      "//chrome/services/printing/public/mojom",
      "//chrome/services/printing:lib",
      "//chrome/services/util_win/public/mojom",
@@ -90,6 +89,9 @@ static_library("chrome_blpwtk2") {
      # required by //chrome/utility/services.cc
      "//components/services/quarantine",
      "//components/services/quarantine/public/mojom",
+     "//chrome/services/machine_learning:machine_learning",
+     "//chrome/services/machine_learning/public/mojom",
+     "//chrome/services/qrcode_generator/public/mojom",
 
      # required for chrome services
      "//content/public/common:service_names",

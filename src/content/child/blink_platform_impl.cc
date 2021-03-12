@@ -48,7 +48,6 @@
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/public/resources/grit/blink_image_resources.h"
-#include "third_party/blink/public/resources/grit/blink_inspector_resources.h"
 #include "third_party/blink/public/resources/grit/blink_resources.h"
 #include "third_party/blink/public/strings/grit/blink_strings.h"
 #include "third_party/zlib/google/compression_utils.h"

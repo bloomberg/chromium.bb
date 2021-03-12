@@ -30,8 +30,7 @@ namespace blpwtk2 {
 
 class ResourceRequestJob : public net::URLRequestJob {
  public:
-  ResourceRequestJob(net::URLRequest* request,
-                     net::NetworkDelegate* network_delegate);
+  ResourceRequestJob(net::URLRequest* request);
 
  private:
   // net::URLRequestJob methods.

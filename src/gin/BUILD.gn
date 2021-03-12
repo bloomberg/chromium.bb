@@ -71,14 +71,7 @@ component("gin") {
   ]
 
   if (v8_use_external_startup_data) {
-    if (bb_version != "") {
-      data = [
-        "$root_out_dir/natives_blob.$bb_version.bin",
-        "$root_out_dir/snapshot_blob.$bb_version.bin",
-      ]
-    } else {
-      data = [ "$root_out_dir/snapshot_blob.bin" ]
-    }
+    data = [ "$root_out_dir/snapshot_blob.bin" ]
   }
 
   defines = [ "GIN_IMPLEMENTATION" ]

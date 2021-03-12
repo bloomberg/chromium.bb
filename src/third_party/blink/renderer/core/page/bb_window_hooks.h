@@ -43,7 +43,6 @@ namespace blink {
                                 public ExecutionContextClient,
                                 public Supplementable<BBWindowHooks>  {
         DEFINE_WRAPPERTYPEINFO();
-        USING_GARBAGE_COLLECTED_MIXIN(BBWindowHooks);
     public:
         struct PumpConfigHooks {
             base::RepeatingCallback<std::vector<std::string>(void)> listSchedulers;
@@ -52,7 +51,7 @@ namespace blink {
             base::RepeatingCallback<int(unsigned,int)> setSchedulerTunable;
         };
 
-        static BBWindowHooks* Create(LocalFrame* frame) { return MakeGarbageCollected<BBWindowHooks>(frame); }
+        static BBWindowHooks* Create(LocalDOMWindow* window) { return MakeGarbageCollected<BBWindowHooks>(window); }
         BLINK_EXPORT static void InstallPumpConfigHooks(PumpConfigHooks hooks);
 
         String listPumpSchedulers();
@@ -60,9 +59,9 @@ namespace blink {
         void activatePumpScheduler(long index);
         void setPumpSchedulerTunable(long index, long value);
 
-        void Trace(blink::Visitor*) override;
+        void Trace(Visitor*) const override;
 
-        explicit BBWindowHooks(LocalFrame*);
+        explicit BBWindowHooks(LocalDOMWindow *window);
     };
 
 } // namespace blink

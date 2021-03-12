@@ -25,10 +25,8 @@
 
 namespace blpwtk2 {
 
-ResourceRequestJob::ResourceRequestJob(
-    net::URLRequest* request,
-    net::NetworkDelegate* network_delegate)
-  : net::URLRequestJob(request, network_delegate)
+ResourceRequestJob::ResourceRequestJob(net::URLRequest* request)
+  : net::URLRequestJob(request)
   , url_(request->url()) {
 }
 

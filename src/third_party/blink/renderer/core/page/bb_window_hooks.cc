@@ -35,6 +35,7 @@
 #include "third_party/blink/renderer/core/editing/visible_position.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
@@ -46,8 +47,8 @@ static BBWindowHooks::PumpConfigHooks& GetPumpConfigHooks()
     return *hooks;
 }
 
-BBWindowHooks::BBWindowHooks(LocalFrame* frame)
-    : ExecutionContextClient(frame)
+BBWindowHooks::BBWindowHooks(LocalDOMWindow* window)
+    : ExecutionContextClient(window)
 {
 }
 
@@ -93,7 +94,7 @@ void BBWindowHooks::setPumpSchedulerTunable(long index, long value) {
     GetPumpConfigHooks().setSchedulerTunable.Run(index, value);
 }
 
-void BBWindowHooks::Trace(blink::Visitor* visitor) {
+void BBWindowHooks::Trace(Visitor* visitor) const {
   ScriptWrappable::Trace(visitor);
   ExecutionContextClient::Trace(visitor);
   Supplementable<BBWindowHooks>::Trace(visitor);

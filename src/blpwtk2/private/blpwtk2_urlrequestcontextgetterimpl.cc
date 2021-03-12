@@ -52,7 +52,6 @@
 #include <net/url_request/url_request_context.h>
 #include <net/url_request/url_request_context_storage.h>
 #include <net/url_request/url_request_context_builder.h>
-#include <net/url_request/url_request_job_factory_impl.h>
 #include <services/network/public/cpp/data_element.h>
 #include <services/network/public/cpp/network_switches.h>
 
@@ -133,30 +132,6 @@ void URLRequestContextGetterImpl::useSystemProxyConfig()
         FROM_HERE, base::Bind(&URLRequestContextGetterImpl::updateProxyConfig,
                               this, proxyConfigService));
 }
-
-void URLRequestContextGetterImpl::setProtocolHandlers(
-    content::ProtocolHandlerMap* protocolHandlers,
-    content::URLRequestInterceptorScopedVector requestInterceptors)
-{
-    // Note: It is guaranteed that this is only called once, and it happens
-    //       before GetURLRequestContext() is called on the IO thread.
-    DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-
-    // If we haven't got a proxy configuration at this point, just initialize
-    // to use the system proxy settings.  Note that proxy configuration must be
-    // setup before the IO thread starts using this URLRequestContextGetter.
-    if (!d_wasProxyInitialized) {
-        useSystemProxyConfig();
-        DCHECK(d_wasProxyInitialized);
-    }
-
-    base::AutoLock guard(d_protocolHandlersLock);
-    DCHECK(!d_gotProtocolHandlers);
-    std::swap(d_protocolHandlers, *protocolHandlers);
-    d_requestInterceptors = std::move(requestInterceptors);
-    d_gotProtocolHandlers = true;
-}
-
 
 // net::URLRequestContextGetter implementation.
 

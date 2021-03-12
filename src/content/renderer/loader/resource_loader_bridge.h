@@ -32,6 +32,7 @@
 #include "net/base/request_priority.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
 #include "third_party/blink/public/platform/web_navigation_body_loader.h"
+#include "third_party/blink/public/platform/sync_load_response.h"
 
 namespace content {
 struct SyncLoadResponse;
@@ -179,7 +180,7 @@ class CONTENT_EXPORT ResourceLoaderBridge
   // Start, Cancel, SyncLoad will be called in content::ResourceDispatcher
   virtual void Start(std::unique_ptr<ResourceReceiver> receiver) = 0;
   virtual void Cancel() = 0;
-  virtual void SyncLoad(content::SyncLoadResponse* response) = 0;
+  virtual void SyncLoad(blink::SyncLoadResponse* response) = 0;
 };
 
 }  // namespace content

@@ -60,7 +60,6 @@ struct InProcessRenderer {
     static void init(bool                                               isHost,
                      const scoped_refptr<base::SingleThreadTaskRunner>& browserIOTaskRunner,
                      mojo::OutgoingInvitation* broker_client_invitation,
-                     const std::string&                                 serviceToken,
                      int                                                mojoHandle,
                      const int32_t                                      renderer_client_id);
 

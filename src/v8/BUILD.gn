@@ -1624,17 +1624,12 @@ template("run_mksnapshot") {
       ]
     }
 
-    bb_ver_str  = "$bb_version"
-    if(bb_version != "") {
-      bb_ver_str = ".$bb_ver_str"
-    }
-
     if (v8_use_external_startup_data) {
-      outputs += [ "$root_out_dir/v8_context_snapshot${suffix}${bb_ver_str}.bin" ]
-      data += [ "$root_out_dir/v8_context_snapshot${suffix}${bb_ver_str}.bin" ]
+      outputs += [ "$root_out_dir/snapshot_blob${suffix}.bin" ]
+      data += [ "$root_out_dir/snapshot_blob${suffix}.bin" ]
       args += [
         "--startup_blob",
-        rebase_path("$root_out_dir/v8_context_snapshot${suffix}${bb_ver_str}.bin", root_build_dir),
+        rebase_path("$root_out_dir/snapshot_blob${suffix}.bin", root_build_dir),
       ]
     } else {
       outputs += [ "$target_gen_dir/snapshot${suffix}.cc" ]

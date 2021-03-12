@@ -29,15 +29,15 @@
 #include <blpwtk2_string.h>
 
 #include <base/bind.h>
-#include <base/message_loop/message_loop.h>
+#include <base/task/single_thread_task_executor.h>
 #include <content/public/renderer/request_peer.h>
-#include <content/renderer/loader/sync_load_response.h>
 #include <net/base/load_flags.h>
 #include <net/base/mime_sniffer.h>
 #include <net/base/net_errors.h>
 #include <net/http/http_request_headers.h>
 #include <net/http/http_response_headers.h>
 #include <services/network/public/cpp/resource_request.h>
+#include <third_party/blink/public/platform/sync_load_response.h>
 #include <third_party/blink/public/platform/web_url_request.h>
 #include <url/gurl.h>
 
@@ -74,10 +74,7 @@ class InProcessResourceLoaderBridge::InProcessURLRequest : public URLRequest {
 
   // see GetLoadFlagsForWebURLRequest() in web_url_request_util.cc:
   bool allowStoredCredentials() const override {
-    static const int disallow_flags = net::LOAD_DO_NOT_SAVE_COOKIES |
-                                      net::LOAD_DO_NOT_SEND_COOKIES |
-                                      net::LOAD_DO_NOT_SEND_AUTH_DATA;
-
+    static const int disallow_flags = net::LOAD_DO_NOT_SAVE_COOKIES;
     return (d_loadFlags & disallow_flags) != disallow_flags;
   }
 
@@ -477,7 +474,9 @@ void InProcessResourceLoaderBridge::InProcessResourceContext::
   d_responseHeaders->GetMimeTypeAndCharset(&responseInfo->mime_type,
                                            &responseInfo->charset);
   if (responseInfo->mime_type.empty() && length > 0) {
-    net::SniffMimeType(buffer, std::min(length, net::kMaxBytesToSniff), d_url,
+    const base::StringPiece content(buffer,
+                                    std::min(length, net::kMaxBytesToSniff));
+    net::SniffMimeType(content, d_url,
                        "", net::ForceSniffFileUrlsForHtml::kDisabled,
                        &responseInfo->mime_type);
   }
@@ -506,7 +505,8 @@ InProcessResourceLoaderBridge::~InProcessResourceLoaderBridge() {
   d_context->OnBridgeDeleted();
 }
 
-void InProcessResourceLoaderBridge::SetDefersLoading(bool defers) {}
+void InProcessResourceLoaderBridge::SetDefersLoading(blink::WebURLLoader::DeferType defers) {
+}
 
 // Starts loading the body. Client must be non-null, and will receive
 // the body, code cache and final result.
@@ -529,7 +529,7 @@ void InProcessResourceLoaderBridge::Cancel() {
 }
 
 void InProcessResourceLoaderBridge::SyncLoad(
-    content::SyncLoadResponse* response) {
+    blink::SyncLoadResponse* response) {
   LOG(ERROR) << "Synchronous requests not supported: url(" << d_context->url()
              << ")";
   response->error_code = net::ERR_FAILED;

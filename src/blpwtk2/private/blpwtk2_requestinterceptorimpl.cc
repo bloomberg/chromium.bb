@@ -34,15 +34,14 @@ RequestInterceptorImpl::RequestInterceptorImpl() {
 RequestInterceptorImpl::~RequestInterceptorImpl() {
 }
 
-net::URLRequestJob* RequestInterceptorImpl::MaybeInterceptRequest(
-      net::URLRequest* request,
-      net::NetworkDelegate* network_delegate) const {
+std::unique_ptr<net::URLRequestJob> RequestInterceptorImpl::MaybeInterceptRequest(
+      net::URLRequest* request) const {
 
   StringRef url = request->url().spec();
 
   if (Statics::inProcessResourceLoader &&
       Statics::inProcessResourceLoader->canHandleURL(url)) {
-    return new ResourceRequestJob(request, network_delegate);
+    return std::make_unique<ResourceRequestJob>(request);
   }
 
   return nullptr;

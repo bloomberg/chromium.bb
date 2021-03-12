@@ -516,19 +516,12 @@ if (is_android) {
       "//tools/v8_context_snapshot:v8_context_snapshot",
     ]
 
-    data = []
-    if (bb_version == "") {
-      data += [
-        "$root_out_dir/v8_context_snapshot.bin",
-      ]
-    }
-    else {
-      data += [
-        "$root_out_dir/v8_context_snapshot.$bb_version.bin"
-      ]
-    }
-
     if (is_win) {
+      deps += [
+        "//base",
+        "//sandbox",
+      ]
+
       if (win_console_app) {
         defines += [ "WIN_CONSOLE_APP" ]
       } else {

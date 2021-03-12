@@ -206,7 +206,7 @@ class WebViewImpl final : public WebView,
         content::RenderFrameHost                 *rfh,
         const content::CustomContextMenuContext&  context);
     void handleFindRequest(const FindOnPageRequest& request);
-    void overrideWebkitPrefs(content::WebPreferences* prefs);
+    void overrideWebkitPrefs(blink::web_pref::WebPreferences* prefs);
     void onRenderViewHostMadeCurrent(content::RenderViewHost* renderViewHost);
 
     v8::MaybeLocal<v8::Value> callFunction(v8::Local<v8::Function>  func,

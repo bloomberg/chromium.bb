@@ -34,7 +34,6 @@
 #include <third_party/blink/public/common/thread_safe_browser_interface_broker_proxy.h>
 
 namespace service_manager {
-class ServiceBinding;
 struct BindSourceInfo;
 }
 
@@ -111,7 +110,6 @@ class ContentRendererClientImpl : public content::ContentRendererClient,
     std::unique_ptr<service_manager::Connector> d_connector;
     mojo::PendingReceiver<service_manager::mojom::Connector> d_connector_request;
     std::unique_ptr<blpwtk2::ForwardingService> d_forward_service;
-    std::unique_ptr<service_manager::ServiceBinding> d_service_binding;
     scoped_refptr<blink::ThreadSafeBrowserInterfaceBrokerProxy> d_browser_interface_broker;
 
     DISALLOW_COPY_AND_ASSIGN(ContentRendererClientImpl);

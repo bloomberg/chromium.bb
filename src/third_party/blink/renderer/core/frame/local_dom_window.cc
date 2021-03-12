@@ -941,12 +941,12 @@ Navigator* LocalDOMWindow::navigator() {
   return navigator_.Get();
 }
 
-BBWindowHooks* LocalDOMWindow::bbWindowHooks() const
+BBWindowHooks* LocalDOMWindow::bbWindowHooks()
 {
     if (!IsCurrentlyDisplayedInFrame())
         return nullptr;
     if (!bb_window_hooks_)
-        bb_window_hooks_ = BBWindowHooks::Create(GetFrame());
+        bb_window_hooks_ = BBWindowHooks::Create(this);
     if (bb_window_hooks_)
       return bb_window_hooks_.Get();
     return nullptr;

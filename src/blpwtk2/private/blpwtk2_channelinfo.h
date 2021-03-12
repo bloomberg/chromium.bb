@@ -79,9 +79,6 @@ class ChannelInfo
     int getMojoControllerHandle() const;
         // Returns the file descriptor for Mojo channels.
 
-    std::string getMojoServiceToken() const;
-        // Returns the Mojo token for service requests.
-
     std::string serialize() const;
         // Export the channel info in a serialized string.  This string can
         // be imported to another instance of ChannelInfo.

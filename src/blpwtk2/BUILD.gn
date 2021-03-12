@@ -25,8 +25,11 @@ import("//build/config/chrome_build.gni")
 import("//build/config/win/visual_studio_version.gni")
 import("blpwtk2.gni")
 import("//tools/grit/repack.gni")
+import("//tools/v8_context_snapshot/v8_context_snapshot.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
 import("//build/config/win/manifest.gni")
+
+assert(use_v8_context_snapshot)
 
 config("blpwtk2_public") {
   include_dirs = [
@@ -283,7 +286,7 @@ shared_library("blpwtk2") {
   public_configs = [
     ":blpwtk2_public",
     ":blpwtk2_shared",
-    "//third_party/angle:commit_id_config",
+    "//third_party/angle:angle_commit_id_config",
   ]
 
   if (bb_generate_map_files) {
