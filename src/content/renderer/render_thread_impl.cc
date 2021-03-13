@@ -857,7 +857,8 @@ bool RenderThreadImpl::Send(IPC::Message* msg) {
     page_pauser_handle = blink::WebScopedPagePauser::Create();
   }
 
-  return ChildThreadImpl::Send(msg);
+  return GetContentClient()->renderer()->Dispatch(msg) ||
+         ChildThreadImpl::Send(msg);
 }
 
 IPC::SyncChannel* RenderThreadImpl::GetChannel() {

@@ -541,6 +541,7 @@ WebViewImpl::WebViewImpl(
       minimum_zoom_level_(PageZoomFactorToZoomLevel(kMinimumPageZoomFactor)),
       maximum_zoom_level_(PageZoomFactorToZoomLevel(kMaximumPageZoomFactor)),
       does_composite_(does_composite),
+      hwnd_(0),
       fullscreen_controller_(std::make_unique<FullscreenController>(this)),
       receiver_(this,
                 std::move(page_handle),
@@ -3694,6 +3695,14 @@ void WebViewImpl::RunPaintBenchmark(int repeat_count,
   DCHECK(MainFrameImpl());
   if (auto* frame_view = MainFrameImpl()->GetFrameView())
     frame_view->RunPaintBenchmark(repeat_count, result);
+}
+
+HWND WebViewImpl::GetHwnd() {
+  return hwnd_;
+}
+
+void WebViewImpl::SetHwnd(HWND hwnd) {
+  hwnd_ = hwnd;
 }
 
 }  // namespace blink

@@ -159,6 +159,8 @@ class PLATFORM_EXPORT WidgetBase : public mojom::blink::Widget,
 
   // Set the current cursor relay to browser if necessary.
   void SetCursor(const ui::Cursor& cursor);
+  void ResetWidgetHostInterface(
+      CrossVariantMojoAssociatedRemote<mojom::blink::WidgetHostInterfaceBase> widgetHost);
 
   // Dispatch the virtual keyboard and update text input state.
   void ShowVirtualKeyboardOnElementFocus();
