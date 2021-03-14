@@ -483,7 +483,7 @@ RenderProcessHost* SiteInstanceImpl::GetProcess(int affinity) {
   // blpwtk2: Lookup the RenderProessHost based on the host id (aka. affinity)
   if (!process_) {
     if (affinity != SiteInstance::kNoProcessAffinity) {
-      process_ = RenderProcessHost::FromID(affinity);
+      SetProcessInternal(RenderProcessHost::FromID(affinity));
     }
   }
 

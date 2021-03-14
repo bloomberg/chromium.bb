@@ -92,13 +92,10 @@ void NavigationBodyLoader::FillNavigationParamsResponseAndBodyLoader(
     navigation_params->response.SetHttpStatusCode(200);
 
   if(loader_creator) {
-    // IMRAN: Remove these two lines
-    int render_frame_id = 0;
-    blink::mojom::ResourceLoadInfoPtr resource_load_info;
-
     BodyLoaderRequestInfoProvider request_info(
         *common_params, *commit_params, url_loader_client_endpoints,
-        task_runner, render_frame_id, resource_load_info);
+        task_runner, render_frame_impl->GetRoutingID(),
+        resource_load_info_notifier_wrapper->GetHttpMethod());
     navigation_params->body_loader = loader_creator(request_info);
   }
   if (!navigation_params->body_loader && url_loader_client_endpoints) {

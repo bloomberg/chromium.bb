@@ -87,17 +87,17 @@ BodyLoaderRequestInfoProvider::BodyLoaderRequestInfoProvider(
     const network::mojom::URLLoaderClientEndpointsPtr& client_endpoints,
     scoped_refptr<base::SingleThreadTaskRunner> runner,
     int render_frame_id,
-    const blink::mojom::ResourceLoadInfoPtr& resource_load_info) {
+    const std::string& httpMethod) {
   url_ = (common_params.url);
   firstPartyForCookies_ = (common_params.url);
   allowStoredCredentials_ = (false);
   loadFlags_ = (0);
-  httpMethod_ = (resource_load_info->method);
+  httpMethod_ = httpMethod;
   requestHeaders_ = {};
   reportUploadProgress_ = (false);
   reportRawHeaders_ = (false);
   hasUserGesture_ = common_params.has_user_gesture;
-  routingId_ = (render_frame_id);
+  routingId_ = render_frame_id;
   priority_ = net::MEDIUM;
   requestBody_ = common_params.post_data;
 }

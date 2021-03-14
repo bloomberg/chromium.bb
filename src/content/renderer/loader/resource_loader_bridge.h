@@ -112,7 +112,7 @@ class CONTENT_EXPORT BodyLoaderRequestInfoProvider
       const network::mojom::URLLoaderClientEndpointsPtr& client_endpoints,
       scoped_refptr<base::SingleThreadTaskRunner> runner,
       int render_frame_id,
-      const blink::mojom::ResourceLoadInfoPtr& resource_load_info);
+      const std::string& httpMethod);
   ~BodyLoaderRequestInfoProvider() override;
 };
 
