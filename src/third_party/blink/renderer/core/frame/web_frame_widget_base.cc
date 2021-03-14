@@ -1493,6 +1493,11 @@ void WebFrameWidgetBase::SetCursor(const ui::Cursor& cursor) {
   widget_base_->SetCursor(cursor);
 }
 
+void WebFrameWidgetBase::ResetWidgetHostInterface(
+  CrossVariantMojoAssociatedRemote<mojom::blink::WidgetHostInterfaceBase> widgetHost) {
+  widget_base_->ResetWidgetHostInterface(std::move(widgetHost));
+}
+
 bool WebFrameWidgetBase::HandlingInputEvent() {
   return widget_base_->input_handler().handling_input_event();
 }
