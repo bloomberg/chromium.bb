@@ -295,6 +295,9 @@ class WebPlugin {
   // Indicate composition is complete to plugin.
   virtual void ImeFinishComposingTextForPlugin(bool keep_selection) {}
 
+  virtual void AttachToLayout() {}
+  virtual void DetachFromLayout() {}
+
  protected:
   virtual ~WebPlugin() = default;
 };
