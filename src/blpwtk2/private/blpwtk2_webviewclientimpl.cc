@@ -146,10 +146,17 @@ void WebViewClientImpl::applyRegion(NativeRegion region)
                            base::Bind(&deleteRegion, region));
 }
 
-void WebViewClientImpl::ncHitTestResult(int x, int y, int result)
+void WebViewClientImpl::onNCHitTestResult(int x, int y, int result)
 {
     if (d_ncHitTestCallback) {
         std::move(d_ncHitTestCallback).Run(x, y, result);
+    }
+}
+
+void WebViewClientImpl::onEnterFullscreenModeResult(bool isFullscreen)
+{
+    if (d_enterFullscreenModeCallback) {
+        std::move(d_enterFullscreenModeCallback).Run(isFullscreen);
     }
 }
 
@@ -176,6 +183,27 @@ void WebViewClientImpl::setParentStatusUpdate(int status, unsigned int parent)
 
     if (d_delegate) {
        d_delegate->didParentStatus(status,  reinterpret_cast<NativeView>(parent));
+    }
+}
+
+void WebViewClientImpl::enterFullscreenMode(enterFullscreenModeCallback callback)
+{
+    DCHECK(d_delegate);
+
+    if (d_delegate) {
+        d_enterFullscreenModeCallback = std::move(callback);
+        d_delegate->enterFullscreenMode();
+        // The proxy is expected to call WebViewClientImpl::onEnterFullscreenModeResult
+    } else {
+        std::move(callback).Run(false);
+    }
+}
+
+void WebViewClientImpl::exitFullscreenMode()
+{
+    DCHECK(d_delegate);
+    if (d_delegate) {
+       d_delegate->exitFullscreenMode();
     }
 }
 
@@ -232,7 +260,7 @@ void WebViewClientImpl::ncHitTest(ncHitTestCallback callback)
     if (d_delegate) {
         d_ncHitTestCallback = std::move(callback);
         d_delegate->ncHitTest();
-        // The proxy is expected to call WebViewClientImpl::ncHitTestResult
+        // The proxy is expected to call WebViewClientImpl::onNCHitTestResult
     }
     else {
         std::move(callback).Run(0, 0, 0);

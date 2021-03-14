@@ -153,6 +153,12 @@ class WebView
         // method should be invoked to provide the hit test result.  This
         // should only be called in response to 'requestNCHitTest' on the
         // delegate.
+    
+    virtual void onEnterFullscreenModeResult(bool isFullscreen) = 0;
+        // When the WebViewDelegate's enterFullscreenMode method is called, this
+        // method should be invoked with the success code of the action.
+        // This should only be called in response to 'enterFullscreenMode' on the
+        // delegate.
 
     virtual void setNCHitTestRegion(NativeRegion region) = 0;
         // Sets the region used for non-client hit testing; hit testing within

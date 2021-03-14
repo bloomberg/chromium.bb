@@ -39,6 +39,10 @@ void WebViewDelegate::blurred(WebView* source) {}
 void WebViewDelegate::showContextMenu(WebView* source,
                                       const ContextMenuParams& params) {}
 
+void WebViewDelegate::enterFullscreenMode(WebView* source) {}
+
+void WebViewDelegate::exitFullscreenMode(WebView* source) {}
+
 void WebViewDelegate::requestNCHitTest(WebView* source) {}
 
 void WebViewDelegate::ncDragBegin(WebView* source,
