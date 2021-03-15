@@ -292,6 +292,8 @@ blink_core_sources_dom = [
   "visited_link_state.cc",
   "visited_link_state.h",
   "weak_identifier_map.h",
+  "web_script_bindings.cc",
+  "web_script_bindings.h",
   "whitespace_attacher.cc",
   "whitespace_attacher.h",
   "xml_document.cc",
