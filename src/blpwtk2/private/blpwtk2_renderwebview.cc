@@ -1022,6 +1022,11 @@ void RenderWebView::onStartDraggingImpl(
     MainMessagePump::ScopedModalLoopWorkAllower allow(
             MainMessagePump::current());
 
+    auto *toolkitDelegate = Statics::toolkitDelegate;
+    if (toolkitDelegate) {
+        toolkitDelegate->onModalLoop();
+    }
+
     base::RunLoop run_loop(base::RunLoop::Type::kNestableTasksAllowed);
     run_loop.BeforeRun();
 
