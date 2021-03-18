@@ -4,6 +4,8 @@
 
 #include "ui/base/clipboard/clipboard_util_win.h"
 
+#include <algorithm>
+
 #include <shellapi.h>
 #include <wininet.h>  // For INTERNET_MAX_URL_LENGTH.
 #include <wrl/client.h>
@@ -646,7 +648,12 @@ bool ClipboardUtil::GetPlainText(IDataObject* data_object,
     {
       // Unicode text
       base::win::ScopedHGlobal<wchar_t*> data(store.hGlobal);
-      plain_text->assign(base::as_u16cstr(data.get()));
+      auto *start = base::as_u16cstr(data.get());
+      auto *end =
+        std::find(
+          start, start + data.Size() / sizeof(wchar_t), 0);
+
+      plain_text->assign(start, end);
     }
     ReleaseStgMedium(&store);
     return true;
@@ -656,7 +663,13 @@ bool ClipboardUtil::GetPlainText(IDataObject* data_object,
     {
       // ASCII text
       base::win::ScopedHGlobal<char*> data(store.hGlobal);
-      plain_text->assign(base::UTF8ToUTF16(data.get()));
+
+      auto *start = data.get();
+      auto *end =
+        std::find(
+          start, start + data.Size(), 0);
+
+      base::UTF8ToUTF16(start, end-start, plain_text);
     }
     ReleaseStgMedium(&store);
     return true;
