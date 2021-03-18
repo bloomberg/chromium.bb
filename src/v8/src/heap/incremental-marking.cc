@@ -549,8 +549,12 @@ StepResult IncrementalMarking::EmbedderStep(double expected_duration_ms,
   // |deadline - heap_->MonotonicallyIncreasingTimeInMs()| could be negative,
   // which means |local_tracer| won't do any actual tracing, so there is no
   // need to check for |deadline <= heap_->MonotonicallyIncreasingTimeInMs()|.
+
+  // blpwtk2:
+  // LocalEmbedderHeapTracer::Trace and EmbedderHeapTracer::AdvanceTracing
+  // expect the Trace parameter is deadline instead of duration.
   bool remote_tracing_done =
-      local_tracer->Trace(deadline - heap_->MonotonicallyIncreasingTimeInMs());
+      local_tracer->Trace(deadline);
   double current = heap_->MonotonicallyIncreasingTimeInMs();
   local_tracer->SetEmbedderWorklistEmpty(empty_worklist);
   *duration_ms = current - start;
