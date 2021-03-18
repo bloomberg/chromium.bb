@@ -436,6 +436,8 @@ const base::Feature kVaapiAV1Decoder{"VaapiAV1Decoder",
 const base::Feature kVaapiLowPowerEncoderGen9x{
     "VaapiLowPowerEncoderGen9x", base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kUseSurfaceLayerForVideo{"UseSurfaceLayerForVideo",
+                                             base::FEATURE_DISABLED_BY_DEFAULT};
 // Enable VA-API hardware encode acceleration for VP8.
 const base::Feature kVaapiVP8Encoder{"VaapiVP8Encoder",
                                      base::FEATURE_ENABLED_BY_DEFAULT};
