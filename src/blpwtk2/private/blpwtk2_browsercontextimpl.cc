@@ -22,14 +22,14 @@
 
 #include <blpwtk2_browsercontextimpl.h>
 
+#include <blpwtk2_desktopstreamsregistry.h>
+#include <blpwtk2_devtoolsmanagerdelegateimpl.h>
+#include <blpwtk2_fontcollectionimpl.h>
 #include <blpwtk2_processhostimpl.h>
 #include <blpwtk2_resourcecontextimpl.h>
 #include <blpwtk2_statics.h>
 #include <blpwtk2_stringref.h>
 #include <blpwtk2_urlrequestcontextgetterimpl.h>
-#include <blpwtk2_devtoolsmanagerdelegateimpl.h>
-#include <blpwtk2_desktopstreamsregistry.h>
-#include <blpwtk2_webviewproperties.h>
 #include <blpwtk2_webviewimpl.h>
 #include <blpwtk2_webviewdelegate.h>
 #include <blpwtk2_requestinterceptorimpl.h>
@@ -41,6 +41,7 @@
 
 
 // patch section: custom fonts
+#include <blpwtk2_webviewproperties.h>
 
 
 
@@ -549,6 +550,11 @@ BrowserContextImpl::GetBackgroundSyncController()
 content::BrowsingDataRemoverDelegate*
 BrowserContextImpl::GetBrowsingDataRemoverDelegate() {
   return nullptr;
+}
+
+content::FontCollection* BrowserContextImpl::GetFontCollection()
+{
+	return FontCollectionImpl::GetCurrent();
 }
 
 }  // close namespace blpwtk2
