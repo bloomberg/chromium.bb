@@ -126,7 +126,7 @@ void CustomScrollbar::SetPressedPart(ScrollbarPart part,
   PositionScrollbarParts();
 }
 
-scoped_refptr<const ComputedStyle>
+scoped_refptr<ComputedStyle>
 CustomScrollbar::GetScrollbarPseudoElementStyle(ScrollbarPart part_type,
                                                 PseudoId pseudo_id) {
   Element* element = StyleSource();
@@ -144,13 +144,10 @@ CustomScrollbar::GetScrollbarPseudoElementStyle(ScrollbarPart part_type,
   }
   if (!element->GetLayoutObject())
     return nullptr;
-  const ComputedStyle* source_style = element->GetLayoutObject()->Style();
-  scoped_refptr<const ComputedStyle> part_style =
-      element->StyleForPseudoElement(
-          PseudoElementStyleRequest(pseudo_id, this, part_type), source_style);
-  if (!part_style)
-    return nullptr;
-  return source_style->AddCachedPseudoElementStyle(std::move(part_style));
+
+  return element->StyleForPseudoElement(
+      PseudoElementStyleRequest(pseudo_id, this, part_type),
+      element->GetLayoutObject()->Style());
 }
 
 void CustomScrollbar::DestroyScrollbarParts() {
@@ -233,7 +230,7 @@ void CustomScrollbar::UpdateScrollbarPart(ScrollbarPart part_type) {
   if (part_type == kNoPart)
     return;
 
-  scoped_refptr<const ComputedStyle> part_style =
+  scoped_refptr<ComputedStyle> part_style =
       GetScrollbarPseudoElementStyle(part_type,
                                      PseudoForScrollbarPart(part_type));
   bool need_layout_object =
