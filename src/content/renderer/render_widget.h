@@ -94,6 +94,11 @@ class CONTENT_EXPORT RenderWidget
 
   ~RenderWidget() override;
 
+  std::size_t getTileMemoryBytes() const;
+  std::size_t getDefaultTileMemoryLimit() const;
+  void overrideTileMemoryLimit(std::size_t limit);
+  void setTag(std::string tag);
+
   // Convenience type for creation method taken by InstallCreateForFrameHook().
   // The method signature matches the RenderWidget constructor.
   using CreateRenderWidgetFunction =
