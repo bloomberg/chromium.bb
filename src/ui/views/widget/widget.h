@@ -365,6 +365,8 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
     // If true then the widget uses software compositing.
     bool force_software_compositing = false;
 
+    bool reroute_mouse_wheel_to_any_related_window = false;
+
     // If set, mouse events will be sent to the widget even if inactive.
     bool wants_mouse_events_when_inactive = false;
 
