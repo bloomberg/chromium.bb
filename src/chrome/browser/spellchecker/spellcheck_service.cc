@@ -457,7 +457,10 @@ void SpellcheckService::LoadDictionaries() {
 
     hunspell_dictionaries_.push_back(
         std::make_unique<SpellcheckHunspellDictionary>(
-            dictionary, platform_spellcheck_language, context_, this));
+            dictionary,
+            platform_spellcheck_language,
+            context_->AllowDictionaryDownloads()? context_ : nullptr,
+            this));
     hunspell_dictionaries_.back()->AddObserver(this);
     hunspell_dictionaries_.back()->Load();
   }
