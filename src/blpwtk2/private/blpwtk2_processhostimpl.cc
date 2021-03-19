@@ -526,6 +526,13 @@ void ProcessHostImpl::setPacUrl(const std::string& url) {
 
 
 // patch section: gpu
+void ProcessHostImpl::getGpuMode(getGpuModeCallback callback)
+{
+    GpuMode mode, startupMode;
+    int crashCount;
+    d_impl->context().getGpuMode(mode, startupMode, crashCount);
+    std::move(callback).Run((mojom::GpuMode)mode, (mojom::GpuMode)startupMode, crashCount);
+}
 
 
 

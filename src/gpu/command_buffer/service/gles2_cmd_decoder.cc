@@ -5996,6 +5996,9 @@ error::Error GLES2DecoderImpl::DoCommandsImpl(unsigned int num_commands,
   if (error::IsError(result)) {
     LOG(ERROR) << "Error: " << result << " for Command "
                << GetCommandName(command);
+	  client()->OnConsoleMessage(0,
+      "GLES Command Decoder failed with error (" + std::to_string(result) + ") for Command "
+		  + GetCommandName(command));
   }
 
   return result;
