@@ -24,7 +24,6 @@
 
 #include <base/bind.h>
 #include <base/logging.h>
-#include <base/message_loop/message_loop.h>
 #include <third_party/blink/public/web/web_document.h>
 #include <third_party/blink/public/web/web_dom_event.h>
 #include <third_party/blink/public/web/web_local_frame.h>
