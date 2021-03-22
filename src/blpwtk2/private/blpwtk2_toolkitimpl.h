@@ -64,6 +64,8 @@ class ProcessHostImpl;
 class Profile;
 class StringRef;
 
+class ToolkitDelegate;
+
                         // =================
                         // class ToolkitImpl
                         // =================
@@ -102,6 +104,19 @@ class ToolkitImpl : public Toolkit {
     // patch section: gpu
 
 
+    // patch section: performance monitor
+    struct Metrics {
+        int d_computedStyleCount                        = 0;
+        int d_wtfPartitionsTotalSizeOfCommittedPagesKB  = 0;
+        int d_wtfPartitionsFastMallocKB                 = 0;
+        int d_wtfPartitionsArrayBufferKB                = 0;
+        int d_wtfPartitionsBufferKB                     = 0;
+        int d_wtfPartitionsLayoutKB                     = 0;
+    };
+
+    Metrics d_metrics;
+
+
     // patch section: multi-heap tracer
 
 
@@ -132,6 +147,16 @@ class ToolkitImpl : public Toolkit {
         // requires 'sandboxInfo' during its initialization.  This method
         // returns the host channel that a render process can use to connect
         // to it.
+
+
+    // patch section: performance monitor
+    void initializeMetrics(blpwtk2::ToolkitDelegate* delegate);
+        // Register the metrics we will report.
+        // Metrics values will subsequently be requested via periodic calls to
+        // getMetrics().
+
+    void uninitializeMetrics(blpwtk2::ToolkitDelegate* delegate);
+        // Uninitialize the metrics we first initialized.
 
   public:
     static ToolkitImpl *instance();
@@ -179,7 +204,12 @@ class ToolkitImpl : public Toolkit {
     // patch section: gpu
 
 
-
+    // patch section: performance monitor
+    void getMetrics(unsigned int   *values,
+                    const int      *metrics,
+                    unsigned int    count) const override;
+        // Request current 'values' of 'count' 'metrics' previously set up
+        // via calls to blpwtk2::ToolkitDelegate::registerMetric().
 };
 
 }  // close namespace blpwtk2

@@ -86,6 +86,11 @@ struct SameSizeAsBorderValue {
   unsigned bitfield_;
 };
 
+static unsigned int s_computedStyleCount = 0;
+  // Number of ComputedStyle objects currently in existence.
+  // Note: This isn't atomic as 32-bit ints on x86 architectures are
+  // updated atomically anyway; and this is just informational.
+
 ASSERT_SIZE(BorderValue, SameSizeAsBorderValue);
 
 // Since different compilers/architectures pack ComputedStyle differently,
@@ -169,19 +174,32 @@ scoped_refptr<ComputedStyle> ComputedStyle::Clone(const ComputedStyle& other) {
 }
 
 ALWAYS_INLINE ComputedStyle::ComputedStyle()
-    : ComputedStyleBase(), RefCounted<ComputedStyle>() {
+    : ComputedStyleBase(), RefCounted<ComputedStyle, CSRefCountedTraits<ComputedStyle>>() {
+      ++s_computedStyleCount;
   svg_style_.Init();
 }
 
 ALWAYS_INLINE ComputedStyle::ComputedStyle(const ComputedStyle& o)
     : ComputedStyleBase(o),
-      RefCounted<ComputedStyle>(),
-      svg_style_(o.svg_style_) {}
+      RefCounted<ComputedStyle, CSRefCountedTraits<ComputedStyle>>(),
+      svg_style_(o.svg_style_) {
+      ++s_computedStyleCount;
+}
 
 ALWAYS_INLINE ComputedStyle::ComputedStyle(PassKey key) : ComputedStyle() {}
 
 ALWAYS_INLINE ComputedStyle::ComputedStyle(PassKey key, const ComputedStyle& o)
     : ComputedStyle(o) {}
+
+void ComputedStyle::Destruct(const ComputedStyle* x) {
+  --s_computedStyleCount;
+  delete x;
+}
+
+unsigned int ComputedStyle::GetObjectCount()
+{
+  return s_computedStyleCount;
+}
 
 static bool PseudoElementStylesEqual(const ComputedStyle& old_style,
                                      const ComputedStyle& new_style) {

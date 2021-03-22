@@ -188,8 +188,17 @@ class WebkitTextStrokeColor;
 //
 // Since this class is huge, do not mark all of it CORE_EXPORT.  Instead,
 // export only the methods you need below.
+
+// Specific deleter needed to replace DefaultRefCountedTraits
+template <typename T>
+struct CSRefCountedTraits {
+  static void Destruct(const T* x) {
+    T::Destruct(x);
+  }
+};
+
 class ComputedStyle : public ComputedStyleBase,
-                      public RefCounted<ComputedStyle> {
+                      public RefCounted<ComputedStyle, CSRefCountedTraits<ComputedStyle>> {
   // Needed to allow access to private/protected getters of fields to allow diff
   // generation
   friend class ComputedStyleBase;
@@ -303,6 +312,9 @@ class ComputedStyle : public ComputedStyleBase,
 
   ALWAYS_INLINE ComputedStyle(PassKey, const ComputedStyle&);
   ALWAYS_INLINE explicit ComputedStyle(PassKey);
+
+  static void Destruct(const ComputedStyle* x);
+  static unsigned int GetObjectCount();
 
   CORE_EXPORT static scoped_refptr<ComputedStyle> Create();
   static scoped_refptr<ComputedStyle> CreateAnonymousStyleWithDisplay(
