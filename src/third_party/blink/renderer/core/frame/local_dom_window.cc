@@ -156,18 +156,17 @@ LocalDOMWindow::LocalDOMWindow(LocalFrame& frame, WindowAgent* agent)
               HeapHashMap<int, Member<ContentSecurityPolicy>>>()),
       token_(LocalFrameToken(frame.GetFrameToken())) {}
 
-LocalDOMWindow::LocalDOMWindow()
+LocalDOMWindow::LocalDOMWindow(WindowAgent* agent)
     : DOMWindow(),
-      ExecutionContext(V8PerIsolateData::MainThreadIsolate()),
+      ExecutionContext(V8PerIsolateData::MainThreadIsolate(), agent),
       visualViewport_(MakeGarbageCollected<DOMVisualViewport>(this)),
-      unused_preloads_timer_(Thread::MainThread()->GetTaskRunner(),
-                             this,
-                             &LocalDOMWindow::WarnUnusedPreloads),
       should_print_when_finished_loading_(false),
       spell_checker_(MakeGarbageCollected<SpellChecker>(*this)),
       text_suggestion_controller_(
-          MakeGarbageCollected<TextSuggestionController>(*this)) {}
-
+          MakeGarbageCollected<TextSuggestionController>(*this)),
+      isolated_world_csp_map_(
+          MakeGarbageCollected<
+              HeapHashMap<int, Member<ContentSecurityPolicy>>>()) {}
 
 void LocalDOMWindow::BindContentSecurityPolicy() {
   DCHECK(!GetContentSecurityPolicy()->IsBound());
@@ -619,6 +618,9 @@ void LocalDOMWindow::CountUseOnlyInCrossOriginIframe(
 }
 
 bool LocalDOMWindow::HasInsecureContextInAncestors() {
+  if (!GetFrame()) {
+    return false;
+  }
   for (Frame* parent = GetFrame()->Tree().Parent(); parent;
        parent = parent->Tree().Parent()) {
     auto* origin = parent->GetSecurityContext()->GetSecurityOrigin();
@@ -653,10 +655,9 @@ Document* LocalDOMWindow::InstallNewDocument(const DocumentInit& init) {
 }
 
 Document* LocalDOMWindow::InstallNewUnintializedDocument(const DocumentInit& init) {
-  DCHECK_EQ(init.GetFrame(), GetFrame());
-
-  ClearDocument();
-  document_ = DOMImplementation::createDocument(init);
+  DCHECK_EQ(init.GetWindow(), this);
+  DCHECK(!document_);
+  document_ = init.CreateDocument();
   document_->SetDOMWindow(this);
   return document_;
 }

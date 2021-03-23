@@ -26,11 +26,13 @@
 #include "third_party/blink/renderer/core/dom/document_init.h"
 #include "third_party/blink/renderer/core/dom/dom_implementation.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
+#include "third_party/blink/renderer/core/execution_context/window_agent_factory.h"
 #include "third_party/blink/renderer/platform/bindings/dom_wrapper_world.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/bindings/to_v8.h"
 #include "third_party/blink/renderer/platform/bindings/v8_binding.h"
 #include "third_party/blink/renderer/platform/bindings/v8_dom_wrapper.h"
+#include "third_party/blink/renderer/platform/bindings/v8_private_property.h"
 #include "third_party/blink/public/platform/web_security_origin.h"
 #include "third_party/blink/public/platform/web_string.h"
 
@@ -51,10 +53,15 @@ v8::Local<v8::Context> WebScriptBindings::CreateWebScriptContext(
     SecurityOrigin::CreateFromString(security_origin.ToString());
     blink_security_origin->GrantUniversalAccess();
 
-    LocalDOMWindow *window = LocalDOMWindow::Create();
-    DocumentInit init = DocumentInit::Create().WithTypeFrom("text/html")
-                                              .WithOriginToCommit(blink_security_origin);
+    WindowAgentFactory *agent_factory = MakeGarbageCollected<WindowAgentFactory>();
+    WindowAgent *agent = agent_factory->GetAgentForOrigin(
+            true, isolate, blink_security_origin.get());
 
+    LocalDOMWindow *window = LocalDOMWindow::Create(agent);
+    DocumentInit init = DocumentInit::Create().WithTypeFrom("text/html")
+                                              .WithWindow(window, nullptr);
+
+    window->GetSecurityContext().SetSecurityOrigin(blink_security_origin.get());
     Document *document = window->InstallNewUnintializedDocument(init);
 
     DOMWrapperWorld& world = DOMWrapperWorld::MainWorld();
@@ -63,7 +70,7 @@ v8::Local<v8::Context> WebScriptBindings::CreateWebScriptContext(
         V8ContextSnapshot::CreateContextFromSnapshot(
             isolate, world, nullptr, v8::Local<v8::Object>(), document);
 
-    MakeGarbageCollected<ScriptState>(context, std::move(&world));
+    MakeGarbageCollected<ScriptState>(context, std::move(&world), window);
 
     const WrapperTypeInfo* wrapper_type_info = window->GetWrapperTypeInfo();
 
@@ -87,8 +94,11 @@ v8::Local<v8::Context> WebScriptBindings::CreateWebScriptContext(
     v8::Local<v8::Object> window_prototype =
         window_wrapper->GetPrototype().As<v8::Object>();
     CHECK(!window_prototype.IsEmpty());
+
+#if !defined(USE_BLINK_V8_BINDING_NEW_IDL_INTERFACE)
     V8DOMWrapper::SetNativeInfo(
         isolate, window_prototype, wrapper_type_info, window);
+#endif
 
     // The named properties object of Window interface.
     v8::Local<v8::Object> window_properties =
@@ -96,6 +106,15 @@ v8::Local<v8::Context> WebScriptBindings::CreateWebScriptContext(
     CHECK(!window_properties.IsEmpty());
     V8DOMWrapper::SetNativeInfo(
         isolate, window_properties, wrapper_type_info, window);
+
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_INTERFACE)
+    v8::Context::Scope context_scope(context);
+
+    // [CachedAccessor=kWindowProxy]
+    V8PrivateProperty::GetCachedAccessor(
+        isolate, V8PrivateProperty::CachedAccessor::kWindowProxy)
+        .Set(window_wrapper, global);
+#endif
 
     return hs.Escape(context);
 }

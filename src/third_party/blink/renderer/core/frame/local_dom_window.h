@@ -105,14 +105,14 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
     virtual void DidRemoveAllEventListeners(LocalDOMWindow*) = 0;
   };
 
-  static LocalDOMWindow* Create() {
-    return MakeGarbageCollected<LocalDOMWindow>();
+  static LocalDOMWindow* Create(WindowAgent *agent) {
+    return MakeGarbageCollected<LocalDOMWindow>(agent);
   }
 
   static LocalDOMWindow* From(const ScriptState*);
 
   LocalDOMWindow(LocalFrame&, WindowAgent*);
-  explicit LocalDOMWindow();
+  explicit LocalDOMWindow(WindowAgent*);
   ~LocalDOMWindow() override;
 
   // Returns the token identifying the frame that this ExecutionContext was

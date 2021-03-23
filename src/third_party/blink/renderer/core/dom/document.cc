@@ -4024,7 +4024,7 @@ bool Document::DispatchBeforeUnloadEvent(ChromeClient* chrome_client,
   // frame_ is nullptr. We set dom_window_ to the caller of
   // InstallNewUnintializedDocument, so that document->GetExecutionContext()
   // could return a valid dom_window.
-  if (!dom_window_ || !frame_)
+  if (!GetFrame())
     return true;
 
   if (!body())
