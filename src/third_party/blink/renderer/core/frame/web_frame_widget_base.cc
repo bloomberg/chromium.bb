@@ -1533,6 +1533,10 @@ WebInputEventResult WebFrameWidgetBase::HandleInputEvent(
     GetPage()->GetVisualViewport().StartTrackingPinchStats();
   }
 
+  if ((rubberbandingForcedOn_ || isAltDragRubberbandingEnabled_) &&
+      HandleAltDragRubberbandEvent(input_event))
+    return WebInputEventResult::kHandledSystem;
+
   // If a drag-and-drop operation is in progress, ignore input events except
   // PointerCancel.
   if (doing_drag_and_drop_ &&

@@ -437,6 +437,10 @@ void WidgetBase::WasShown(base::TimeTicks show_request_timestamp,
   client_->WasShown(was_evicted);
 }
 
+void WidgetBase::EnableAltDragRubberbanding(bool is_enabled) {
+  client_->EnableAltDragRubberbanding(is_enabled);
+}
+
 void WidgetBase::ApplyViewportChanges(
     const cc::ApplyViewportChangesArgs& args) {
   client_->ApplyViewportChanges(args);

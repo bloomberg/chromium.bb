@@ -1963,6 +1963,14 @@ void RenderWidgetHostImpl::SelectionBoundsChanged(
                                   focus_dir, is_anchor_first);
 }
 
+void RenderWidgetHostImpl::SetRubberbandRect(const gfx::Rect& rect) {
+  view_->SetRubberbandRect(rect);
+}
+
+void RenderWidgetHostImpl::HideRubberbandRect() {
+  view_->HideRubberbandRect();
+}
+
 void RenderWidgetHostImpl::OnUpdateDragCursor(DragOperation current_op) {
   if (delegate_->OnUpdateDragCursor())
     return;

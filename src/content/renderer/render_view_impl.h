@@ -208,6 +208,9 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
       base::TimeTicks commit_start_time) override;
   void OnSetHistoryOffsetAndLength(int history_offset,
                                    int history_length) override;
+  void setRubberbandRect(const blink::WebRect&) override;
+  void hideRubberbandRect() override;
+  void EnableAltDragRubberbanding(bool is_enabled) override;
 
   // RenderView implementation -------------------------------------------------
 
@@ -322,6 +325,13 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
 
   static WindowOpenDisposition NavigationPolicyToDisposition(
       blink::WebNavigationPolicy policy);
+
+  // IPC message handlers ------------------------------------------------------
+  //
+  // The documentation for these functions should be in
+  // content/common/*_messages.h for the message that the function is handling.
+
+  void OnForceRedraw(const ui::LatencyInfo& latency_info);
 
   // Misc private functions ----------------------------------------------------
 

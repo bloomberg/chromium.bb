@@ -91,6 +91,10 @@ class CONTENT_EXPORT RenderViewHost {
   // Returns true if the RenderView is active and has not crashed.
   virtual bool IsRenderViewLive() = 0;
 
+#define BB_RENDER_VIEW_HOST_SUPPORTS_RUBBERBANDING
+  // Enable alt-drag rubberbanding.
+  virtual void EnableAltDragRubberbanding(bool enable) = 0;
+
  private:
   // This interface should only be implemented inside content.
   friend class RenderViewHostImpl;

@@ -856,6 +856,10 @@ void RenderViewHostImpl::ExecutePluginActionAtLocation(
       ->PluginActionAt(local_location, plugin_action);
 }
 
+void RenderViewHostImpl::EnableAltDragRubberbanding(bool enable) {
+  Send(new ViewMsg_EnableAltDragRubberbanding(GetRoutingID(), enable));
+}
+
 void RenderViewHostImpl::PostRenderViewReady() {
   GetProcess()->PostTaskWhenProcessIsReady(base::BindOnce(
       &RenderViewHostImpl::RenderViewReady, weak_factory_.GetWeakPtr()));

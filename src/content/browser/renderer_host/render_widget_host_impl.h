@@ -286,6 +286,9 @@ class CONTENT_EXPORT RenderWidgetHostImpl
       mojo::PendingRemote<cc::mojom::RenderFrameMetadataObserver>
           render_frame_metadata_observer) override;
 
+  void SetRubberbandRect(const gfx::Rect& rect) override;
+  void HideRubberbandRect() override;
+
   // blink::mojom::PopupWidgetHost implementation.
   void RequestClosePopup() override;
   void ShowPopup(const gfx::Rect& initial_rect,

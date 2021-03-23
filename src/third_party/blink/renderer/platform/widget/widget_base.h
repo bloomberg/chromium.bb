@@ -109,6 +109,7 @@ class PLATFORM_EXPORT WidgetBase : public mojom::blink::Widget,
                 bool was_evicted,
                 mojom::blink::RecordContentToVisibleTimeRequestPtr
                     record_tab_switch_time_request) override;
+  void EnableAltDragRubberbanding(bool is_enabled) override;
 
   // LayerTreeDelegate overrides:
   // Applies viewport related properties during a commit from the compositor
