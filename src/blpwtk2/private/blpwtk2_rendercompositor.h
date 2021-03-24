@@ -25,7 +25,7 @@
 
 #include <base/lazy_instance.h>
 #include <base/memory/scoped_refptr.h>
-#include <third_party/blink/public/mojom/page/widget.mojom-blink.h>
+#include <third_party/blink/public/mojom/page/widget.mojom.h>
 #include <gpu/ipc/common/surface_handle.h>
 #include <mojo/public/cpp/bindings/binding.h>
 #include <ui/gfx/geometry/size.h>
@@ -55,7 +55,7 @@ class RenderCompositorFactory {
     std::unique_ptr<RenderFrameSinkProviderImpl> d_frame_sink_provider;
     scoped_refptr<base::SingleThreadTaskRunner> d_compositor_task_runner;
 
-    std::map<int, RenderCompositor *> d_compositors_by_widget_id;
+    std::map<int, RenderCompositor *> d_compositors_by_compositor_id;
 
     RenderCompositorFactory();
 
@@ -66,11 +66,8 @@ class RenderCompositorFactory {
 
     ~RenderCompositorFactory();
 
-    void Bind(mojo::PendingReceiver<mojom::blink::WidgetHost> receiver);
-    void Unbind();
-
     std::unique_ptr<RenderCompositor> CreateCompositor(
-        int32_t widget_id,
+        int32_t compositor_id,
         gpu::SurfaceHandle gpu_surface_handle,
         blpwtk2::ProfileImpl *profile);
 };
@@ -81,7 +78,7 @@ class RenderCompositor {
 
     RenderCompositorFactory &d_factory;
 
-    int32_t d_widget_id;
+    int32_t d_compositor_id;
     gpu::SurfaceHandle d_gpu_surface_handle;
     blpwtk2::ProfileImpl *d_profile;
     scoped_refptr<base::SingleThreadTaskRunner> d_compositor_task_runner;
@@ -92,7 +89,7 @@ class RenderCompositor {
 
     RenderCompositor(
         RenderCompositorFactory &,
-        int32_t widget_id,
+        int32_t compositor_id,
         gpu::SurfaceHandle gpu_surface_handle,
         blpwtk2::ProfileImpl *profile);
 
@@ -100,7 +97,13 @@ class RenderCompositor {
 
     ~RenderCompositor();
 
-    viz::LocalSurfaceIdAllocation GetLocalSurfaceIdAllocation();
+    void CreateFrameSink(
+        mojo::PendingReceiver<viz::mojom::CompositorFrameSink>
+            compositor_frame_sink_receiver,
+        mojo::PendingRemote<viz::mojom::CompositorFrameSinkClient>
+            compositor_frame_sink_client);
+
+    viz::LocalSurfaceId GetLocalSurfaceId();
 
     void Invalidate();
     void SetVisible(bool visible);

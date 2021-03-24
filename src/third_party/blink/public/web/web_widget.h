@@ -239,8 +239,12 @@ class WebWidget {
 
   virtual bool IsHidden() const = 0;
 
-  virtual void ResetWidgetHostInterface(
-    CrossVariantMojoAssociatedRemote<mojom::blink::WidgetHostInterfaceBase> widgetHost) {}
+  virtual void ResetWidgetInterfaces(
+    CrossVariantMojoAssociatedRemote<mojom::blink::WidgetHostInterfaceBase> widgetHost,
+    CrossVariantMojoAssociatedRemote<mojom::blink::FrameWidgetHostInterfaceBase> frameWidgetHost,
+    CrossVariantMojoAssociatedRemote<mojom::blink::PopupWidgetHostInterfaceBase> popupWidgetHost,
+    CrossVariantMojoAssociatedReceiver<mojom::blink::WidgetInterfaceBase> widget,
+    CrossVariantMojoAssociatedReceiver<mojom::blink::FrameWidgetInterfaceBase> pendingFWReceiver) {}
 
  protected:
   ~WebWidget() = default;

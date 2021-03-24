@@ -1493,9 +1493,15 @@ void WebFrameWidgetBase::SetCursor(const ui::Cursor& cursor) {
   widget_base_->SetCursor(cursor);
 }
 
-void WebFrameWidgetBase::ResetWidgetHostInterface(
-  CrossVariantMojoAssociatedRemote<mojom::blink::WidgetHostInterfaceBase> widgetHost) {
-  widget_base_->ResetWidgetHostInterface(std::move(widgetHost));
+void WebFrameWidgetBase::ResetWidgetInterfaces(
+  CrossVariantMojoAssociatedRemote<mojom::blink::WidgetHostInterfaceBase> widgetHost,
+  CrossVariantMojoAssociatedRemote<mojom::blink::FrameWidgetHostInterfaceBase> frameWidgetHost,
+  CrossVariantMojoAssociatedRemote<mojom::blink::PopupWidgetHostInterfaceBase> popupWidgetHost,
+  CrossVariantMojoAssociatedReceiver<mojom::blink::WidgetInterfaceBase> widget,
+  CrossVariantMojoAssociatedReceiver<mojom::blink::FrameWidgetInterfaceBase> pendingFWReceiver) {
+  widget_base_->ResetWidgetInterfaces(std::move(widgetHost), std::move(widget));
+  frame_widget_host_.Bind(std::move(frameWidgetHost), local_root_->GetTaskRunner(TaskType::kInternalDefault));
+  receiver_.Bind(std::move(pendingFWReceiver), local_root_->GetTaskRunner(TaskType::kInternalDefault));
 }
 
 bool WebFrameWidgetBase::HandlingInputEvent() {

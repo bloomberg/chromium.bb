@@ -27,7 +27,7 @@
 #include <vector>
 
 #include <content/public/common/drop_data.h>
-#include <third_party/blink/public/platform/web_drag_operation.h>
+#include <third_party/blink/public/mojom/page/widget.mojom.h>
 #include <ui/base/dragdrop/drop_target_win.h>
 #include <ui/gfx/geometry/point_f.h>
 #include <ui/gfx/geometry/vector2d.h>
@@ -49,13 +49,13 @@ class DragDropDelegate {
         const std::vector<content::DropData::Metadata>& drop_data,
         const gfx::PointF& client_pt,
         const gfx::PointF& screen_pt,
-        blink::WebDragOperationsMask ops_allowed,
+        blink::DragOperationsMask ops_allowed,
         int key_modifiers) = 0;
 
     virtual void DragTargetOver(
         const gfx::PointF& client_pt,
         const gfx::PointF& screen_pt,
-        blink::WebDragOperationsMask ops_allowed,
+        blink::DragOperationsMask ops_allowed,
         int key_modifiers) = 0;
 
     virtual void DragTargetLeave() = 0;
@@ -69,7 +69,7 @@ class DragDropDelegate {
     virtual void DragSourceEnded(
         const gfx::PointF& client_pt,
         const gfx::PointF& screen_pt,
-        blink::WebDragOperation drag_operation) = 0;
+        blink::DragOperation drag_operation) = 0;
 
     virtual void DragSourceSystemEnded() = 0;
 };
@@ -83,12 +83,11 @@ class DragDrop : public ui::DropTargetWin
 
     void StartDragging(
         const content::DropData& drop_data,
-        blink::WebDragOperationsMask operations_allowed,
+        blink::DragOperationsMask operations_allowed,
         const SkBitmap& bitmap,
-        const gfx::Vector2d& bitmap_offset_in_dip,
-        const content::DragEventSourceInfo& event_info);
+        const gfx::Vector2d& bitmap_offset_in_dip);
     void UpdateDragCursor(
-        blink::WebDragOperation drag_operation);
+        blink::DragOperation drag_operation);
 
     DWORD OnDragEnter(
         IDataObject* data_object,
@@ -113,7 +112,7 @@ class DragDrop : public ui::DropTargetWin
     HWND d_hwnd;
     DragDropDelegate *d_delegate;
 
-    blink::WebDragOperationsMask d_current_drag_operation = blink::kWebDragOperationNone;
+    blink::DragOperationsMask d_current_drag_operation = blink::kDragOperationNone;
 };
 
 }  // close namespace blpwtk2

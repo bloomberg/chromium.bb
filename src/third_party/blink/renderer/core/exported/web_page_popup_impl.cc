@@ -987,9 +987,14 @@ WebPagePopupClient* WebPagePopupImpl::GetClientForTesting() const {
   return web_page_popup_client_;
 }
 
-void WebPagePopupImpl::ResetWidgetHostInterface(
-    CrossVariantMojoAssociatedRemote<mojom::blink::WidgetHostInterfaceBase> widgetHost) {
-  widget_base_->ResetWidgetHostInterface(std::move(widgetHost));
+void WebPagePopupImpl::ResetWidgetInterfaces(
+    CrossVariantMojoAssociatedRemote<mojom::blink::WidgetHostInterfaceBase> widgetHost,
+    CrossVariantMojoAssociatedRemote<mojom::blink::FrameWidgetHostInterfaceBase> frameWidgetHost,
+    CrossVariantMojoAssociatedRemote<mojom::blink::PopupWidgetHostInterfaceBase> popupWidgetHost,
+    CrossVariantMojoAssociatedReceiver<mojom::blink::WidgetInterfaceBase> widget,
+    CrossVariantMojoAssociatedReceiver<mojom::blink::FrameWidgetInterfaceBase> pendingFWReceiver) {
+  popup_widget_host_.Bind(std::move(popupWidgetHost), Window()->GetTaskRunner(TaskType::kInternalDefault));
+  widget_base_->ResetWidgetInterfaces(std::move(widgetHost), std::move(widget));
 }
 
 void WebPagePopupImpl::Cancel() {

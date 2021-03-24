@@ -473,6 +473,10 @@ class CORE_EXPORT WebLocalFrameImpl final
 
   virtual void Trace(Visitor*) const;
 
+  // blpwtk2: for RenderWebView
+  void SetLocalFrameHostPartialOverride(CrossVariantMojoAssociatedRemote<mojom::blink::LocalFrameHostPartialOverrideInterfaceBase> hostOverride) override;
+
+
  protected:
   // WebLocalFrame protected overrides:
   void AddMessageToConsoleImpl(const WebConsoleMessage&,

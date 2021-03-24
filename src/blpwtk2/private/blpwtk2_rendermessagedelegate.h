@@ -27,6 +27,7 @@
 #include <base/memory/ref_counted.h>
 #include <ipc/message_router.h>
 #include <mojo/public/cpp/bindings/associated_receiver.h>
+#include <mojo/public/cpp/bindings/associated_remote.h>
 
 namespace mojo {
 namespace internal {
@@ -53,6 +54,10 @@ class RenderMessageDelegate : public IPC::MessageRouter {
     template<typename Interface>
     mojo::PendingAssociatedRemote<Interface>
     BindNewAssociatedEndpointAndPassRemote(mojo::AssociatedReceiver<Interface>& receiver);
+
+    template<typename Interface>
+    mojo::PendingAssociatedReceiver<Interface>
+    BindNewAssociatedEndpointAndPassReceiver(mojo::AssociatedRemote<Interface>& remote);
 
   private:
 
@@ -84,6 +89,15 @@ RenderMessageDelegate::BindNewAssociatedEndpointAndPassRemote(mojo::AssociatedRe
     mojo::PendingAssociatedRemote<Interface> remote;
     receiver.Bind(InitWithNewAssociatedEndpointAndPassReceiver(remote));
     return remote;
+}
+
+template<typename Interface>
+mojo::PendingAssociatedReceiver<Interface>
+RenderMessageDelegate::BindNewAssociatedEndpointAndPassReceiver(mojo::AssociatedRemote<Interface>& remote) {
+  mojo::PendingAssociatedRemote<Interface> newPendingRemote;
+  auto receiver = InitWithNewAssociatedEndpointAndPassReceiver(newPendingRemote);
+  remote.Bind(std::move(newPendingRemote));
+  return receiver;
 }
 
 } // close namespace blpwtk2

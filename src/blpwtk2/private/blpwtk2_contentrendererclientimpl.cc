@@ -174,20 +174,6 @@ bool ContentRendererClientImpl::Dispatch(IPC::Message *msg)
     return false;
 }
 
-void ContentRendererClientImpl::BindHostReceiver(
-        mojo::PendingReceiver<content::mojom::FrameSinkProvider> receiver) {
-  RenderCompositorFactory::GetInstance()->Bind(std::move(receiver));
-}
-
-bool ContentRendererClientImpl::ShouldBindFrameSinkProvider()
-{
-    if (Statics::rendererUIEnabled) {
-        return true;
-    }
-
-    return false;
-}
-
 void ContentRendererClientImpl::OnBindInterface(
         const service_manager::BindSourceInfo& source,
         const std::string& name,

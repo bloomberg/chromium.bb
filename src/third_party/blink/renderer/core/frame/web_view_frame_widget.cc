@@ -709,28 +709,6 @@ void WebViewFrameWidget::ApplyVisualPropertiesSizing(
     return;
   }
 
-  // blpwtk2:
-  //   In RendererUI mode, the renderer owns the OS window that is visible
-  //   on screen. The browser still creates and owns a window but it
-  //   remains hidden and is mostly unused. When the display settings
-  //   change in the OS, a WM_DISPLAYCHANGE event is broadcasted to all
-  //   windows, including the browser's hidden window. The browser uses
-  //   this event as a trigger to send the size information of its window
-  //   to the renderer. Since this window is unused, it doesn't have the
-  //   correct size of the webview. When the renderer receives this size
-  //   information, it incorrectly resizes the surface to which the
-  //   compositor draws onto.
-  //
-  //   Given that in the RendererUI mode, the renderer owns and maintains
-  //   the visible window, it doesn't need to accept the size information
-  //   from the browser.
-  //
-  //  NOTE: I didn't indent the code inside the if-block to reduce the
-  //  patch size
-  if (!lock_size_) {
-    return;
-  }
-
   SetWindowSegments(visual_properties.root_widget_window_segments);
 
   // We can ignore browser-initialized resizing during synchronous

@@ -28,7 +28,6 @@
 
 #include <base/debug/alias.h>
 #include <base/memory/ref_counted.h>
-#include <base/message_loop/message_loop.h>
 #include <components/viz/common/display/renderer_settings.h>
 #include <components/viz/common/surfaces/frame_sink_id.h>
 #include <components/viz/common/surfaces/frame_sink_id_allocator.h>
@@ -47,7 +46,7 @@
 #include <components/viz/service/display_embedder/software_output_surface.h>
 #include <components/viz/service/frame_sinks/frame_sink_manager_impl.h>
 #include <components/viz/service/frame_sinks/root_compositor_frame_sink_impl.h>
-#include <content/common/render_frame_metadata.mojom.h>
+#include <cc/mojom/render_frame_metadata.mojom.h>
 #include <content/public/common/gpu_stream_constants.h>
 #include <content/renderer/render_thread_impl.h>
 #include <content/renderer/renderer_blink_platform_impl.h>
@@ -66,10 +65,8 @@ namespace blpwtk2 {
 
 class RenderCompositorFrameSinkImpl;
 
-class RenderFrameSinkProviderImpl : public mojom::blink::WidgetHost
-                                  , public viz::OutputSurfaceProvider {
-    mojo::Receiver<mojom::blink::WidgetHost> d_binding;  //d_receiver
-    mojo::Remote<mojom::blink::WidgetHost> d_default_frame_sink_provider;
+class RenderFrameSinkProviderImpl :  public viz::OutputSurfaceProvider {
+    mojo::Remote<blink::mojom::WidgetHost> d_default_frame_sink_provider;
 
     scoped_refptr<base::SingleThreadTaskRunner> d_main_task_runner, d_compositor_task_runner;
     gpu::GpuMemoryBufferManager *d_gpu_memory_buffer_manager = nullptr;
@@ -82,6 +79,8 @@ class RenderFrameSinkProviderImpl : public mojom::blink::WidgetHost
     std::unique_ptr<viz::OutputDeviceBacking> d_software_output_device_backing;
 
     scoped_refptr<gpu::GpuChannelHost> d_gpu_channel;
+
+    viz::DebugRendererSettings debug_renderer_settings_;
 
     struct CompositorData {
         CompositorData(gpu::SurfaceHandle gpu_surface_handle)
@@ -102,13 +101,12 @@ class RenderFrameSinkProviderImpl : public mojom::blink::WidgetHost
     void EstablishGpuChannelSyncOnMain(gpu::GpuChannelEstablishedCallback callback);
 
     void CreateForWidgetOnCompositor(
-        int32_t widget_id,
+        int32_t compositor_id,
         mojo::PendingReceiver<::viz::mojom::CompositorFrameSink> compositor_frame_sink_receiver,
         mojo::PendingRemote<::viz::mojom::CompositorFrameSinkClient> compositor_frame_sink_client,
         scoped_refptr<gpu::GpuChannelHost> gpu_channel);
 
     void DelegateToDefaultFrameSinkProviderOnMain(
-        int32_t widget_id,
         mojo::PendingReceiver<::viz::mojom::CompositorFrameSink> compositor_frame_sink_receiver,
         mojo::PendingRemote<::viz::mojom::CompositorFrameSinkClient> compositor_frame_sink_client);
 
@@ -148,34 +146,35 @@ public:
         return d_software_output_device_backing.get();
     }
 
-    void Bind(mojo::PendingReceiver<mojom::blink::WidgetHost> receiver);
+    void Bind(mojo::PendingReceiver<blink::mojom::WidgetHost> receiver);
     void Unbind();
 
-    void RegisterCompositor(int32_t widget_id, gpu::SurfaceHandle gpu_surface_handle);
-    void UnregisterCompositor(int32_t widget_id);
-    void InvalidateCompositor(int32_t widget_id);
-    void SetCompositorVisible(int32_t widget_id, bool visible);
-    void ResizeCompositor(int32_t widget_id, gfx::Size size, base::WaitableEvent *event);
+    void CreateCompositorFrameSink(int32_t compositor_id,
+        mojo::PendingReceiver<viz::mojom::CompositorFrameSink>
+        compositor_frame_sink_receiver,
+        mojo::PendingRemote<viz::mojom::CompositorFrameSinkClient>
+        compositor_frame_sink_client);
+    void RegisterCompositor(int32_t compositor_id, gpu::SurfaceHandle gpu_surface_handle);
+    void UnregisterCompositor(int32_t compositor_id);
+    void InvalidateCompositor(int32_t compositor_id);
+    void SetCompositorVisible(int32_t compositor_id, bool visible);
+    void ResizeCompositor(int32_t compositor_id, gfx::Size size, base::WaitableEvent *event);
 
     void CompositingModeFallbackToSoftwareOnMain();
-
-    // mojom::blink::WidgetHost overrides:
-    void CreateFrameSink(
-        mojo::PendingReceiver<::viz::mojom::CompositorFrameSink> compositor_frame_sink_receiver,
-        mojo::PendingRemote<::viz::mojom::CompositorFrameSinkClient> compositor_frame_sink_client) override;
-    void RegisterRenderFrameMetadataObserver(
-        int32_t widget_id,
-        mojo::PendingReceiver<::content::mojom::RenderFrameMetadataObserverClient> render_frame_metadata_observer_client_receiver,
-        mojo::PendingRemote<::content::mojom::RenderFrameMetadataObserver> render_frame_metadata_observer) override;
 
     // viz::OutputSurfaceProvider overrides:
     std::unique_ptr<viz::OutputSurface> CreateOutputSurface(
         gpu::SurfaceHandle surface_handle,
         bool gpu_compositing,
         viz::mojom::DisplayClient* display_client,
-        const viz::RendererSettings& renderer_settings) override;
+        viz::DisplayCompositorMemoryAndTaskController* gpu_dependency,
+        const viz::RendererSettings& renderer_settings,
+        const viz::DebugRendererSettings* debug_settings) override;
 
-    gpu::SharedImageManager* GetSharedImageManager() override;
+    std::unique_ptr<viz::DisplayCompositorMemoryAndTaskController> CreateGpuDependency(
+      bool gpu_compositing,
+      gpu::SurfaceHandle surface_handle,
+      const viz::RendererSettings& renderer_settings) override;
 };
 
 class GpuOutputSurface : public viz::OutputSurface {
@@ -210,9 +209,6 @@ public:
     gfx::OverlayTransform GetDisplayTransform() override;
 
     gpu::SurfaceHandle GetSurfaceHandle() const override;
-    scoped_refptr<gpu::GpuTaskSchedulerHelper> GetGpuTaskSchedulerHelper() override;
-    gpu::MemoryTracker* GetMemoryTracker() override;
-    void SetFrameRate(float frame_rate) override;
 
 protected:
 
@@ -287,7 +283,8 @@ public:
         gfx::Size size,
         bool visible,
         mojo::PendingReceiver<::viz::mojom::CompositorFrameSink> compositor_frame_sink_receiver,
-        mojo::PendingRemote<::viz::mojom::CompositorFrameSinkClient> compositor_frame_sink_client);
+        mojo::PendingRemote<::viz::mojom::CompositorFrameSinkClient> compositor_frame_sink_client,
+        const viz::DebugRendererSettings* debug_settings);
     ~RenderCompositorFrameSinkImpl() override;
 
     void SetVisible(bool visible);
@@ -362,36 +359,18 @@ RenderCompositorFactory::~RenderCompositorFactory()
             std::move(d_frame_sink_provider));
 }
 
-void RenderCompositorFactory::Bind(mojo::PendingReceiver<mojom::blink::WidgetHost> receiver)
-{
-    d_compositor_task_runner->
-        PostTask(
-            FROM_HERE,
-            base::BindOnce(&RenderFrameSinkProviderImpl::Bind,
-                base::Unretained(d_frame_sink_provider.get()),
-                std::move(receiver)));
-}
-
-void RenderCompositorFactory::Unbind()
-{
-    d_compositor_task_runner->
-        PostTask(
-            FROM_HERE,
-            base::BindOnce(&RenderFrameSinkProviderImpl::Unbind,
-                base::Unretained(d_frame_sink_provider.get())));
-}
 
 std::unique_ptr<RenderCompositor> RenderCompositorFactory::CreateCompositor(
-    int32_t widget_id,
+    int32_t compositor_id,
     gpu::SurfaceHandle gpu_surface_handle,
     blpwtk2::ProfileImpl *profile)
 {
-    auto it = d_compositors_by_widget_id.find(widget_id);
-    DCHECK(it == d_compositors_by_widget_id.end());
+    auto it = d_compositors_by_compositor_id.find(compositor_id);
+    DCHECK(it == d_compositors_by_compositor_id.end());
 
     std::unique_ptr<RenderCompositor> render_compositor(
         new RenderCompositor(
-            *this, widget_id,
+            *this, compositor_id,
             gpu_surface_handle, profile));
 
     return render_compositor;
@@ -400,18 +379,18 @@ std::unique_ptr<RenderCompositor> RenderCompositorFactory::CreateCompositor(
 //
 RenderCompositor::RenderCompositor(
     RenderCompositorFactory& factory,
-    int32_t widget_id,
+    int32_t compositor_id,
     gpu::SurfaceHandle gpu_surface_handle,
     blpwtk2::ProfileImpl *profile)
 : d_factory(factory)
-, d_widget_id(widget_id)
+, d_compositor_id(compositor_id)
 , d_gpu_surface_handle(gpu_surface_handle)
 , d_profile(profile)
 , d_compositor_task_runner(d_factory.d_compositor_task_runner)
 , d_local_surface_id_allocator(new viz::ParentLocalSurfaceIdAllocator())
 {
-    d_factory.d_compositors_by_widget_id.insert(
-        std::make_pair(d_widget_id, this));
+    d_factory.d_compositors_by_compositor_id.insert(
+        std::make_pair(d_compositor_id, this));
 
     d_profile->registerNativeViewForComposition(d_gpu_surface_handle);
 
@@ -420,16 +399,25 @@ RenderCompositor::RenderCompositor(
             FROM_HERE,
             base::BindOnce(&RenderFrameSinkProviderImpl::RegisterCompositor,
                 base::Unretained(d_factory.d_frame_sink_provider.get()),
-                d_widget_id,
+                d_compositor_id,
                 d_gpu_surface_handle));
+}
+
+void RenderCompositor::CreateFrameSink(
+    mojo::PendingReceiver<viz::mojom::CompositorFrameSink>
+        compositor_frame_sink_receiver,
+    mojo::PendingRemote<viz::mojom::CompositorFrameSinkClient>
+        compositor_frame_sink_client)
+{
+    d_factory.d_frame_sink_provider.get()->CreateCompositorFrameSink(d_compositor_id, std::move(compositor_frame_sink_receiver), std::move(compositor_frame_sink_client));
 }
 
 RenderCompositor::~RenderCompositor()
 {
-    auto it = d_factory.d_compositors_by_widget_id.find(d_widget_id);
-    DCHECK(it != d_factory.d_compositors_by_widget_id.end());
+    auto it = d_factory.d_compositors_by_compositor_id.find(d_compositor_id);
+    DCHECK(it != d_factory.d_compositors_by_compositor_id.end());
 
-    d_factory.d_compositors_by_widget_id.erase(it);
+    d_factory.d_compositors_by_compositor_id.erase(it);
 
     d_profile->unregisterNativeViewForComposition(d_gpu_surface_handle);
 
@@ -438,12 +426,12 @@ RenderCompositor::~RenderCompositor()
             FROM_HERE,
             base::BindOnce(&RenderFrameSinkProviderImpl::UnregisterCompositor,
                 base::Unretained(d_factory.d_frame_sink_provider.get()),
-                d_widget_id));
+                d_compositor_id));
 }
 
-viz::LocalSurfaceIdAllocation RenderCompositor::GetLocalSurfaceIdAllocation()
+viz::LocalSurfaceId RenderCompositor::GetLocalSurfaceId()
 {
-    return d_local_surface_id_allocator->GetCurrentLocalSurfaceIdAllocation();
+    return d_local_surface_id_allocator->GetCurrentLocalSurfaceId();
 }
 
 void RenderCompositor::Invalidate()
@@ -460,7 +448,7 @@ void RenderCompositor::SetVisible(bool visible)
             FROM_HERE,
             base::BindOnce(&RenderFrameSinkProviderImpl::SetCompositorVisible,
                 base::Unretained(d_factory.d_frame_sink_provider.get()),
-                d_widget_id,
+                d_compositor_id,
                 d_visible));
 }
 
@@ -483,7 +471,7 @@ void RenderCompositor::Resize(const gfx::Size& size)
             FROM_HERE,
             base::BindOnce(&RenderFrameSinkProviderImpl::ResizeCompositor,
                 base::Unretained(d_factory.d_frame_sink_provider.get()),
-                d_widget_id,
+                d_compositor_id,
                 d_size,
                 &event));
 
@@ -492,7 +480,6 @@ void RenderCompositor::Resize(const gfx::Size& size)
 
 //
 RenderFrameSinkProviderImpl::RenderFrameSinkProviderImpl()
-: d_binding(this)
 {
     content::RenderThreadImpl *render_thread =
         content::RenderThreadImpl::current();
@@ -524,54 +511,46 @@ void RenderFrameSinkProviderImpl::Init(
 
     d_renderer_settings = std::make_unique<viz::RendererSettings>(viz::CreateRendererSettings());
     d_software_output_device_backing = std::make_unique<viz::OutputDeviceBacking>();
-}
 
-void RenderFrameSinkProviderImpl::Bind(mojo::PendingReceiver<mojom::blink::WidgetHost> receiver)
-{
-    d_binding.Bind(std::move(receiver), d_compositor_task_runner);
-}
-
-void RenderFrameSinkProviderImpl::Unbind()
-{
-    d_binding.reset();
+    debug_renderer_settings_ = viz::CreateDefaultDebugRendererSettings();
 }
 
 void RenderFrameSinkProviderImpl::RegisterCompositor(
-    int32_t widget_id, gpu::SurfaceHandle gpu_surface_handle)
+    int32_t compositor_id, gpu::SurfaceHandle gpu_surface_handle)
 {
-    auto it = d_compositor_data.find(widget_id);
+    auto it = d_compositor_data.find(compositor_id);
     DCHECK(it == d_compositor_data.end());
 
     CompositorData compositor_data(gpu_surface_handle);
 
-    it = d_compositor_data.insert({ widget_id, std::move(compositor_data) }).first;
+    it = d_compositor_data.insert({ compositor_id, std::move(compositor_data) }).first;
     d_compositor_data_by_surface_handle.insert({ gpu_surface_handle, it });
 }
 
 void RenderFrameSinkProviderImpl::InvalidateCompositor(
-    int32_t widget_id)
+    int32_t compositor_id)
 {
-    SetCompositorVisible(widget_id, false);
+    SetCompositorVisible(compositor_id, false);
 
-    auto it = d_compositor_data.find(widget_id);
+    auto it = d_compositor_data.find(compositor_id);
     DCHECK(it != d_compositor_data.end());
 
     it->second.invalidated = true;
 }
 
 void RenderFrameSinkProviderImpl::UnregisterCompositor(
-    int32_t widget_id)
+    int32_t compositor_id)
 {
-    auto it = d_compositor_data.find(widget_id);
+    auto it = d_compositor_data.find(compositor_id);
     DCHECK(it != d_compositor_data.end());
 
     d_compositor_data_by_surface_handle.erase(it->second.gpu_surface_handle);
-    d_compositor_data.erase(widget_id);
+    d_compositor_data.erase(compositor_id);
 }
 
-void RenderFrameSinkProviderImpl::SetCompositorVisible(int32_t widget_id, bool visible)
+void RenderFrameSinkProviderImpl::SetCompositorVisible(int32_t compositor_id, bool visible)
 {
-    auto it = d_compositor_data.find(widget_id);
+    auto it = d_compositor_data.find(compositor_id);
     DCHECK(it != d_compositor_data.end());
 
     it->second.visible = visible;
@@ -581,9 +560,9 @@ void RenderFrameSinkProviderImpl::SetCompositorVisible(int32_t widget_id, bool v
     }
 }
 
-void RenderFrameSinkProviderImpl::ResizeCompositor(int32_t widget_id, gfx::Size size, base::WaitableEvent *event)
+void RenderFrameSinkProviderImpl::ResizeCompositor(int32_t compositor_id, gfx::Size size, base::WaitableEvent *event)
 {
-    auto it = d_compositor_data.find(widget_id);
+    auto it = d_compositor_data.find(compositor_id);
     DCHECK(it != d_compositor_data.end());
 
     it->second.size = size;
@@ -600,7 +579,8 @@ void RenderFrameSinkProviderImpl::CompositingModeFallbackToSoftwareOnMain()
     content::RenderThreadImpl::current()->CompositingModeFallbackToSoftware();
 }
 
-void RenderFrameSinkProviderImpl::CreateFrameSink(
+void RenderFrameSinkProviderImpl::CreateCompositorFrameSink(
+    int32_t compositor_id,
     mojo::PendingReceiver<::viz::mojom::CompositorFrameSink> compositor_frame_sink_receiver,
     mojo::PendingRemote<::viz::mojom::CompositorFrameSinkClient> compositor_frame_sink_client)
 {
@@ -613,22 +593,18 @@ void RenderFrameSinkProviderImpl::CreateFrameSink(
                 base::BindOnce(
                     &RenderFrameSinkProviderImpl::CreateForWidgetOnCompositor,
                     base::Unretained(this),
+                    compositor_id,
                     std::move(compositor_frame_sink_receiver),
                     std::move(compositor_frame_sink_client))));
-}
-
-void RenderFrameSinkProviderImpl::RegisterRenderFrameMetadataObserver(
-    int32_t widget_id,
-    mojo::PendingReceiver<::content::mojom::RenderFrameMetadataObserverClient> render_frame_metadata_observer_client_receiver,
-    mojo::PendingRemote<::content::mojom::RenderFrameMetadataObserver> render_frame_metadata_observer)
-{
 }
 
 std::unique_ptr<viz::OutputSurface> RenderFrameSinkProviderImpl::CreateOutputSurface(
     gpu::SurfaceHandle surface_handle,
     bool gpu_compositing,
     viz::mojom::DisplayClient* display_client,
-    const viz::RendererSettings& renderer_settings)
+    viz::DisplayCompositorMemoryAndTaskController* gpu_dependency,
+    const viz::RendererSettings& renderer_settings,
+    const viz::DebugRendererSettings* debug_settings)
 {
     std::unique_ptr<viz::OutputSurface> output_surface;
 
@@ -698,7 +674,10 @@ std::unique_ptr<viz::OutputSurface> RenderFrameSinkProviderImpl::CreateOutputSur
     return output_surface;
 }
 
-gpu::SharedImageManager* RenderFrameSinkProviderImpl::GetSharedImageManager()
+std::unique_ptr<viz::DisplayCompositorMemoryAndTaskController> RenderFrameSinkProviderImpl::CreateGpuDependency(
+      bool gpu_compositing,
+      gpu::SurfaceHandle surface_handle,
+      const viz::RendererSettings& renderer_settings)
 {
     return nullptr;
 }
@@ -719,14 +698,13 @@ void RenderFrameSinkProviderImpl::EstablishGpuChannelSyncOnMain(
         base::BindOnce(std::move(callback), gpu_channel));
 }
 
-// Reference: RenderWidgetHostImpl::CreateFrameSink
 void RenderFrameSinkProviderImpl::CreateForWidgetOnCompositor(
+    int32_t compositor_id,
     mojo::PendingReceiver<::viz::mojom::CompositorFrameSink> compositor_frame_sink_receiver,
     mojo::PendingRemote<::viz::mojom::CompositorFrameSinkClient> compositor_frame_sink_client,
     scoped_refptr<gpu::GpuChannelHost> gpu_channel)
 {
-    // TODO: widget_id
-    auto it = d_compositor_data.find(widget_id);
+    auto it = d_compositor_data.find(compositor_id);
     if (it == d_compositor_data.end()) {
         d_main_task_runner->
             PostTask(
@@ -734,7 +712,6 @@ void RenderFrameSinkProviderImpl::CreateForWidgetOnCompositor(
                 base::BindOnce(
                     &RenderFrameSinkProviderImpl::DelegateToDefaultFrameSinkProviderOnMain,
                     base::Unretained(this),
-                    widget_id,
                     std::move(compositor_frame_sink_receiver),
                     std::move(compositor_frame_sink_client)));
         return;
@@ -755,16 +732,15 @@ void RenderFrameSinkProviderImpl::CreateForWidgetOnCompositor(
             it->second.size,
             it->second.visible,
             std::move(compositor_frame_sink_receiver),
-            std::move(compositor_frame_sink_client));
+            std::move(compositor_frame_sink_client),
+            &debug_renderer_settings_);
 }
 
 void RenderFrameSinkProviderImpl::DelegateToDefaultFrameSinkProviderOnMain(
-    int32_t widget_id,
     mojo::PendingReceiver<::viz::mojom::CompositorFrameSink> compositor_frame_sink_receiver,
     mojo::PendingRemote<::viz::mojom::CompositorFrameSinkClient> compositor_frame_sink_client)
 {
-    d_default_frame_sink_provider->CreateForWidget(
-        widget_id,
+    d_default_frame_sink_provider->CreateFrameSink(
         std::move(compositor_frame_sink_receiver),
         std::move(compositor_frame_sink_client));
 }
@@ -1021,24 +997,6 @@ gpu::SurfaceHandle GpuOutputSurface::GetSurfaceHandle() const
     return surface_handle_;
 }
 
-scoped_refptr<gpu::GpuTaskSchedulerHelper>
-GpuOutputSurface::GetGpuTaskSchedulerHelper()
-{
-    //return viz_context_provider_->GetGpuTaskSchedulerHelper();
-    return nullptr;
-}
-
-gpu::MemoryTracker* GpuOutputSurface::GetMemoryTracker()
-{
-    //return viz_context_provider_->GetMemoryTracker();
-    return nullptr;
-}
-
-void GpuOutputSurface::SetFrameRate(float frame_rate)
-{
-    //viz_context_provider_->ContextSupport()->SetFrameRate(frame_rate);
-}
-
 //
 RenderCompositorFrameSinkImpl::RenderCompositorFrameSinkImpl(
     RenderFrameSinkProviderImpl& context,
@@ -1048,7 +1006,8 @@ RenderCompositorFrameSinkImpl::RenderCompositorFrameSinkImpl(
     gfx::Size size,
     bool visible,
     mojo::PendingReceiver<::viz::mojom::CompositorFrameSink> compositor_frame_sink_receiver,
-    mojo::PendingRemote<::viz::mojom::CompositorFrameSinkClient> compositor_frame_sink_client)
+    mojo::PendingRemote<::viz::mojom::CompositorFrameSinkClient> compositor_frame_sink_client,
+    const viz::DebugRendererSettings* debug_settings)
 : d_context(context)
 , d_binding(this, std::move(compositor_frame_sink_receiver))
 {
@@ -1077,7 +1036,7 @@ RenderCompositorFrameSinkImpl::RenderCompositorFrameSinkImpl(
     auto root_compositor_frame_sink = viz::RootCompositorFrameSinkImpl::Create(
         std::move(root_params),
         d_context.frame_sink_manager(), &d_context,
-        viz::BeginFrameSource::kNotRestartableId, false);
+        viz::BeginFrameSource::kNotRestartableId, false, debug_settings);
 
     d_root_compositor_frame_sink = std::move(root_compositor_frame_sink);
 

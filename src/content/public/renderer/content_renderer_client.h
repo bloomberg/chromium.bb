@@ -20,7 +20,7 @@
 #include "base/task/thread_pool/thread_pool_instance.h"
 #include "build/build_config.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
-#include "content/common/frame_sink_provider.mojom.h"
+#include "third_party/blink/public/mojom/page/widget.mojom.h"
 #include "content/public/common/content_client.h"
 #include "content/public/renderer/url_loader_throttle_provider.h"
 #include "content/public/renderer/websocket_handshake_throttle_provider.h"
@@ -433,11 +433,6 @@ class CONTENT_EXPORT ContentRendererClient {
   // 'msg' and return 'true'. If the function does not handle the message,
   // it should return 'false' without deleting 'msg'.
   virtual bool Dispatch(IPC::Message* msg);
-
-  virtual bool ShouldBindFrameSinkProvider();
-
-  virtual void BindHostReceiver(
-    mojo::PendingReceiver<content::mojom::FrameSinkProvider> receiver) {}
 
   // Returns true if |url| still requires the native HTML Imports feature.
   // Used for Web UI pages.

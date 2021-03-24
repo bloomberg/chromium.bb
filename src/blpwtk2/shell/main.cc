@@ -252,7 +252,7 @@ public:
             blpwtk2::WebViewCreateParams params;
             params.setJavascriptCanAccessClipboard(true);
             params.setDOMPasteEnabled(true);
-            if (g_in_process_renderer && d_profile == g_profile && !useExternalRenderer) {
+            if (g_in_process_renderer && d_profile == g_profile && (g_renderer_ui || !useExternalRenderer)) {
                 params.setRendererAffinity(::GetCurrentProcessId());
             }
             d_profile->createWebView(this, params);
@@ -914,6 +914,7 @@ int main(int, const char**)
     // patch section: renderer ui
     if (g_renderer_ui) {
         toolkitParams.appendCommandLineSwitch("disable-direct-composition");
+        toolkitParams.appendCommandLineSwitch("disable-oop-rasterization");
     }
 
 

@@ -41,20 +41,22 @@
 #include <content/browser/renderer_host/input/input_router_client.h>
 
 #include <content/common/cursors/webcursor.h>
-#include <content/common/text_input_state.h>
 #include <content/public/common/input_event_ack_state.h>
 #include <ipc/ipc_listener.h>
 
 #include <third_party/blink/public/mojom/page/widget.mojom.h>
-#include "third_party/blink/public/mojom/page/widget.mojom-blink.h"
+//#include "third_party/blink/public/mojom/page/widget.mojom-blink.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 
 #include <ui/base/cursor/cursor_loader.h>
 #include <ui/base/ime/input_method_delegate.h>
 #include <ui/base/ime/text_input_client.h>
 #include <ui/gfx/geometry/rect.h>
 #include <ui/views/corewm/tooltip_win.h>
+
+#include <functional>
 
 namespace blink {
 class WebFrameWidget;
@@ -86,6 +88,9 @@ namespace blpwtk2 {
 
 class ProfileImpl;
 class RenderCompositor;
+class MojoLocalFrameHostImpl;
+class MojoFrameWidgetHostImpl;
+class MojoPopupWidgetHostImpl;
 
                         // ===================
                         // class RenderWebView
@@ -105,6 +110,9 @@ class RenderWebView final : public WebView
                           , private blink::mojom::PointerLockContext
 {
     class RenderViewObserver;
+    friend class MojoLocalFrameHostImpl;
+    friend class MojoFrameWidgetHostImpl;
+    friend class MojoPopupWidgetHostImpl;
 
     // DATA
     WebView *d_proxy;
@@ -124,7 +132,7 @@ class RenderWebView final : public WebView
 
     // Track the 'content::RenderWidget':
     bool d_gotRenderViewInfo = false;
-    base::Optional<int> d_renderViewRoutingId, d_renderWidgetRoutingId, d_mainFrameRoutingId;
+    base::Optional<int> d_renderViewRoutingId, d_mainFrameRoutingId;
     RenderViewObserver *d_renderViewObserver = nullptr;
 
     // The compositor:
@@ -134,7 +142,7 @@ class RenderWebView final : public WebView
     //
     // The input event router:
     std::unique_ptr<content::InputRouterImpl> d_inputRouterImpl;
-    mojo::Remote<content::mojom::WidgetInputHandler> d_widgetInputHandler;
+    mojo::Remote<blink::mojom::WidgetInputHandler> d_widgetInputHandler;
 
     // State related to mouse events:
     gfx::Point d_mouseScreenPosition;
@@ -168,7 +176,7 @@ class RenderWebView final : public WebView
     gfx::Range d_composition_range;
     std::vector<gfx::Rect> d_compositionCharacterBounds;
     bool d_hasCompositionText = false;
-    content::TextInputState d_textInputState;
+    ui::mojom::TextInputStatePtr d_textInputState;
     gfx::SelectionBound d_selectionAnchor, d_selectionFocus;
     base::string16 d_selectionText;
     std::size_t d_selectionTextOffset = 0;
@@ -196,6 +204,14 @@ class RenderWebView final : public WebView
     mojo::Receiver<blink::mojom::PointerLockContext> d_mouse_lock_context{this};
     mojo::AssociatedReceiver<blink::mojom::WidgetHost> d_blink_widget_host_receiver{this};
     blink::WebFrameWidget *d_frame_widget = nullptr;
+    mojo::AssociatedRemote<blink::mojom::FrameWidget> blink_frame_widget_;
+    mojo::AssociatedRemote<blink::mojom::Widget> blink_widget_;
+    std::unique_ptr<MojoLocalFrameHostImpl> mojo_local_frame_host_impl_;
+    std::unique_ptr<MojoFrameWidgetHostImpl> mojo_frame_widget_host_impl_;
+    std::unique_ptr<MojoPopupWidgetHostImpl> mojo_popup_widget_host_impl_;
+
+    // For popup webview
+    std::function<void()> callback_after_renderer_inited_;
 
 #if defined(BLPWTK2_FEATURE_RUBBERBAND)
     // State related to rubber band selection:
@@ -332,7 +348,7 @@ class RenderWebView final : public WebView
     void IncrementInFlightEventCount() override {}
     void DecrementInFlightEventCount(blink::mojom::InputEventResultSource ack_source) override {}
     void DidOverscroll(const ui::DidOverscrollParams& params) override {}
-    void OnSetWhiteListedTouchAction(cc::TouchAction touch_action) override {}
+    void OnSetCompositorAllowedTouchAction(cc::TouchAction) override {}
     void DidStartScrollingViewport() override {}
     void ForwardGestureEventWithLatencyInfo(
         const blink::WebGestureEvent& gesture_event,
@@ -346,15 +362,14 @@ class RenderWebView final : public WebView
     void SetMouseCapture(bool capture) override {}
     void RequestMouseLock(
       bool from_user_gesture,
-      bool privileged,
       bool unadjusted_movement,
-      content::mojom::WidgetInputHandlerHost::RequestMouseLockCallback response) override;
+      blink::mojom::WidgetInputHandlerHost::RequestMouseLockCallback response) override;
 
     gfx::Size GetRootWidgetViewportSize() override;
     void OnInvalidInputEventSource() override {}
 
     // content::InputRouterImplClient overrides:
-    content::mojom::WidgetInputHandler* GetWidgetInputHandler() override;
+    blink::mojom::WidgetInputHandler* GetWidgetInputHandler() override;
     void OnImeCancelComposition() override;
     void OnImeCompositionRangeChanged(
         const gfx::Range& range,
@@ -387,7 +402,7 @@ class RenderWebView final : public WebView
 
     // ui::TextInputClient overrides:
     void SetCompositionText(const ui::CompositionText& composition) override;
-    void ConfirmCompositionText(bool keep_selection) override;
+    uint32_t ConfirmCompositionText(bool keep_selection) override;
     void ClearCompositionText() override;
     void InsertText(const base::string16& text) override;
     void InsertChar(const ui::KeyEvent& event) override;
@@ -432,12 +447,12 @@ class RenderWebView final : public WebView
         const std::vector<content::DropData::Metadata>& drop_data,
         const gfx::PointF& client_pt,
         const gfx::PointF& screen_pt,
-        blink::WebDragOperationsMask ops_allowed,
+        blink::DragOperationsMask ops_allowed,
         int key_modifiers) override;
     void DragTargetOver(
         const gfx::PointF& client_pt,
         const gfx::PointF& screen_pt,
-        blink::WebDragOperationsMask ops_allowed,
+        blink::DragOperationsMask ops_allowed,
         int key_modifiers) override;
     void DragTargetLeave() override;
     void DragTargetDrop(
@@ -448,11 +463,29 @@ class RenderWebView final : public WebView
     void DragSourceEnded(
         const gfx::PointF& client_pt,
         const gfx::PointF& screen_pt,
-        blink::WebDragOperation drag_operation) override;
+        blink::DragOperation drag_operation) override;
     void DragSourceSystemEnded() override;
 
     // blink::mojom::WidgetHost override:
     void SetCursor(const ui::Cursor& cursor) override;
+    void SetToolTipText(const ::base::string16& tooltip_text, base::i18n::TextDirection text_direction_hint) override;
+    void TextInputStateChanged(ui::mojom::TextInputStatePtr state) override;
+    void SelectionBoundsChanged(const gfx::Rect& anchor_rect,
+                                base::i18n::TextDirection anchor_dir,
+                                const gfx::Rect& focus_rect,
+                                base::i18n::TextDirection focus_dir,
+                                bool is_anchor_first) override;
+    void CreateFrameSink(
+        mojo::PendingReceiver<viz::mojom::CompositorFrameSink>
+            compositor_frame_sink_receiver,
+        mojo::PendingRemote<viz::mojom::CompositorFrameSinkClient>
+            compositor_frame_sink_client) override;
+
+    void RegisterRenderFrameMetadataObserver(
+        mojo::PendingReceiver<cc::mojom::RenderFrameMetadataObserverClient>
+            render_frame_metadata_observer_client_receiver,
+        mojo::PendingRemote<cc::mojom::RenderFrameMetadataObserver>
+            render_frame_metadata_observer) override;
 
     // blink::mojom::PointerLockContext overrides
     void RequestMouseLockChange(
@@ -462,7 +495,6 @@ class RenderWebView final : public WebView
     // Mouse locking:
     void OnLockMouse(
         bool user_gesture,
-        bool privileged,
         bool request_unadjusted_movement);
     void OnUnlockMouse();
 
@@ -470,33 +502,22 @@ class RenderWebView final : public WebView
     void OnSetCursor(const content::WebCursor& cursor);
 
     // Keyboard events:
-    void OnSelectionBoundsChanged(
-        const WidgetHostMsg_SelectionBounds_Params& params);
     void OnSelectionChanged(const base::string16& text,
         uint32_t offset,
         const gfx::Range& range);
-    void OnTextInputStateChanged(
-        const content::TextInputState& params);
 
-    // Drag and drop:
-    void OnStartDragging(
-        const content::DropData& drop_data,
-        blink::WebDragOperationsMask operations_allowed,
-        const SkBitmap& bitmap,
-        const gfx::Vector2d& bitmap_offset_in_dip,
-        const content::DragEventSourceInfo& event_info);
+    void StartDragging(blink::mojom::DragDataPtr drag_data,
+                        blink::DragOperationsMask drag_operations_mask,
+                        const SkBitmap& unsafe_bitmap,
+                        const gfx::Vector2d& bitmap_offset_in_dip,
+                        blink::mojom::DragEventSourceInfoPtr event_info);
+
     void OnUpdateDragCursor(
-        blink::WebDragOperation drag_operation);
+        blink::DragOperation drag_operation);
 
     // Renderer-driven popups:
-    void OnShowWidget(
-        int routing_id, const gfx::Rect initial_rect);
+    void OnShowWidget(const gfx::Rect initial_rect);
     void OnClose();
-
-    // Native tooltips:
-    void OnSetTooltipText(
-        const base::string16& tooltip_text,
-        base::i18n::TextDirection text_direction_hint);
 
 #if defined(BLPWTK2_FEATURE_RUBBERBAND)
     // Rubber band selection:
@@ -506,7 +527,6 @@ class RenderWebView final : public WebView
 
     // PRIVATE FUNCTIONS:
     explicit RenderWebView(ProfileImpl              *profile,
-                           int                       routingId,
                            const gfx::Rect&          initialRect);
 
     static LPCTSTR GetWindowClass();
@@ -538,21 +558,26 @@ class RenderWebView final : public WebView
         blink::mojom::InputEventResultState ack_result) {}
     void onQueueWheelEventWithPhaseEnded();
     void onStartDraggingImpl(
-        const content::DropData& drop_data,
-        blink::WebDragOperationsMask operations_allowed,
-        const SkBitmap& bitmap,
-        const gfx::Vector2d& bitmap_offset_in_dip,
-        const content::DragEventSourceInfo& event_info);
+            const content::DropData& drop_data,
+            blink::DragOperationsMask drag_operations_mask,
+            const SkBitmap& unsafe_bitmap,
+            const gfx::Vector2d& bitmap_offset_in_dip);
     void showTooltip();
     void hideTooltip();
     void updateTooltip();
     void onSessionChange(WPARAM status_code, const bool* is_current_session);
     void forceRedrawWindow(int attempts);
 
+    // IPC message handlers
+    void OnUpdateScreenRectsAck();
+
+    gfx::PointF ConvertWindowPointToViewport(const gfx::PointF& point);
+
 #if defined(BLPWTK2_FEATURE_RUBBERBAND)
     void updateAltDragRubberBanding();
 #endif
 
+    base::WeakPtrFactory<RenderWebView> weak_factory_{this};
     DISALLOW_COPY_AND_ASSIGN(RenderWebView);
 
   public:

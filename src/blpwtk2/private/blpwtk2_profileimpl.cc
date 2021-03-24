@@ -127,6 +127,9 @@ void ProfileImpl::registerNativeViewForComposition(NativeView view)
 
 void ProfileImpl::unregisterNativeViewForComposition(NativeView view)
 {
+    if (!d_hostPtr.is_bound() || !d_hostPtr.is_connected()) {
+        return;
+    }
     d_hostPtr->unregisterNativeViewForComposition(
         static_cast<unsigned int>(reinterpret_cast<uintptr_t>(view)));
 }

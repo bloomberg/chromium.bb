@@ -271,8 +271,4 @@ bool ContentRendererClient::Dispatch(IPC::Message* msg) {
   return false;
 }
 
-bool ContentRendererClient::ShouldBindFrameSinkProvider() {
-  return false;
-}
-
 }  // namespace content

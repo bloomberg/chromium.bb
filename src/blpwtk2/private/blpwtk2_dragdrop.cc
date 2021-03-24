@@ -23,7 +23,6 @@
 #include <blpwtk2_dragdrop.h>
 
 #include <base/strings/utf_string_conversions.h>
-#include <content/common/drag_messages.h>
 #include <content/public/common/drop_data.h>
 #include <net/base/filename_util.h>
 #include <third_party/blink/public/common/input/web_input_event.h>
@@ -58,19 +57,19 @@ int MakeWebInputEventModifiers()
         (!!(GetKeyState(VK_RBUTTON) & 0x0080)     ? blink::WebInputEvent::kRightButtonDown : 0);
 }
 
-DWORD MakeDROPEFFECT(blink::WebDragOperationsMask drag_operations)
+DWORD MakeDROPEFFECT(blink::DragOperationsMask drag_operations)
 {
-    return ((!!(drag_operations & blink::kWebDragOperationCopy)? DROPEFFECT_COPY : DROPEFFECT_NONE) |
-            (!!(drag_operations & blink::kWebDragOperationMove)? DROPEFFECT_MOVE : DROPEFFECT_NONE) |
-            (!!(drag_operations & blink::kWebDragOperationLink)? DROPEFFECT_LINK : DROPEFFECT_NONE));
+    return ((!!(drag_operations & blink::kDragOperationCopy)? DROPEFFECT_COPY : DROPEFFECT_NONE) |
+            (!!(drag_operations & blink::kDragOperationMove)? DROPEFFECT_MOVE : DROPEFFECT_NONE) |
+            (!!(drag_operations & blink::kDragOperationLink)? DROPEFFECT_LINK : DROPEFFECT_NONE));
 }
 
-blink::WebDragOperationsMask MakeWebDragOperations(DWORD effect)
+blink::DragOperationsMask MakeWebDragOperations(DWORD effect)
 {
-    return (blink::WebDragOperationsMask)
-            ((!!(effect & DROPEFFECT_COPY)? blink::kWebDragOperationCopy : blink::kWebDragOperationNone) |
-             (!!(effect & DROPEFFECT_MOVE)? blink::kWebDragOperationMove : blink::kWebDragOperationNone) |
-             (!!(effect & DROPEFFECT_LINK)? blink::kWebDragOperationLink : blink::kWebDragOperationNone));
+    return (blink::DragOperationsMask)
+            ((!!(effect & DROPEFFECT_COPY)? blink::kDragOperationCopy : blink::kDragOperationNone) |
+             (!!(effect & DROPEFFECT_MOVE)? blink::kDragOperationMove : blink::kDragOperationNone) |
+             (!!(effect & DROPEFFECT_LINK)? blink::kDragOperationLink : blink::kDragOperationNone));
 }
 
 const ui::ClipboardFormatType& GetFileSystemFileFormatType()
@@ -127,12 +126,12 @@ std::unique_ptr<content::DropData> MakeDropData(const ui::OSExchangeData& data,
     base::string16 plain_text;
     data.GetString(&plain_text);
     if (!plain_text.empty())
-        drop_data->text = base::NullableString16(plain_text, false);
+        drop_data->text = base::make_optional(plain_text);
 
     GURL url;
     base::string16 url_title;
     data.GetURLAndTitle(
-        ui::DO_NOT_CONVERT_FILENAMES, &url, &url_title);
+        ui::FilenameToURLPolicy::DO_NOT_CONVERT_FILENAMES, &url, &url_title);
     if (url.is_valid()) {
         drop_data->url = url;
         drop_data->url_title = url_title;
@@ -142,7 +141,7 @@ std::unique_ptr<content::DropData> MakeDropData(const ui::OSExchangeData& data,
     GURL html_base_url;
     data.GetHtml(&html, &html_base_url);
     if (!html.empty())
-        drop_data->html = base::NullableString16(html, false);
+        drop_data->html = base::make_optional(html);
     if (html_base_url.is_valid())
         drop_data->html_base_url = html_base_url;
 
@@ -176,7 +175,7 @@ std::unique_ptr<content::DropData> MakeDropData(const ui::OSExchangeData& data,
 std::vector<content::DropData::Metadata> MakeDropDataMetadata(const content::DropData& drop_data) {
     std::vector<content::DropData::Metadata> metadata;
 
-    if (!drop_data.text.is_null()) {
+    if (drop_data.text.has_value()) {
         metadata.push_back(content::DropData::Metadata::CreateForMimeType(
             content::DropData::Kind::STRING,
             base::ASCIIToUTF16(ui::kMimeTypeText)));
@@ -188,7 +187,7 @@ std::vector<content::DropData::Metadata> MakeDropDataMetadata(const content::Dro
             base::ASCIIToUTF16(ui::kMimeTypeURIList)));
     }
 
-    if (!drop_data.html.is_null()) {
+    if (drop_data.html.has_value()) {
         metadata.push_back(content::DropData::Metadata::CreateForMimeType(
             content::DropData::Kind::STRING,
             base::ASCIIToUTF16(ui::kMimeTypeHTML)));
@@ -255,12 +254,12 @@ std::unique_ptr<ui::OSExchangeData> MakeOSExchangeData(const content::DropData& 
     // SetURL() will itself do SetString() when a string hasn't been set yet,
     // but we want to prefer drop_data.text.string() over the URL string if it
     // exists.
-    if (!drop_data.text.string().empty())
-        provider->SetString(drop_data.text.string());
+    if (!drop_data.text.value().empty())
+        provider->SetString(drop_data.text.value());
     if (drop_data.url.is_valid())
         provider->SetURL(drop_data.url, drop_data.url_title);
-    if (!drop_data.html.string().empty())
-        provider->SetHtml(drop_data.html.string(), drop_data.html_base_url);
+    if (!drop_data.html.value().empty())
+        provider->SetHtml(drop_data.html.value(), drop_data.html_base_url);
     if (!drop_data.filenames.empty())
         provider->SetFilenames(drop_data.filenames);
     if (!drop_data.file_system_files.empty()) {
@@ -331,10 +330,9 @@ DragDrop::~DragDrop()
 
 void DragDrop::StartDragging(
     const content::DropData& drop_data,
-    blink::WebDragOperationsMask operations_allowed,
+    blink::DragOperationsMask operations_allowed,
     const SkBitmap& bitmap,
-    const gfx::Vector2d& bitmap_offset_in_dip,
-    const content::DragEventSourceInfo& event_info)
+    const gfx::Vector2d& bitmap_offset_in_dip)
 {
     auto data = MakeOSExchangeData(drop_data);
 
@@ -367,12 +365,12 @@ void DragDrop::StartDragging(
         gfx::PointF(gfx::Point(client_pt)), gfx::PointF(gfx::Point(screen_pt)),
         (result == DRAGDROP_S_DROP     ?
          MakeWebDragOperations(effect) :
-         blink::kWebDragOperationNone));
+         blink::kDragOperationNone));
 
     d_delegate->DragSourceSystemEnded();
 }
 
-void DragDrop::UpdateDragCursor(blink::WebDragOperation drag_operation)
+void DragDrop::UpdateDragCursor(blink::DragOperation drag_operation)
 {
     d_current_drag_operation = drag_operation;
 }
@@ -398,7 +396,7 @@ DWORD DragDrop::OnDragEnter(
         MakeWebDragOperations(effect),
         MakeWebInputEventModifiers());
 
-    return MakeDROPEFFECT(blink::kWebDragOperationNone);
+    return MakeDROPEFFECT(blink::kDragOperationNone);
 }
 
 DWORD DragDrop::OnDragOver(

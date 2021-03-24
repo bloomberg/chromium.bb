@@ -165,7 +165,6 @@ class CONTENT_EXPORT RenderWidget
 
   void bbHandleInputEvent(const blink::WebInputEvent& event);
 
-  void LockSize(bool val);
   void Redraw();
 
  protected:
@@ -236,8 +235,6 @@ class CONTENT_EXPORT RenderWidget
   // ownership via IPC.  These booleans exist to allow us to confirm than an IPC
   // message to kill the render widget is coming for a popup.
   bool for_popup_ = false;
-
-  bool lock_size_ = false;
 
   bool bb_OnHandleInputEvent_no_ack_{false};
 
