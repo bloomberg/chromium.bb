@@ -130,13 +130,18 @@ void SpellCheckHostChromeImpl::CallSpellingServiceDone(
     return;
   }
 
+  // blpwtk2: Remove dependency on CustomDictionary
+#if 0
   std::vector<SpellCheckResult> results = FilterCustomWordResults(
       base::UTF16ToUTF8(text), *spellcheck->GetCustomDictionary(),
       service_results);
+#endif
 
-  std::move(callback).Run(success, results);
+  std::move(callback).Run(success, service_results);
 }
 
+// blpwtk2: Remove dependency on CustomDictionary
+#if 0
 // static
 std::vector<SpellCheckResult> SpellCheckHostChromeImpl::FilterCustomWordResults(
     const std::string& text,
@@ -151,6 +156,7 @@ std::vector<SpellCheckResult> SpellCheckHostChromeImpl::FilterCustomWordResults(
 
   return results;
 }
+#endif
 #endif  // BUILDFLAG(USE_RENDERER_SPELLCHECKER)
 
 #if BUILDFLAG(USE_BROWSER_SPELLCHECKER) && BUILDFLAG(ENABLE_SPELLING_SERVICE)

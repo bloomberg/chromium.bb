@@ -44,6 +44,7 @@
 #include <content/public/common/service_names.mojom.h>
 #include <content/public/common/url_constants.h>
 #include <content/public/common/user_agent.h>
+#include "content/browser/builtin_service_manifests.h"
 #include <chrome/grit/browser_resources.h>
 #include "mojo/public/cpp/bindings/remote.h"
 #include <net/url_request/url_request_job_factory.h>
@@ -149,7 +150,7 @@ void ContentBrowserClientImpl::ExposeInterfacesToRenderer(
         content::RenderProcessHost* render_process_host)
 {
     ProcessHostImpl::registerMojoInterfaces(registry);
-}            
+}
 
 void ContentBrowserClientImpl::StartInProcessRendererThread(
     mojo::OutgoingInvitation* broker_client_invitation, int renderer_client_id)
@@ -166,7 +167,7 @@ mojo::OutgoingInvitation* ContentBrowserClientImpl::GetClientInvitation() const
 std::vector<service_manager::Manifest>
 ContentBrowserClientImpl::GetExtraServiceManifests()
 {
-    return std::vector<service_manager::Manifest>{};
+    return content::GetBuiltinServiceManifests();
 }
 
 std::string ContentBrowserClientImpl::GetUserAgent()
