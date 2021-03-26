@@ -111,6 +111,7 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
     scoped_refptr<base::SingleThreadTaskRunner> main_task_runner;
     MutatorHost* mutator_host = nullptr;
     RasterDarkModeFilter* dark_mode_filter = nullptr;
+    int routing_id =0;
 
     // The image worker task runner is used to schedule image decodes. The
     // compositor thread may make sync calls to this thread, analogous to the
@@ -333,6 +334,8 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   // Registers a callback that is run when any ongoing scroll-animation ends. If
   // there are no ongoing animations, then the callback is run immediately.
   void RequestScrollAnimationEndNotification(base::OnceClosure callback);
+
+  virtual int GetRoutingId() const;
 
   // Layer tree accessors and modifiers ------------------------
 
@@ -904,6 +907,8 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   // use this bool to decide whether we need to compute subtree has copy request
   // for every layer during property tree building.
   bool has_copy_request_ = false;
+
+  int routing_id_;
 
   MutatorHost* mutator_host_;
 
