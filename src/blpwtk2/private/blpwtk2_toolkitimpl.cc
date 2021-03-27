@@ -865,21 +865,21 @@ void ToolkitImpl::getMetrics(
       continue;
     }
     if (metrics[i] == d_metrics.d_wtfPartitionsArrayBufferKB) {
-      base::PartitionRootGeneric* p = WTF::Partitions::ArrayBufferPartition();
+      base::ThreadSafePartitionRoot* p = WTF::Partitions::ArrayBufferPartition();
       if (p) {
         values[i] = p->total_size_of_committed_pages / 1024;
       }
       continue;
     }
     if (metrics[i] == d_metrics.d_wtfPartitionsBufferKB) {
-      base::PartitionRootGeneric* p = WTF::Partitions::BufferPartition();
+      base::ThreadSafePartitionRoot* p = WTF::Partitions::BufferPartition();
       if (p) {
         values[i] = p->total_size_of_committed_pages / 1024;
       }
       continue;
     }
     if (metrics[i] == d_metrics.d_wtfPartitionsLayoutKB) {
-      base::PartitionRoot* p = WTF::Partitions::LayoutPartition();
+      base::ThreadUnsafePartitionRoot* p = WTF::Partitions::LayoutPartition();
       if (p) {
         values[i] = p->total_size_of_committed_pages / 1024;
       }
