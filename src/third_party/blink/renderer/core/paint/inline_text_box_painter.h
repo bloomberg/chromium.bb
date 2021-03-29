@@ -95,12 +95,12 @@ class InlineTextBoxPainter {
                                 LayoutTextCombine* = nullptr);
 
   void PaintHighlightMarkerForeground(const PaintInfo& paintInfo,
-                                      const LayoutPoint& boxOrigin,
+                                      const PhysicalOffset& boxOrigin,
                                       const HighlightMarker& marker,
                                       const ComputedStyle& style,
                                       const Font& font);
   void PaintHighlightMarkerBackground(const PaintInfo& paintInfo,
-                                      const LayoutPoint& boxOrigin,
+                                      const PhysicalOffset& boxOrigin,
                                       const HighlightMarker& marker,
                                       const ComputedStyle& style,
                                       const Font& font);

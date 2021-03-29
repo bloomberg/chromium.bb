@@ -938,7 +938,7 @@ void InlineTextBoxPainter::PaintTextMarkerBackground(
 }
 
 void InlineTextBoxPainter::PaintHighlightMarkerForeground(const PaintInfo& paintInfo,
-                                                          const LayoutPoint& boxOrigin,
+                                                          const PhysicalOffset& boxOrigin,
                                                           const HighlightMarker& marker,
                                                           const ComputedStyle& style,
                                                           const Font& font)
@@ -964,8 +964,8 @@ void InlineTextBoxPainter::PaintHighlightMarkerForeground(const PaintInfo& paint
 
     int ascent = font_data ? font_data->GetFontMetrics().Ascent() : 0;
 
-    LayoutRect boxRect(boxOrigin, LayoutSize(inline_text_box_.LogicalWidth(), inline_text_box_.LogicalHeight()));
-    LayoutPoint textOrigin(boxOrigin.X(), boxOrigin.Y() + ascent);
+    PhysicalRect boxRect(boxOrigin, LayoutSize(inline_text_box_.LogicalWidth(), inline_text_box_.LogicalHeight()));
+    PhysicalOffset textOrigin(boxOrigin.left, boxOrigin.top + ascent);
     TextPainter textPainter(paintInfo.context, font, run, textOrigin, boxRect, inline_text_box_.IsHorizontal());
 
     DOMNodeId node_holder = GetNodeHolder(
@@ -976,7 +976,7 @@ void InlineTextBoxPainter::PaintHighlightMarkerForeground(const PaintInfo& paint
 }
 
 void InlineTextBoxPainter::PaintHighlightMarkerBackground(const PaintInfo& paintInfo,
-                                                          const LayoutPoint& boxOrigin,
+                                                          const PhysicalOffset& boxOrigin,
                                                           const HighlightMarker& marker,
                                                           const ComputedStyle& style,
                                                           const Font& font)
@@ -992,7 +992,7 @@ void InlineTextBoxPainter::PaintHighlightMarkerBackground(const PaintInfo& paint
     GraphicsContext& context = paintInfo.context;
     GraphicsContextStateSaver stateSaver(context);
 
-    LayoutRect boxRect(boxOrigin, LayoutSize(inline_text_box_.LogicalWidth(), inline_text_box_.LogicalHeight()));
+    PhysicalRect boxRect(boxOrigin, LayoutSize(inline_text_box_.LogicalWidth(), inline_text_box_.LogicalHeight()));
     context.Clip(FloatRect(boxRect));
     context.DrawHighlightForText(font, run, FloatPoint(boxOrigin), boxRect.Height().ToInt(), color, sPos, ePos);
 }

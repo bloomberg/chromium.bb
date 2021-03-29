@@ -56,7 +56,7 @@ class CORE_EXPORT HighlightMarkerListImpl final : public DocumentMarkerList {
                     unsigned old_length,
                     unsigned new_length) final;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) const override;
 
  private:
   HeapVector<Member<DocumentMarker>> markers_;

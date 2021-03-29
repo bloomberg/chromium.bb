@@ -82,7 +82,7 @@ bool HighlightMarkerListImpl::ShiftMarkers(const String&,
       &markers_, offset, old_length, new_length);
 }
 
-void HighlightMarkerListImpl::Trace(blink::Visitor* visitor) {
+void HighlightMarkerListImpl::Trace(Visitor* visitor) const {
   visitor->Trace(markers_);
   DocumentMarkerList::Trace(visitor);
 }
