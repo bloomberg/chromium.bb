@@ -131,8 +131,7 @@ class WebViewImpl final : public WebView,
         // handle this. Returns true if the delegate successfully handled it.
 
     void EnterFullscreenModeForTab(
-        content::WebContents* web_contents,
-        const GURL& origin,
+        content::RenderFrameHost* requesting_frame,
         const blink::mojom::FullscreenOptions& options) override;
         // Called when the renderer puts a tab into fullscreen mode.
         // |origin| is the origin of the initiating frame inside the |web_contents|.

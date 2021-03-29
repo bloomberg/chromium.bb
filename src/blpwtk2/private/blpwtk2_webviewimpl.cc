@@ -690,12 +690,11 @@ void WebViewImpl::setFullscreenMode(bool isFullscreen) {
         ->GetWidget()
         ->SynchronizeVisualProperties();
 }
-
-void WebViewImpl::EnterFullscreenModeForTab(content::WebContents* web_contents,
-                                            const GURL& origin,
-                                            const blink::mojom::FullscreenOptions& options) {
+void WebViewImpl::EnterFullscreenModeForTab(
+    content::RenderFrameHost* requesting_frame,
+    const blink::mojom::FullscreenOptions& options)
+{
     DCHECK(Statics::isInBrowserMainThread());
-
     d_delegate->enterFullscreenMode(this);
 }
 
