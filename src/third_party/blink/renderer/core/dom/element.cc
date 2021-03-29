@@ -1920,7 +1920,11 @@ int Element::bbScrollLeftNoZoomAdjust() const {
     return 0;
   }
 
-  if (PaintLayerScrollableArea* scrollable_area = GetScrollableArea()) {
+  LayoutBox* box = GetLayoutBoxForScrolling();
+  if (!box)
+    return 0;
+
+  if (PaintLayerScrollableArea* scrollable_area = box->GetScrollableArea()) {
     DCHECK(GetLayoutBox());
 
     if (HasLeftwardDirection(*this)) {
@@ -1933,11 +1937,7 @@ int Element::bbScrollLeftNoZoomAdjust() const {
     // In order to keep the behavior of element scroll consistent with document
     // scroll, and consistent with the behavior of other vendors, the scrollLeft
     // of a box is changed to the offset from |ScrollOrigin()|.
-    if (RuntimeEnabledFeatures::CSSOMViewScrollCoordinatesEnabled()) {
-      return scrollable_area->GetScrollOffset().Width();
-    } else {
-      return scrollable_area->ScrollPosition().X();
-    }
+    return scrollable_area->GetScrollOffset().Width();
   }
 
   return 0;
@@ -1958,7 +1958,11 @@ int Element::bbScrollTopNoZoomAdjust() const {
     return 0;
   }
 
-  if (PaintLayerScrollableArea* scrollable_area = GetScrollableArea()) {
+  LayoutBox* box = GetLayoutBoxForScrolling();
+  if (!box)
+    return 0;
+
+  if (PaintLayerScrollableArea* scrollable_area = box->GetScrollableArea()) {
     DCHECK(GetLayoutBox());
 
     if (HasUpwardDirection(*this)) {
@@ -1971,11 +1975,7 @@ int Element::bbScrollTopNoZoomAdjust() const {
     // In order to keep the behavior of element scroll consistent with document
     // scroll, and consistent with the behavior of other vendors, the scrollTop
     // of a box is changed to the offset from |ScrollOrigin()|.
-    if (RuntimeEnabledFeatures::CSSOMViewScrollCoordinatesEnabled()) {
-      return scrollable_area->GetScrollOffset().Height();
-    } else {
-      return scrollable_area->ScrollPosition().Y();
-    }
+    return scrollable_area->GetScrollOffset().Height();
   }
 
   return 0;
@@ -1988,7 +1988,8 @@ void Element::setBbScrollLeftNoZoomAdjust(int new_left) {
   if (!InActiveDocument())
     return;
 
-  GetDocument().UpdateStyleAndLayoutForNode(this, DocumentUpdateReason::kJavaScript);
+  GetDocument().UpdateStyleAndLayoutForNode(this,
+                                            DocumentUpdateReason::kJavaScript);
 
   new_left = ScrollableArea::NormalizeNonFiniteScroll(new_left);
 
@@ -1998,10 +1999,13 @@ void Element::setBbScrollLeftNoZoomAdjust(int new_left) {
       options->setLeft(new_left);
       window->scrollTo(options);
     }
-  } else if (PaintLayerScrollableArea* scrollable_area = GetScrollableArea()) {
-    LayoutBox* box = GetLayoutBox();
-    DCHECK(box);
+    return;
+  }
 
+  LayoutBox* box = GetLayoutBoxForScrolling();
+  if (!box)
+    return;
+  if (PaintLayerScrollableArea* scrollable_area = box->GetScrollableArea()) {
     if (HasLeftwardDirection(*this)) {
       UseCounter::Count(
           GetDocument(),
@@ -2015,38 +2019,21 @@ void Element::setBbScrollLeftNoZoomAdjust(int new_left) {
       }
     }
 
-    if (RuntimeEnabledFeatures::CSSOMViewScrollCoordinatesEnabled()) {
-      ScrollOffset end_offset(new_left,
-                              scrollable_area->GetScrollOffset().Height());
-      std::unique_ptr<cc::SnapSelectionStrategy> strategy =
-          cc::SnapSelectionStrategy::CreateForEndPosition(
-              gfx::ScrollOffset(
-                  scrollable_area->ScrollOffsetToPosition(end_offset)),
-              true, false);
-      base::Optional<FloatPoint> snap_point =
-          scrollable_area->GetSnapPositionAndSetTarget(*strategy);
-      if (snap_point.has_value()) {
-        end_offset =
-            scrollable_area->ScrollPositionToOffset(snap_point.value());
-      }
-      scrollable_area->SetScrollOffset(end_offset,
-                                       mojom::blink::ScrollType::kProgrammatic,
-                                       mojom::blink::ScrollBehavior::kAuto);
-    } else {
-      FloatPoint end_point(new_left,
-                           scrollable_area->ScrollPosition().Y());
-      std::unique_ptr<cc::SnapSelectionStrategy> strategy =
-          cc::SnapSelectionStrategy::CreateForEndPosition(
-              gfx::ScrollOffset(end_point), true, false);
-      end_point =
-          scrollable_area->GetSnapPositionAndSetTarget(*strategy).value_or(
-              end_point);
-
-      FloatPoint new_position(end_point.X(),
-                              scrollable_area->ScrollPosition().Y());
-      scrollable_area->ScrollToAbsolutePosition(new_position,
-                                                mojom::blink::ScrollBehavior::kAuto);
+    ScrollOffset end_offset(new_left,
+                            scrollable_area->GetScrollOffset().Height());
+    std::unique_ptr<cc::SnapSelectionStrategy> strategy =
+        cc::SnapSelectionStrategy::CreateForEndPosition(
+            gfx::ScrollOffset(
+                scrollable_area->ScrollOffsetToPosition(end_offset)),
+            true, false);
+    base::Optional<FloatPoint> snap_point =
+        scrollable_area->GetSnapPositionAndSetTarget(*strategy);
+    if (snap_point.has_value()) {
+      end_offset = scrollable_area->ScrollPositionToOffset(snap_point.value());
     }
+    scrollable_area->SetScrollOffset(end_offset,
+                                     mojom::blink::ScrollType::kProgrammatic,
+                                     mojom::blink::ScrollBehavior::kAuto);
   }
 }
 
@@ -2057,7 +2044,8 @@ void Element::setBbScrollTopNoZoomAdjust(int new_top) {
   if (!InActiveDocument())
     return;
 
-  GetDocument().UpdateStyleAndLayoutForNode(this, DocumentUpdateReason::kJavaScript);
+  GetDocument().UpdateStyleAndLayoutForNode(this,
+                                            DocumentUpdateReason::kJavaScript);
 
   new_top = ScrollableArea::NormalizeNonFiniteScroll(new_top);
 
@@ -2067,10 +2055,13 @@ void Element::setBbScrollTopNoZoomAdjust(int new_top) {
       options->setTop(new_top);
       window->scrollTo(options);
     }
-  } else if (PaintLayerScrollableArea* scrollable_area = GetScrollableArea()) {
-    LayoutBox* box = GetLayoutBox();
-    DCHECK(box);
+    return;
+  }
 
+  LayoutBox* box = GetLayoutBoxForScrolling();
+  if (!box)
+    return;
+  if (PaintLayerScrollableArea* scrollable_area = box->GetScrollableArea()) {
     if (HasUpwardDirection(*this)) {
       UseCounter::Count(
           GetDocument(),
@@ -2084,38 +2075,22 @@ void Element::setBbScrollTopNoZoomAdjust(int new_top) {
       }
     }
 
-    if (RuntimeEnabledFeatures::CSSOMViewScrollCoordinatesEnabled()) {
-      ScrollOffset end_offset(scrollable_area->GetScrollOffset().Width(),
-                              new_top);
-      std::unique_ptr<cc::SnapSelectionStrategy> strategy =
-          cc::SnapSelectionStrategy::CreateForEndPosition(
-              gfx::ScrollOffset(
-                  scrollable_area->ScrollOffsetToPosition(end_offset)),
-              false, true);
-      base::Optional<FloatPoint> snap_point =
-          scrollable_area->GetSnapPositionAndSetTarget(*strategy);
-      if (snap_point.has_value()) {
-        end_offset =
-            scrollable_area->ScrollPositionToOffset(snap_point.value());
-      }
-
-      scrollable_area->SetScrollOffset(end_offset,
-                                       mojom::blink::ScrollType::kProgrammatic,
-                                       mojom::blink::ScrollBehavior::kAuto);
-    } else {
-      FloatPoint end_point(scrollable_area->ScrollPosition().X(),
-                           new_top);
-      std::unique_ptr<cc::SnapSelectionStrategy> strategy =
-          cc::SnapSelectionStrategy::CreateForEndPosition(
-              gfx::ScrollOffset(end_point), false, true);
-      end_point =
-          scrollable_area->GetSnapPositionAndSetTarget(*strategy).value_or(
-              end_point);
-      FloatPoint new_position(scrollable_area->ScrollPosition().X(),
-                              end_point.Y());
-      scrollable_area->ScrollToAbsolutePosition(new_position,
-                                                mojom::blink::ScrollBehavior::kAuto);
+    ScrollOffset end_offset(scrollable_area->GetScrollOffset().Width(),
+                            new_top);
+    std::unique_ptr<cc::SnapSelectionStrategy> strategy =
+        cc::SnapSelectionStrategy::CreateForEndPosition(
+            gfx::ScrollOffset(
+                scrollable_area->ScrollOffsetToPosition(end_offset)),
+            false, true);
+    base::Optional<FloatPoint> snap_point =
+        scrollable_area->GetSnapPositionAndSetTarget(*strategy);
+    if (snap_point.has_value()) {
+      end_offset = scrollable_area->ScrollPositionToOffset(snap_point.value());
     }
+
+    scrollable_area->SetScrollOffset(end_offset,
+                                     mojom::blink::ScrollType::kProgrammatic,
+                                     mojom::blink::ScrollBehavior::kAuto);
   }
 }
 
