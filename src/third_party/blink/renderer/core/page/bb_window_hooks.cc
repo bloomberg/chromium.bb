@@ -101,7 +101,15 @@ void BBWindowHooks::Trace(Visitor* visitor) const {
 }
 
 void BBWindowHooks::allowPrint(long value) {
-    GetFrame()->AllowPrint(!!value);
+    LocalDOMWindow* localDOMWin = DomWindow();
+    if (!localDOMWin) {
+        return;
+    }
+    LocalFrame* localFrame = localDOMWin->GetFrame();
+    if (!localFrame) {
+        return;
+    }
+    localFrame->AllowPrint(!!value);
 }
 
 } // namespace blink

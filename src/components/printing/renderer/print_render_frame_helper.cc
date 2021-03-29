@@ -1230,12 +1230,12 @@ std::vector<char> PrintRenderFrameHelper::PrintToPDF(
   std::vector<char> buffer;
   DCHECK(localframe);
 
-  int expected_pages_count_ = 0;
+  uint32_t expected_pages_count_ = 0;
   if (CalculateNumberOfPages(localframe, blink::WebNode(),
                              &expected_pages_count_) &&
       expected_pages_count_ > 0) {
-    const PrintMsg_PrintPages_Params& params = *print_pages_params_;
-    const PrintMsg_Print_Params& print_params = params.params;
+    const mojom::PrintPagesParams& pagesParams = *print_pages_params_;
+    const mojom::PrintParams& print_params = *(pagesParams.params);
     prep_frame_view_.reset(new PrepareFrameAndViewForPrint(
         print_params, localframe, blink::WebNode(), true));
 
@@ -1246,7 +1246,7 @@ std::vector<char> PrintRenderFrameHelper::PrintToPDF(
 
     // blpwtk2: This logic is borrowed from the PrintPagesNative function
     // defined below
-    std::vector<int> printed_pages = GetPrintedPages(params, page_count);
+    std::vector<uint32_t> printed_pages = GetPrintedPages(pagesParams, page_count);
     if (printed_pages.empty())
       return buffer;
 
@@ -1254,7 +1254,7 @@ std::vector<char> PrintRenderFrameHelper::PrintToPDF(
                           print_params.document_cookie);
     CHECK(metafile.Init());
 
-    PrintHostMsg_DidPrintDocument_Params page_params;
+    mojom::DidPrintDocumentParams page_params;
 
     PrintPageInternal(print_params, printed_pages[0], page_count,
                       print_params.scale_factor, frame, &metafile,

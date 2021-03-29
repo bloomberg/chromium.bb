@@ -214,9 +214,12 @@ void PrintViewManager::PrintPreviewDone() {
 
 bool PrintViewManager::RejectPrintPreviewRequestIfRestricted(
     content::RenderFrameHost* rfh) {
+#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
   if (!IsPrintingRestricted())
     return false;
   GetPrintRenderFrame(rfh)->OnPrintPreviewDialogClosed();
+#endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
+
 #if defined(OS_CHROMEOS)
   policy::ShowDlpPrintDisabledNotification();
 #endif
@@ -370,17 +373,17 @@ bool PrintViewManager::OnMessageReceived(
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
   FrameDispatchHelper helper = {this, render_frame_host};
 #endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
-  bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP_WITH_PARAM(PrintViewManager, message, render_frame_host)
+  bool handled = false;
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
+  IPC_BEGIN_MESSAGE_MAP_WITH_PARAM(PrintViewManager, message, render_frame_host)
     IPC_MESSAGE_FORWARD_DELAY_REPLY(
         PrintHostMsg_SetupScriptedPrintPreview, &helper,
         FrameDispatchHelper::OnSetupScriptedPrintPreview)
     IPC_MESSAGE_HANDLER(PrintHostMsg_ShowScriptedPrintPreview,
                         OnShowScriptedPrintPreview)
-#endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
+#endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
 
   return handled ||
          PrintViewManagerBase::OnMessageReceived(message, render_frame_host);

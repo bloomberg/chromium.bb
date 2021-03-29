@@ -42,7 +42,7 @@ class ContentUtilityClientImpl : public content::ContentUtilityClient {
     bool OnMessageReceived(const IPC::Message& message) override;
     bool HandleServiceRequest(
         const std::string& service_name,
-        service_manager::mojom::ServiceRequest request) override;
+        mojo::PendingReceiver<service_manager::mojom::Service> receiver) override;
     void RegisterNetworkBinders(
         service_manager::BinderRegistry* registry) override;
     void ExposeInterfacesToBrowser(mojo::BinderMap* binders) override;

@@ -40,8 +40,8 @@ bool ContentUtilityClientImpl::OnMessageReceived(const IPC::Message& message) {
 }
 bool ContentUtilityClientImpl::HandleServiceRequest(
     const std::string& service_name,
-    service_manager::mojom::ServiceRequest request) {
-    return chrome_utility_client_->HandleServiceRequest(service_name, std::move(request));
+    mojo::PendingReceiver<service_manager::mojom::Service> receiver) {
+    return chrome_utility_client_->HandleServiceRequest(service_name, std::move(receiver));
 }
 
 void ContentUtilityClientImpl::RegisterNetworkBinders(
