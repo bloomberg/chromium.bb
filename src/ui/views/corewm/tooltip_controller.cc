@@ -247,8 +247,10 @@ void TooltipController::OnCursorVisibilityChanged(bool is_visible) {
 
 void TooltipController::OnWindowVisibilityChanged(aura::Window* window,
                                                   bool visible) {
-  if (!visible)
+  if (!visible && tooltip_window_ == window) {
     HideTooltipAndResetStates();
+    tooltip_shown_timeout_map_.erase(tooltip_window_);
+  }
 }
 
 void TooltipController::OnWindowDestroyed(aura::Window* window) {
@@ -256,14 +258,6 @@ void TooltipController::OnWindowDestroyed(aura::Window* window) {
     tooltip_->Hide();
     tooltip_shown_timeout_map_.erase(tooltip_window_);
     tooltip_window_ = nullptr;
-  }
-}
-
-void TooltipController::OnWindowVisibilityChanged(aura::Window* window, bool visible) {
-  if (!visible && tooltip_window_ == window) {
-    tooltip_->Hide();
-    tooltip_shown_timeout_map_.erase(tooltip_window_);
-    SetTooltipWindow(NULL);
   }
 }
 
