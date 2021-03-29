@@ -268,10 +268,13 @@ void SpellCheckHostChromeImpl::OnDictionariesInitialized() {
           hunspell_dictionary->GetLanguage()));
     }
 
+  // blpwtk2: Remove dependency on CustomDictionary
+#if 0
     SpellcheckCustomDictionary* custom_dictionary =
         spellcheck->GetCustomDictionary();
     custom_words.assign(custom_dictionary->GetWords().begin(),
                         custom_dictionary->GetWords().end());
+#endif
   }
 
   std::move(dictionaries_loaded_callback_)

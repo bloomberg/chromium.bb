@@ -45,7 +45,6 @@ source_set("browser") {
   ldflags = []
 
   deps = [
-    ":builtin_service_manifests",
     "//base",
     "//base:base_static",
     "//base:clang_profiling_buildflags",
@@ -2864,16 +2863,4 @@ group("for_internal_webauthn") {
   if (!is_component_build) {
     public_deps = [ ":browser" ]
   }
-}
-
-source_set("builtin_service_manifests") {
-  sources = [
-    "builtin_service_manifests.cc",
-    "builtin_service_manifests.h",
-  ]
-  deps = [
-    "//ui/gfx:color_space",
-    "//content/public/app:content_browser_manifest",
-    "//third_party/blink/public/mojom:mojom_page_visibility"
-  ]
 }

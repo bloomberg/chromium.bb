@@ -317,7 +317,6 @@ shared_library("blpwtk2") {
     "//content",
     "//content:content_resources",
     "//content:sandbox_helper_win",
-    "//content/browser:builtin_service_manifests",
     "//content/app/resources",
     "//ipc",
     "//net",

@@ -919,6 +919,7 @@ int main(int, const char**)
         toolkitParams.disableInProcessRenderer();
     }
 
+    toolkitParams.appendCommandLineSwitch("disable-features=WinUseBrowserSpellChecker");
     toolkitParams.setHeaderFooterHTML(getHeaderFooterHTMLContent());
     toolkitParams.enablePrintBackgroundGraphics();
     toolkitParams.setDictionaryPath(g_dictDir);
