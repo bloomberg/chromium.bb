@@ -2098,17 +2098,17 @@ LayoutRect LayoutBlock::LocalCaretRect(
 
     LayoutUnit margin;
     if (child->IsBox()) {
-        LayoutBox* box = ToLayoutBox(child);
+        LayoutBox* box = To<LayoutBox>(child);
         inline_box = box->InlineBoxWrapper();
         margin = isAfterLastChild ? box->MarginRight() : box->MarginLeft();
     }
     else if (child->IsText()) {
-        inline_box = isAfterLastChild ? ToLayoutText(child)->LastTextBox()
-                                      : ToLayoutText(child)->FirstTextBox();
+        inline_box = isAfterLastChild ? To<LayoutText>(child)->LastTextBox()
+                                      : To<LayoutText>(child)->FirstTextBox();
     }
     else if (child->IsLayoutInline()) {
-        inline_box = isAfterLastChild ? ToLayoutInline(child)->LastLineBox()
-                                      : ToLayoutInline(child)->FirstLineBox();
+        inline_box = isAfterLastChild ? To<LayoutInline>(child)->LastLineBox()
+                                      : To<LayoutInline>(child)->FirstLineBox();
     }
 
     if (!inline_box) {
