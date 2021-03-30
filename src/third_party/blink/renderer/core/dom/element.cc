@@ -28,6 +28,7 @@
 
 #include <algorithm>
 #include <bitset>
+#include <cmath>
 #include <limits>
 #include <memory>
 #include <utility>
