@@ -907,7 +907,7 @@ GpuInternalsUI::GpuInternalsUI(WebUI* web_ui)
 
 std::unique_ptr<base::ListValue> GpuInternalsUI::GetGpuMemoryBufferInfo()
 {
-  const gpu::GpuExtraInfo gpu_extra_info =
+  const gfx::GpuExtraInfo gpu_extra_info =
       GpuDataManagerImpl::GetInstance()->GetGpuExtraInfo();
   return GpuMemoryBufferInfo(gpu_extra_info);
 }
