@@ -26,11 +26,11 @@
 #include "blpwtk2/public/blpwtk2_stringref.h"
 
 #include <base/logging.h>
-#include <base/message_loop/message_loop_current.h>
 #include <base/optional.h>
 #include <base/time/time.h>
 
 #include <deque>
+#include <queue>
 
 namespace blpwtk2 {
 static ToolkitCreateParams::LogMessageSeverity decodeLogSeverity(int severity) {
