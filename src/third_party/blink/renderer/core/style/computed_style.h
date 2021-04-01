@@ -314,8 +314,8 @@ class ComputedStyle : public ComputedStyleBase,
   ALWAYS_INLINE ComputedStyle(PassKey, const ComputedStyle&);
   ALWAYS_INLINE explicit ComputedStyle(PassKey);
 
-  static void Destruct(const ComputedStyle* x);
-  static unsigned int GetObjectCount();
+  CORE_EXPORT static void Destruct(const ComputedStyle* x);
+  CORE_EXPORT static unsigned int GetObjectCount();
 
   CORE_EXPORT static scoped_refptr<ComputedStyle> Create();
   static scoped_refptr<ComputedStyle> CreateAnonymousStyleWithDisplay(
