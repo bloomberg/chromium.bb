@@ -83,6 +83,7 @@ class PrintViewManagerBase : public content::NotificationObserver,
       const ui::AXTreeUpdate& accessibility_tree) override;
 #endif
   void GetDefaultPrintSettings(
+      uint32_t owner_wnd,
       GetDefaultPrintSettingsCallback callback) override;
   void UpdatePrintSettings(int32_t cookie,
                            base::Value job_settings,

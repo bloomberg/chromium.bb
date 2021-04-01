@@ -122,7 +122,7 @@ void PrintingMessageFilter::OnScriptedPrint(
   auto* printer_query_ptr = printer_query.get();
   printer_query_ptr->GetSettings(
       PrinterQuery::GetSettingsAskParam::ASK_USER, params.expected_pages_count,
-      params.has_selection, params.margin_type, params.owner_wnd, params.is_scripted,
+      params.has_selection, params.margin_type, reinterpret_cast<HWND>(params.owner_wnd), params.is_scripted,
       params.is_modifiable,
       base::BindOnce(&PrintingMessageFilter::OnScriptedPrintReply, this,
                      std::move(printer_query), reply_msg));

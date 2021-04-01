@@ -291,7 +291,7 @@ interface PrintManagerHost {
 
   // Request the default print settings.
   [Sync]
-  GetDefaultPrintSettings() => (PrintParams default_settings);
+  GetDefaultPrintSettings(uint32 owner_wnd) => (PrintParams default_settings);
 
   // Update the current print settings with new |job_settings|.
   [Sync]
