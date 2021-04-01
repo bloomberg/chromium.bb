@@ -1632,6 +1632,9 @@ void Element::setScrollTop(double new_top) {
       end_offset = scrollable_area->ScrollPositionToOffset(snap_point.value());
     }
 
+    // blpwtk2: rount y
+    end_offset.SetHeight(std::roundf(end_offset.Height()));
+
     scrollable_area->SetScrollOffset(end_offset,
                                      mojom::blink::ScrollType::kProgrammatic,
                                      mojom::blink::ScrollBehavior::kAuto);
