@@ -23,6 +23,7 @@
 #include "gpu_error_message_observer.h"
 
 #include "base/no_destructor.h"
+#include "base/logging.h"
 
 #include <vector>
 namespace {

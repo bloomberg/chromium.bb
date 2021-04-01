@@ -67,8 +67,8 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
                        public GpuErrorMessageObserver::Delegate,
                        public viz::GpuHostImpl::Delegate {
  public:
-  static int GetGpuCrashCount();
-  static base::Optional<gpu::GpuMode> GetStartupGpuMode();
+  CONTENT_EXPORT static int GetGpuCrashCount();
+  CONTENT_EXPORT static base::Optional<gpu::GpuMode> GetStartupGpuMode();
 
   // Creates a new GpuProcessHost (if |force_create| is turned on) or gets an
   // existing one, resulting in the launching of a GPU process if required.
