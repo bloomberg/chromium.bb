@@ -1194,9 +1194,9 @@ void RenderWebView::updateAltDragRubberBanding()
         return;
     }
 
-    dispatchIPCMessage(
-        ViewMsg_EnableAltDragRubberbanding(*d_renderViewRoutingId,
-            d_enableAltDragRubberBanding));
+    if (blink_widget_) {
+        blink_widget_->EnableAltDragRubberbanding(d_enableAltDragRubberBanding);
+    }
 }
 #endif
 
@@ -1546,6 +1546,21 @@ String RenderWebView::getTextInRubberband(const NativeRect& rect)
 {
     return d_proxy->getTextInRubberband(rect);
 }
+
+void RenderWebView::SetRubberbandRect(const ::gfx::Rect& rect)
+{
+    if (!d_rubberbandOutline.get()) {
+        d_rubberbandOutline.reset(new ui::RubberbandOutline());
+    }
+
+    d_rubberbandOutline->SetRect(d_hwnd.get(), rect.ToRECT());
+}
+
+void RenderWebView::HideRubberbandRect()
+{
+    d_rubberbandOutline.reset();
+}
+
 #endif
 
 void RenderWebView::rootWindowPositionChanged()
@@ -1784,22 +1799,7 @@ void RenderWebView::notifyRoutingId(int id)
 // IPC::Listener overrideds:
 bool RenderWebView::OnMessageReceived(const IPC::Message& message)
 {
-    bool handled = true;
-    IPC_BEGIN_MESSAGE_MAP(RenderWebView, message)
-        // Keyboard events:
-        // Drag and drop:
-        // Renderer-driven popups:
-        // Native tooltips:
-#if defined(BLPWTK2_FEATURE_RUBBERBAND)
-        // Rubber band selection:
-        IPC_MESSAGE_HANDLER(ViewHostMsg_HideRubberbandRect,
-            OnHideRubberbandRect)
-        IPC_MESSAGE_HANDLER(ViewHostMsg_SetRubberbandRect,
-            OnSetRubberbandRect)
-#endif
-        IPC_MESSAGE_UNHANDLED(handled = false)
-    IPC_END_MESSAGE_MAP()
-
+    constexpr bool handled = false;
     return handled;
 }
 
@@ -2435,25 +2435,6 @@ void RenderWebView::OnClose()
 
 void RenderWebView::OnUpdateScreenRectsAck() {
 }
-
-
-
-#if defined(BLPWTK2_FEATURE_RUBBERBAND)
-// Rubber band selection:
-void RenderWebView::OnHideRubberbandRect()
-{
-    d_rubberbandOutline.reset();
-}
-
-void RenderWebView::OnSetRubberbandRect(const gfx::Rect& rect)
-{
-    if (!d_rubberbandOutline.get()) {
-        d_rubberbandOutline.reset(new ui::RubberbandOutline());
-    }
-
-    d_rubberbandOutline->SetRect(d_hwnd.get(), rect.ToRECT());
-}
-#endif
 
 #if defined(BLPWTK2_FEATURE_MEMORY_DIAGNOSTIC)
 std::size_t RenderWebView::getDefaultTileMemoryLimit() const{

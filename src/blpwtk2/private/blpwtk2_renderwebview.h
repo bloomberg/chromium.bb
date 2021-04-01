@@ -256,6 +256,8 @@ class RenderWebView final : public WebView
     bool isRubberbanding() const override;
     void abortRubberbanding() override;
     String getTextInRubberband(const NativeRect&) override;
+    void SetRubberbandRect(const ::gfx::Rect& rect) override;
+    void HideRubberbandRect() override;
 #endif
     void find(const StringRef& text, bool matchCase, bool forward) override;
     void stopFind(bool preserveSelection) override;
@@ -518,12 +520,6 @@ class RenderWebView final : public WebView
     // Renderer-driven popups:
     void OnShowWidget(const gfx::Rect initial_rect);
     void OnClose();
-
-#if defined(BLPWTK2_FEATURE_RUBBERBAND)
-    // Rubber band selection:
-    void OnHideRubberbandRect();
-    void OnSetRubberbandRect(const gfx::Rect& rect);
-#endif
 
     // PRIVATE FUNCTIONS:
     explicit RenderWebView(ProfileImpl              *profile,
