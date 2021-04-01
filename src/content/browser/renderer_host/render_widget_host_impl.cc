@@ -758,6 +758,12 @@ void RenderWidgetHostImpl::WasShown(
   SynchronizeVisualProperties();
 }
 
+void RenderWidgetHostImpl::EnableAltDragRubberbanding(bool enabled) {
+  if (blink_widget_) {
+    blink_widget_->EnableAltDragRubberbanding(enabled);
+  }
+}
+
 void RenderWidgetHostImpl::RunPendingWasShown(
     base::TimeTicks show_request_timestamp,
     bool is_evicted,

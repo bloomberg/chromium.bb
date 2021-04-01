@@ -134,7 +134,6 @@ class CONTENT_EXPORT RenderViewHostImpl
   void SendWebPreferencesToRenderer();
   void SendRendererPreferencesToRenderer(
       const blink::RendererPreferences& preferences);
-  void EnableAltDragRubberbanding(bool enable) override;
 
   // RenderProcessHostObserver implementation
   void RenderProcessExited(RenderProcessHost* host,

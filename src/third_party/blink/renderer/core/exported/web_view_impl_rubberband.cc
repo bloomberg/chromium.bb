@@ -28,6 +28,8 @@
 #include "third_party/blink/renderer/core/events/input_event.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/frame_view.h"
+#include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
+#include "third_party/blink/renderer/core/frame/web_frame_widget_base.h"
 #include "third_party/blink/renderer/core/layout/line/inline_text_box.h"
 #include "third_party/blink/renderer/core/layout/layout_block.h"
 #include "third_party/blink/renderer/core/layout/layout_iframe.h"
@@ -342,7 +344,7 @@ void WebViewImpl::RubberbandWalkLayoutObject(const RubberbandContext& context, c
 
     if (layoutObject->HasLayer()) {
         DCHECK(layoutObject->IsBoxModelObject());
-        PaintLayer* layer = ToLayoutBoxModelObject(layoutObject)->Layer();
+        PaintLayer* layer = To<LayoutBoxModelObject>(layoutObject)->Layer();
         PaintLayer* containingLayer = layer->ContainingLayer();
         RubberbandLayerContext& layerContext = *localContext.m_layerContext;
 
@@ -425,7 +427,7 @@ void WebViewImpl::RubberbandWalkLayoutObject(const RubberbandContext& context, c
     const unsigned int candidateCnt = rubberbandState_->impl_->m_candidates.size();
 
     if (layoutObject->IsBox()) {
-        const LayoutBox* layoutBox = ToLayoutBox(layoutObject);
+        const LayoutBox* layoutBox = To<LayoutBox>(layoutObject);
 
         // HACK: LayoutTableSection is not a containing block, but the cell
         //       positions seem to be relative to LayoutTableSection instead of
@@ -451,7 +453,7 @@ void WebViewImpl::RubberbandWalkLayoutObject(const RubberbandContext& context, c
         }
     }
     else if (layoutObject->IsText() && isVisible && isTextRubberbandable(layoutObject)) {
-        const LayoutText* layoutText = ToLayoutText(layoutObject);
+        const LayoutText* layoutText = To<LayoutText>(layoutObject);
 
         WTF::String text(layoutText->GetText());
         if (layoutText->IsLayoutNGText()) {
@@ -844,7 +846,7 @@ bool WebViewImpl::HandleAltDragRubberbandEvent(const WebInputEvent& inputEvent)
         }
         else {
             WebString copied = FinishRubberbandingImpl(rc);
-            LocalFrame* frame = DynamicTo<LocalFrame>(AsView().page->MainFrame());
+            LocalFrame* frame = DynamicTo<LocalFrame>(page_->MainFrame());
             DCHECK(frame && frame->GetSystemClipboard());
             frame->GetSystemClipboard()->WritePlainText(copied, SystemClipboard::kCannotSmartReplace);
             frame->GetSystemClipboard()->CommitWrite();
@@ -853,12 +855,14 @@ bool WebViewImpl::HandleAltDragRubberbandEvent(const WebInputEvent& inputEvent)
         return true;
     }
     else {
-        WebViewClient* client = AsView().client;
-        if (client) {
+        WebLocalFrameImpl* main_frame = MainFrameImpl();
+
+        if (main_frame) {
+            WebFrameWidgetBase* widget = main_frame->LocalRootFrameWidget();
             IntPoint start = rubberbandState_->impl_->m_startPoint;
             IntPoint extent = IntPoint(positionInWidget.x(), positionInWidget.y());
             WebRect rc = ExpandRubberbandRect(getRubberbandRect(start, extent));
-            client->setRubberbandRect(rc);
+            widget->SetRubberbandRect(gfx::Rect(rc));
         }
         return true;
     }
@@ -885,12 +889,11 @@ bool WebViewImpl::IsRubberbanding() const
 bool WebViewImpl::PreStartRubberbanding()
 {
     DCHECK(!IsRubberbanding());
-    Page* page = AsView().page;
-    if (!page || !page->MainFrame() || !page->MainFrame()->IsLocalFrame() || !page->DeprecatedLocalMainFrame()->GetDocument())
+    if (!page_ || !page_->MainFrame() || !page_->MainFrame()->IsLocalFrame() || !page_->DeprecatedLocalMainFrame()->GetDocument())
         return false;
 
     Event* event = Event::CreateCancelable("rubberbandstarting");
-    if (DispatchEventResult::kCanceledByEventHandler == page->DeprecatedLocalMainFrame()->GetDocument()->DispatchEvent(*event))
+    if (DispatchEventResult::kCanceledByEventHandler == page_->DeprecatedLocalMainFrame()->GetDocument()->DispatchEvent(*event))
         return false;
 
     return !event->defaultPrevented();
@@ -905,7 +908,7 @@ void WebViewImpl::StartRubberbanding()
     s_groupId = 0; // reset group id
 
     RubberbandContext context;
-    RubberbandWalkFrame(context, AsView().page->DeprecatedLocalMainFrame(), LayoutPoint());
+    RubberbandWalkFrame(context, page_->DeprecatedLocalMainFrame(), LayoutPoint());
 }
 
 WebRect WebViewImpl::ExpandRubberbandRect(const WebRect& rcOrig)
@@ -994,18 +997,19 @@ WebString WebViewImpl::FinishRubberbandingImpl(const LayoutRect& rc)
 {
     DCHECK(IsRubberbanding());
 
-    WebViewClient* client = AsView().client;
-    if (client)
-        client->hideRubberbandRect();
+    WebLocalFrameImpl* main_frame = MainFrameImpl();
+    if (main_frame) {
+        WebFrameWidgetBase* widget = main_frame->LocalRootFrameWidget();
+        widget->HideRubberbandRect();
+    }
 
     WTF::String copied = GetTextInRubberbandImpl(rc);
 
     rubberbandState_.reset(nullptr);
     rubberbandingForcedOn_ = false;
-    Page* page = AsView().page;
-    if (page && page->MainFrame() && page->MainFrame()->IsLocalFrame() && page->DeprecatedLocalMainFrame()->GetDocument()) {
+    if (page_ && page_->MainFrame() && page_->MainFrame()->IsLocalFrame() && page_->DeprecatedLocalMainFrame()->GetDocument()) {
         Event* event = Event::Create("rubberbandfinished");
-        page->DeprecatedLocalMainFrame()->GetDocument()->DispatchEvent(*event);
+        page_->DeprecatedLocalMainFrame()->GetDocument()->DispatchEvent(*event);
     }
 
     return copied;
@@ -1015,18 +1019,18 @@ void WebViewImpl::AbortRubberbanding()
 {
     DCHECK(IsRubberbanding());
 
-
-    WebViewClient* client = AsView().client;
-    if (client)
-        client->hideRubberbandRect();
+    WebLocalFrameImpl* main_frame = MainFrameImpl();
+    if (main_frame) {
+        WebFrameWidgetBase* widget = main_frame->LocalRootFrameWidget();
+        widget->HideRubberbandRect();
+    }
 
     rubberbandState_.reset(nullptr);
     rubberbandingForcedOn_ = false;
 
-    Page* page = AsView().page;
-    if (page && page->MainFrame() && page->MainFrame()->IsLocalFrame() && page->DeprecatedLocalMainFrame()->GetDocument()) {
+    if (page_ && page_->MainFrame() && page_->MainFrame()->IsLocalFrame() && page_->DeprecatedLocalMainFrame()->GetDocument()) {
         Event* event = Event::Create("rubberbandaborted");
-        page->DeprecatedLocalMainFrame()->GetDocument()->DispatchEvent(*event);
+        page_->DeprecatedLocalMainFrame()->GetDocument()->DispatchEvent(*event);
     }
 }
 
@@ -1034,8 +1038,7 @@ WebString WebViewImpl::GetTextInRubberband(const WebRect& rc)
 {
     DCHECK(!IsRubberbanding());
 
-    Page* page = AsView().page;
-    if (!page || !page->MainFrame() || rc.IsEmpty() || !page->MainFrame()->IsLocalFrame())
+    if (!page_ || !page_->MainFrame() || rc.IsEmpty() || !page_->MainFrame()->IsLocalFrame())
         return WTF::g_empty_string;
 
     rubberbandState_ = std::unique_ptr<RubberbandState>(new RubberbandState());
@@ -1044,7 +1047,7 @@ WebString WebViewImpl::GetTextInRubberband(const WebRect& rc)
     RubberbandLayerContext layerContext;
     context.m_layerContext = &layerContext;
     layerContext.m_clipRect = LayoutRect(rc);
-    RubberbandWalkFrame(context, page->DeprecatedLocalMainFrame(), LayoutPoint());
+    RubberbandWalkFrame(context, page_->DeprecatedLocalMainFrame(), LayoutPoint());
     LayoutRect layoutRc(rc);
     WTF::String result = GetTextInRubberbandImpl(layoutRc);
     rubberbandState_.reset(nullptr);
@@ -1102,8 +1105,8 @@ void appendCandidatesByLayoutNGText(
 
         candidate.m_charPositions.reserve(candidate.m_len);
         for (int id = startOffset; id < startOffset + candidate.m_len; ++id) {
-            auto localRect = physicalTextFragment.LocalRect(id, id + 1);
-            LayoutUnit pos = localRect.X();
+            auto localRect2 = physicalTextFragment.LocalRect(id, id + 1);
+            LayoutUnit pos = localRect2.X();
             pos *= localContext.m_layerContext->m_scaleX;
             if (candidate.m_isLTR)
                 pos += candidate.m_absRect.X();

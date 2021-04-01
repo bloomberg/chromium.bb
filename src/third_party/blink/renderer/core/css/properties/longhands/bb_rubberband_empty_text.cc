@@ -23,7 +23,7 @@
 #include "third_party/blink/renderer/core/css/properties/longhands.h"
 
 #include "third_party/blink/renderer/core/css/css_string_value.h"
-#include "third_party/blink/renderer/core/css/parser/css_property_parser_helpers.h"
+#include "third_party/blink/renderer/core/css/properties/css_parsing_utils.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 
 namespace blink {
@@ -34,8 +34,8 @@ const CSSValue* BbRubberbandEmptyText::ParseSingleValue(
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
   if (range.Peek().Id() == CSSValueID::kNone)
-    return css_property_parser_helpers::ConsumeIdent(range);
-  return css_property_parser_helpers::ConsumeString(range);
+    return css_parsing_utils::ConsumeIdent(range);
+  return css_parsing_utils::ConsumeString(range);
 }
 
 const CSSValue* BbRubberbandEmptyText::CSSValueFromComputedStyleInternal(

@@ -4,6 +4,7 @@
 
 #include "ui/base/win/rubberband_windows.h"
 #include "ui/gfx/win/window_impl.h"
+#include "base/notreached.h"
 
 namespace ui {
 

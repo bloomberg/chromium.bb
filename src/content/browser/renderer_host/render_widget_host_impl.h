@@ -380,6 +380,8 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   void WasShown(blink::mojom::RecordContentToVisibleTimeRequestPtr
                     record_tab_switch_time_request);
 
+  void EnableAltDragRubberbanding(bool enabled);
+
 #if defined(OS_ANDROID)
   // Set the importance of widget. The importance is passed onto
   // RenderProcessHost which aggregates importance of all of its widgets.

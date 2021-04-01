@@ -179,6 +179,9 @@ class PLATFORM_EXPORT WidgetBase : public mojom::blink::Widget,
 
   void SetToolTipText(const String& tooltip_text, TextDirection dir);
 
+  void SetRubberbandRect(const gfx::Rect& rect);
+  void HideRubberbandRect();
+
   void ShowVirtualKeyboard();
   void UpdateSelectionBounds();
   void UpdateTextInputState();

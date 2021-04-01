@@ -802,6 +802,14 @@ void WidgetBase::SetToolTipText(const String& tooltip_text, TextDirection dir) {
                                ToBaseTextDirection(dir));
 }
 
+void WidgetBase::SetRubberbandRect(const gfx::Rect& rect) {
+  widget_host_->SetRubberbandRect(rect);
+}
+
+void WidgetBase::HideRubberbandRect() {
+  widget_host_->HideRubberbandRect();
+}
+
 void WidgetBase::ShowVirtualKeyboard() {
   UpdateTextInputStateInternal(true, false);
 }

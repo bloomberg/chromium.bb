@@ -95,6 +95,7 @@ class WebLocalFrameImpl;
 class WebSettingsImpl;
 class WebViewClient;
 class WebViewFrameWidget;
+class WebFrameWidgetBase;
 
 enum class FullscreenRequestType;
 
@@ -547,6 +548,7 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   friend class WebView;  // So WebView::Create can call our constructor
   friend class WebViewFrameWidget;
   friend class WTF::RefCounted<WebViewImpl>;
+  friend class WebFrameWidgetBase;
 
   // These are temporary methods to allow WebViewFrameWidget to delegate to
   // WebViewImpl. We expect to eventually move these out.

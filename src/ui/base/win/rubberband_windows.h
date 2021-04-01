@@ -6,7 +6,7 @@
 #define UI_BASE_WIN_RUBBERBAND_WINDOWS_H_
 
 #include "base/macros.h"
-#include "ui/base/ui_base_export.h"
+#include "base/component_export.h"
 
 #include <windows.h>
 #include <memory>
@@ -18,7 +18,7 @@ class Rect;
 namespace ui {
 class RubberbandWindow;
 
-class UI_BASE_EXPORT RubberbandOutline {
+class COMPONENT_EXPORT(UI_BASE) RubberbandOutline {
  public:
   RubberbandOutline();
   ~RubberbandOutline();

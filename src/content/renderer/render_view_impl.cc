@@ -630,20 +630,6 @@ int RenderViewImpl::HistoryForwardListCount() {
   return history_list_length_ - HistoryBackListCount() - 1;
 }
 
-void RenderViewImpl::setRubberbandRect(const WebRect& rect) {
-  Send(new ViewHostMsg_SetRubberbandRect(
-    main_render_frame_->GetLocalRootRenderWidget()->routing_id(), rect));
-}
-
-void RenderViewImpl::hideRubberbandRect() {
-  Send(new ViewHostMsg_HideRubberbandRect(
-    main_render_frame_->GetLocalRootRenderWidget()->routing_id()));
-}
-
-void RenderViewImpl::EnableAltDragRubberbanding(bool is_enabled) {
-  GetWebView()->EnableAltDragRubberbanding(is_enabled);
-}
-
 // blink::WebWidgetClient ----------------------------------------------------
 
 bool RenderViewImpl::CanHandleGestureEvent() {
