@@ -2106,7 +2106,9 @@ bool PrintRenderFrameHelper::InitPrintSettings(bool fit_to_paper_size, HWND owne
   mojom::PrintPagesParams settings;
   settings.params = mojom::PrintParams::New();
 
-  GetPrintManagerHost()->GetDefaultPrintSettings(reinterpret_cast<uint32_t>(owner_wnd), &settings.params);
+  GetPrintManagerHost()->GetDefaultPrintSettings(
+          static_cast<uint32_t>(reinterpret_cast<intptr_t>(owner_wnd)),
+          &settings.params);
 
   // Check if the printer returned any settings, if the settings is empty, we
   // can safely assume there are no printer drivers configured. So we safely
@@ -2263,7 +2265,7 @@ void PrintRenderFrameHelper::GetPrintSettingsFromUser(
   params.margin_type = margin_type;
   params.is_scripted = is_scripted;
   params.is_modifiable = !IsPrintingNodeOrPdfFrame(frame, node);
-  params.owner_wnd = reinterpret_cast<uint32_t>(frame->View()->GetHwnd());
+  params.owner_wnd = static_cast<uint32_t>(reinterpret_cast<intptr_t>(frame->View()->GetHwnd()));
 
   GetPrintManagerHost()->DidShowPrintDialog();
 
