@@ -560,6 +560,9 @@ void WebViewImpl::enableAltDragRubberbanding(bool enabled)
     DCHECK(Statics::isInBrowserMainThread());
     DCHECK(!d_wasDestroyed);
     d_altDragRubberbandingEnabled = enabled;
+    if (!d_renderViewHost) {
+        return;
+    }
 
     auto *rwh = static_cast<content::RenderWidgetHostImpl*>(
             d_renderViewHost->GetWidget());
