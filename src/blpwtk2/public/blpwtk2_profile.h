@@ -43,7 +43,16 @@ enum class ProxyType {
     kHTTPS
 };
 
-
+enum class GpuMode {
+    kUnknown,
+    // The GPU process is running with hardware acceleration, using only GL.
+    kOOPHardwareAccelerated,
+    // The GPU process is running for SwiftShader WebGL.
+    kOOPSoftware,
+    // The GPU process is disabled and won't start. This is only used on Windows
+    // when GPU acceleration and SwiftShader are both disabled.
+    kDisabled
+};
                         // =============
                         // class Profile
                         // =============
@@ -156,6 +165,7 @@ class Profile
 
 
     // patch section: gpu
+    virtual void getGpuMode(GpuMode& currentMode, GpuMode& startupMode, int& crashCount) const = 0;
 
 
 
