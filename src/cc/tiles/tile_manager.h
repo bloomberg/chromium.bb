@@ -107,6 +107,9 @@ class CC_EXPORT TileManagerClient {
   // True if there is a pending tree.
   virtual bool HasPendingTree() = 0;
 
+  // Called when TileManager gets out of memory error when assigning tile memory.
+  virtual void onTileMemoryError() {}
+
  protected:
   virtual ~TileManagerClient() {}
 };
@@ -146,6 +149,16 @@ RasterTaskCompletionStatsAsValue(const RasterTaskCompletionStats& stats);
 
 class CC_EXPORT TileManager : CheckerImageTrackerClient {
  public:
+  // blpwtk2: there can be multiple TileManagers.
+  // Set the total memory limited for all TileManagers
+  static void setTotalTileMemoryLimit(size_t limit);
+  // Get the default memory limit (in bytes) of this TileManager
+  std::size_t getDefaultTileMemoryLimit() const;
+  // Override the default memory limit (in bytes) of this TileManager
+  void overrideTileMemoryLimit(size_t limit);
+  // Set the tag for diagnostics
+  void setTag(std::string tag);
+
   TileManager(TileManagerClient* client,
               base::SequencedTaskRunner* origin_task_runner,
               scoped_refptr<base::SequencedTaskRunner> image_worker_task_runner,
@@ -490,6 +503,10 @@ class CC_EXPORT TileManager : CheckerImageTrackerClient {
   // has completed.
   bool has_pending_queries_ = false;
   base::CancelableOnceClosure check_pending_tile_queries_callback_;
+
+  // blpwtk2: tag for diagnostics
+  std::size_t tile_memory_limit_override_{0};
+  std::string tag_;
 
   // We need two WeakPtrFactory objects as the invalidation pattern of each is
   // different. The |task_set_finished_weak_ptr_factory_| is invalidated any
