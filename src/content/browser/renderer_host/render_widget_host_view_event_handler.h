@@ -144,6 +144,8 @@ class CONTENT_EXPORT RenderWidgetHostViewEventHandler
   }
   void set_window(aura::Window* window) { window_ = window; }
 
+  bool has_capture_from_mouse_down() const { return has_capture_from_mouse_down_; }
+
   // Lock/Unlock processing of future mouse events.
   blink::mojom::PointerLockResult LockMouse(bool request_unadjusted_movement);
   // Change the current lock to have the given unadjusted_movement.
@@ -317,6 +319,10 @@ class CONTENT_EXPORT RenderWidgetHostViewEventHandler
 
   // The following are not owned. They should outlive |this|
   RenderWidgetHostImpl* const host_;
+
+  // True if we have capture due to the mouse being down.
+  bool has_capture_from_mouse_down_;
+
   // Should create |this| and own it.
   RenderWidgetHostViewBase* const host_view_;
   // Optional, used to redirect events to a popup and associated handler.
