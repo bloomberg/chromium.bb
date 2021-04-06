@@ -23,7 +23,13 @@
 #ifndef INCLUDED_BLPWTK2_UTILITY_H
 #define INCLUDED_BLPWTK2_UTILITY_H
 
+#include <string>
+
 namespace blpwtk2 {
+class Profile;
+
+void DumpGpuInfo(const Profile* profile, const std::string& path);
+std::string GetGpuInfo(const Profile* profile);
 }  // close namespace blpwtk2
 
 

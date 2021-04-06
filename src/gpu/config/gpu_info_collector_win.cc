@@ -28,6 +28,7 @@
 #include "base/numerics/safe_conversions.h"
 #include "base/scoped_native_library.h"
 #include "base/strings/stringprintf.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/trace_event/trace_event.h"
 #include "base/win/scoped_com_initializer.h"
 #include "base/win/windows_version.h"
@@ -181,6 +182,7 @@ bool CollectDriverInfoD3D(GPUInfo* gpu_info) {
     device.sub_sys_id = desc.SubSysId;
     device.revision = desc.Revision;
     device.luid = desc.AdapterLuid;
+    device.device_string = base::WideToUTF8(desc.Description);
 
     LARGE_INTEGER umd_version;
     hr = dxgi_adapter->CheckInterfaceSupport(__uuidof(IDXGIDevice),
