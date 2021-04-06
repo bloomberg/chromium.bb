@@ -548,6 +548,9 @@ class CORE_EXPORT WebFrameWidgetBase
 
   void SetToolTipText(const String& tooltip_text, TextDirection dir);
 
+  void SetRubberbandRect(const gfx::Rect& rect);
+  void HideRubberbandRect();
+
   void ShowVirtualKeyboardOnElementFocus();
   void ProcessTouchAction(WebTouchAction touch_action);
 

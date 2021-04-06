@@ -228,6 +228,8 @@ interface Widget {
   WasShown(mojo_base.mojom.TimeTicks show_request_timestamp,
            bool was_evicted,
            RecordContentToVisibleTimeRequest? record_tab_switch_time_request);
+
+  EnableAltDragRubberbanding(bool is_enabled);
 };
 
 // Implemented in Browser, this interface defines widget-specific methods that
@@ -271,6 +273,9 @@ interface WidgetHost {
         render_frame_metadata_observer_client_receiver,
       pending_remote<cc.mojom.RenderFrameMetadataObserver>
         render_frame_metadata_observer);
+
+  SetRubberbandRect(gfx.mojom.Rect rect);
+  HideRubberbandRect();
 };
 
 // This interface is bound on the compositor thread.
