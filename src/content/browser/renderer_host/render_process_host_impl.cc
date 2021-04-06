@@ -116,6 +116,7 @@
 #include "content/browser/renderer_host/agent_metrics_collector.h"
 #include "content/browser/renderer_host/code_cache_host_impl.h"
 #include "content/browser/renderer_host/embedded_frame_sink_provider_impl.h"
+#include "content/browser/renderer_host/dwrite_font_proxy_impl_win.h"
 #include "content/browser/renderer_host/file_utilities_host_impl.h"
 #include "content/browser/renderer_host/media/media_stream_manager.h"
 #include "content/browser/renderer_host/media/media_stream_track_metrics_host.h"
@@ -2015,6 +2016,12 @@ void RenderProcessHostImpl::CreateMessageFilters() {
 
 #if BUILDFLAG(ENABLE_PLUGINS)
   AddFilter(new PepperRendererConnection(GetID()));
+#endif
+
+#if defined(OS_WIN)
+  {
+    DWriteFontProxyImpl::SetFontCollection(browser_context_->GetFontCollection());
+  }
 #endif
 
   p2p_socket_dispatcher_host_ =
