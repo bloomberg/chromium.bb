@@ -118,7 +118,6 @@ mojom("mojom_platform") {
     "page/display_cutout.mojom",
     "page/drag.mojom",
     "page/page.mojom",
-    "page/page_visibility_state.mojom",
     "page/record_content_to_visible_time_request.mojom",
     "page/widget.mojom",
     "page_state/page_state.mojom",
@@ -209,6 +208,7 @@ mojom("mojom_platform") {
     ":mojom_mhtml_load_result",
     ":script_type_mojo_bindings",
     ":web_feature_mojo_bindings",
+    ":mojom_page_visibility",
     "//cc/mojom",
     "//components/payments/mojom",
     "//components/schema_org/common:mojom",
@@ -1327,5 +1327,13 @@ mojom("mobile_metrics") {
       traits_sources = [ "//third_party/blink/common/mobile_metrics/mobile_friendliness_mojom_traits.cc" ]
       traits_public_deps = [ "//third_party/blink/public/common:headers" ]
     },
+  ]
+}
+
+mojom("mojom_page_visibility") {
+  sources = ["page/page_visibility_state.mojom"]
+  deps = [
+    "//content/public/common:window_container_mojom",
+    "//media/mojo/mojom",
   ]
 }
