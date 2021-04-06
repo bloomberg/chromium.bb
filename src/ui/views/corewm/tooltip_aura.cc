@@ -321,5 +321,9 @@ void TooltipAura::OnWidgetDestroying(views::Widget* widget) {
   tooltip_window_ = nullptr;
 }
 
+HWND TooltipAura::GetParentHwnd() {
+  return 0;
+}
+
 }  // namespace corewm
 }  // namespace views
