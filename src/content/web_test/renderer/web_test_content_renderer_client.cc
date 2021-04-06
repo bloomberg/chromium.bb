@@ -59,8 +59,8 @@ RenderViewImpl* CreateWebViewTestProxy(
 }
 
 std::unique_ptr<RenderWidget> CreateWebWidgetTestProxy(
-    CompositorDependencies* compositor_deps) {
-  return std::make_unique<WebWidgetTestProxy>(compositor_deps);
+    CompositorDependencies* compositor_deps, int view_id) {
+  return std::make_unique<WebWidgetTestProxy>(compositor_deps, view_id);
 }
 
 RenderFrameImpl* CreateWebFrameTestProxy(RenderFrameImpl::CreateParams params) {
