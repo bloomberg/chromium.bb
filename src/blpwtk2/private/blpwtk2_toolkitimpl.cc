@@ -375,6 +375,26 @@ static void appendCommandLine(const std::vector<std::string>& argv)
     }
 }
 
+static bool startsWith(const std::string& hay, const std::string& needle)
+{
+    return hay.compare(0, needle.size(), needle) == 0;
+}
+
+static void appendCommonCommandLineSwitches(std::vector<std::string> *switches)
+{
+    switches->push_back("disable-in-process-stack-traces");
+
+
+
+    // patch section: spellchecker
+
+
+    // patch section: web script context
+
+
+
+}
+
                         // -----------------
                         // class ToolkitImpl
                         // -----------------
@@ -507,12 +527,6 @@ ToolkitImpl *ToolkitImpl::instance()
     return g_instance;
 }
 
-static bool
-startsWith(const std::string& hay, const std::string& needle)
-{
-    return hay.compare(0, needle.size(), needle) == 0;
-}
-
 ToolkitImpl::ToolkitImpl(const std::string&              dictionaryPath,
                          const std::string&              hostChannel,
                          const std::vector<std::string>& cmdLineSwitches,
@@ -529,6 +543,9 @@ ToolkitImpl::ToolkitImpl(const std::string&              dictionaryPath,
     g_instance = this;
     content::InitializeMojo();
     base::CommandLine::Init(0, nullptr);
+
+    // Append common command line switches
+    appendCommonCommandLineSwitches(&args);
 
     // Setup sandbox
     sandbox::SandboxInterfaceInfo sandboxInfo;
