@@ -54,6 +54,7 @@ class PrinterQuery {
                    uint32_t expected_page_count,
                    bool has_selection,
                    mojom::MarginType margin_type,
+                   HWND hwnd,
                    bool is_scripted,
                    bool is_modifiable,
                    base::OnceClosure callback);

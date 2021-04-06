@@ -108,6 +108,12 @@ class CORE_EXPORT WebPagePopupImpl final : public WebPagePopup,
   WebDocument GetDocument() override;
   WebPagePopupClient* GetClientForTesting() const override;
   void InitializeForTesting(WebView* view) override;
+  void ResetWidgetInterfaces(
+    CrossVariantMojoAssociatedRemote<mojom::blink::WidgetHostInterfaceBase> widgetHost,
+    CrossVariantMojoAssociatedRemote<mojom::blink::FrameWidgetHostInterfaceBase> frameWidgetHost,
+    CrossVariantMojoAssociatedRemote<mojom::blink::PopupWidgetHostInterfaceBase> popupWidgetHost,
+    CrossVariantMojoAssociatedReceiver<mojom::blink::WidgetInterfaceBase> widget,
+    CrossVariantMojoAssociatedReceiver<mojom::blink::FrameWidgetInterfaceBase> pendingFWReceiver) override;
 
   // PagePopup implementation.
   void PostMessageToPopup(const String& message) override;
