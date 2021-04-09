@@ -130,7 +130,11 @@ class VIZ_HOST_EXPORT GpuHostImpl : public mojom::GpuHost {
     bool info_collection_gpu_process = false;
 
     // The time (milliseconds) waiting for establishing GPU channel
-    std::size_t establish_channel_time_out_ms{5000};
+    //
+    // When running in debug configuration on a Lenovo X1 extreme laptop with
+    // battery saver mode enabled, the GPU process can take upto 12 seconds to
+    // start.
+    std::size_t establish_channel_time_out_ms{13000};
   };
 
   enum class EstablishChannelStatus {
