@@ -117,6 +117,7 @@ class VIEWS_EXPORT DesktopWindowTreeHostWin
   bool ShouldUseNativeFrame() const override;
   bool ShouldWindowContentsBeTransparent() const override;
   void FrameTypeChanged() override;
+  void CompositionChanged() override;
   void SetFullscreen(bool fullscreen) override;
   bool IsFullscreen() const override;
   void SetOpacity(float opacity) override;
