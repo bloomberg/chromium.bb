@@ -213,6 +213,9 @@ class WebViewPlugin : public blink::WebPlugin,
         mojo::PendingRemote<cc::mojom::RenderFrameMetadataObserver>
             render_frame_metadata_observer) override {}
 
+    void SetRubberbandRect(const ::gfx::Rect& rect) override {}
+    void HideRubberbandRect() override {}
+
    private:
     WebViewPlugin* plugin_;
     blink::WebNavigationControl* frame_ = nullptr;

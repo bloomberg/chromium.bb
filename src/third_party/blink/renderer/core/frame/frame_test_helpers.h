@@ -268,6 +268,10 @@ class TestWebWidgetClient : public WebWidgetClient,
       mojo::PendingRemote<cc::mojom::blink::RenderFrameMetadataObserver>
           render_frame_metadata_observer) override;
 
+  void SetRubberbandRect(const gfx::Rect& rect) override {}
+  void HideRubberbandRect() override {}
+
+
  private:
   WebFrameWidget* frame_widget_ = nullptr;
   cc::LayerTreeHost* layer_tree_host_ = nullptr;

@@ -58,6 +58,7 @@ class MockWidget : public blink::mojom::Widget {
                 bool was_evicted,
                 blink::mojom::RecordContentToVisibleTimeRequestPtr
                     record_tab_switch_time_request) override;
+  void EnableAltDragRubberbanding(bool is_enabled) override {}
 
  private:
   base::Optional<bool> is_hidden_;
