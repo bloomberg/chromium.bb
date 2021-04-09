@@ -2894,6 +2894,10 @@ KURL WebFrameWidgetBase::GetURLForDebugTrace() {
   return {};
 }
 
+void WebFrameWidgetBase::EnableAltDragRubberbanding(bool is_enabled) {
+  View()->EnableAltDragRubberbanding(is_enabled);
+}
+
 void WebFrameWidgetBase::ReleaseMouseLockAndPointerCaptureForTesting() {
   GetPage()->GetPointerLockController().ExitPointerLock();
   MouseCaptureLost();

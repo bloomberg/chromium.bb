@@ -400,6 +400,7 @@ class CORE_EXPORT WebFrameWidgetBase
   void WasHidden() override;
   void WasShown(bool was_evicted) override;
   KURL GetURLForDebugTrace() override;
+  void EnableAltDragRubberbanding(bool is_enabled) override;
 
   // mojom::blink::FrameWidget methods.
   void DragTargetDragEnter(const WebDragData&,
