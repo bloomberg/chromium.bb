@@ -171,6 +171,12 @@ BrowserContextImpl::~BrowserContextImpl()
                                            d_resourceContext.release());
     }
 
+    if (d_requestContextManager.get()) {
+        content::BrowserThread::DeleteSoon(content::BrowserThread::IO,
+                                           FROM_HERE,
+                                           d_requestContextManager.release());
+    }
+
     if (d_isOffTheRecord) {
         // Delete the temporary directory that we created in the constructor.
 

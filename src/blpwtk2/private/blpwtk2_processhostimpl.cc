@@ -45,6 +45,7 @@
 #include <base/task/task_traits.h>
 #include <content/public/browser/browser_task_traits.h>
 #include <content/public/browser/browser_thread.h>
+#include <content/public/browser/site_instance.h>
 
 
 
@@ -330,7 +331,7 @@ void ProcessHostImpl::getHostId(int* hostId,
   } else {
     // The requester specified a process id of 0, which indicates that the
     // host should spawn a new subprocess and use it for the RenderProcess
-    *hostId = content::RenderProcessHostImpl::GenerateUniqueId();
+    *hostId = content::SiteInstance::kNoProcessAffinity;
     *context = nullptr;
   }
 }
