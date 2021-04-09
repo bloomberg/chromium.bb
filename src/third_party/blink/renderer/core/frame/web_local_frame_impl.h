@@ -480,6 +480,8 @@ class CORE_EXPORT WebLocalFrameImpl final
 
   void AddInspectorIssueImpl(mojom::blink::InspectorIssueCode code) override;
 
+  bool IsPrintAllowed() const override;
+
  private:
   friend LocalFrameClientImpl;
 
