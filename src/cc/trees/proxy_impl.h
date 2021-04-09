@@ -77,6 +77,11 @@ class CC_EXPORT ProxyImpl : public LayerTreeHostImplClient,
 
   void RequestBeginMainFrameNotExpected(bool new_state) override;
 
+  std::size_t  getTileMemoryBytes() const;
+  std::size_t getDefaultTileMemoryLimit() const;
+  void overrideTileMemoryLimit(std::size_t limit);
+  void setTag(std::string tag);
+
  private:
   // The members of this struct should be accessed on the impl thread only when
   // the main thread is blocked for a commit.
