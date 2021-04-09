@@ -452,12 +452,13 @@ cc::LayerTreeHost* WebPagePopupImpl::InitializeCompositing(
     bool for_child_local_root_frame,
     const ScreenInfo& screen_info,
     std::unique_ptr<cc::UkmRecorderFactory> ukm_recorder_factory,
+    int view_id,
     const cc::LayerTreeSettings* settings) {
   // Careful Initialize() is called after InitializeCompositing, so don't do
   // much work here.
   widget_base_->InitializeCompositing(
       main_thread_scheduler, task_graph_runner, for_child_local_root_frame,
-      screen_info, std::move(ukm_recorder_factory), settings);
+      screen_info, std::move(ukm_recorder_factory), view_id, settings);
   return widget_base_->LayerTreeHost();
 }
 
