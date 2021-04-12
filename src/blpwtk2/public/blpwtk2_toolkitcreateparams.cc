@@ -74,6 +74,7 @@ struct ToolkitCreateParamsImpl final
 
 
     // patch section: memory diagnostics
+    size_t d_totalTileMemoryLimit;
 
 
     // patch section: embedder ipc
@@ -117,6 +118,7 @@ ToolkitCreateParamsImpl::ToolkitCreateParamsImpl()
 
 
     // patch section: memory diagnostics
+    , d_totalTileMemoryLimit(0)
 
 
     // patch section: embedder ipc
@@ -447,6 +449,17 @@ bool ToolkitCreateParams::isIsolatedProfile() const
 bool ToolkitCreateParams::isRendererIOThreadEnabled() const
 {
     return d_impl->d_rendererIOThreadEnabled;
+}
+
+
+
+// patch section: memory diagnostics
+void ToolkitCreateParams::setTotalTileMemoryLimit(std::size_t limit) {
+    d_impl->d_totalTileMemoryLimit = limit;
+}
+
+std::size_t ToolkitCreateParams::getTotalTileMemoryLimit() const {
+    return d_impl->d_totalTileMemoryLimit;
 }
 
 
