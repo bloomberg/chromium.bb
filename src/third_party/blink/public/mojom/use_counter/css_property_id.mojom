@@ -740,6 +740,9 @@ enum CSSSampleId {
 
 
     // patch section: rubberband (features 691,692,693)
+    kRubberbandable = 691,
+    kBbRubberbandEmptyText = 692,
+    kBbRubberbandGroupDelimiter = 693,
 
 
     // patch section: lcd-text background (feature 694)
