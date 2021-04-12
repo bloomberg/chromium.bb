@@ -119,6 +119,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
                    const gfx::Rect& pos) override;
   void InitAsFullscreen(RenderWidgetHostView* reference_host_view) override;
   void Focus() override;
+  void Blur() override;
   void UpdateCursor(const WebCursor& cursor) override;
   void DisplayCursor(const WebCursor& cursor) override;
   CursorManager* GetCursorManager() override;
@@ -267,6 +268,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
                        const gfx::Rect& new_bounds) override;
   gfx::NativeCursor GetCursor(const gfx::Point& point) override;
   int GetNonClientComponent(const gfx::Point& point) const override;
+  bool ShouldTryFocusOnMouseDown() const override;
   bool ShouldDescendIntoChildForEventHandling(
       aura::Window* child,
       const gfx::Point& location) override;

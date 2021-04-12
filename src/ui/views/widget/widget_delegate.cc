@@ -263,6 +263,10 @@ View* WidgetDelegate::CreateOverlayView() {
   return std::move(overlay_view_factory_).Run().release();
 }
 
+aura::Window* WidgetDelegate::GetDefaultActivationWindow() {
+  return NULL;
+}
+
 bool WidgetDelegate::WidgetHasHitTestMask() const {
   return false;
 }
