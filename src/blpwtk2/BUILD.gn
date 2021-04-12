@@ -295,6 +295,7 @@ shared_library("blpwtk2") {
 
   public_deps = [
     ":blpwtk2_generate_sources",
+    ":blpwtk2_manifest",
     "//v8:v8",
     "//base/allocator:buildflags",
   ]
@@ -302,7 +303,6 @@ shared_library("blpwtk2") {
   deps = [
     ":interfaces",
     ":pak",
-    ":blpwtk2_manifest",
     "//base",
     "//cc",
     "//chrome/chrome_blpwtk2",
