@@ -2797,7 +2797,6 @@ void MainThreadSchedulerImpl::OnBeginNestedRunLoop() {
 }
 
 void MainThreadSchedulerImpl::OnExitNestedRunLoop() {
-  DCHECK(!main_thread_only().running_queues.empty());
   main_thread_only().nested_runloop = false;
   ApplyVirtualTimePolicy();
 }
