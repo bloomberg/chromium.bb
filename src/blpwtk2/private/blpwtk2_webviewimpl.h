@@ -106,10 +106,12 @@ class WebViewImpl final : public WebView,
 
 
     // patch section: fullscreen mode
+    bool d_isFullscreen;
 
 
 
     int createWidget(blpwtk2::NativeView parent);
+    void setFullscreenMode(bool isFullscreen);
 
     // blpwtk2::NativeViewWidgetDelegate overrides
     void onDestroyed(NativeViewWidget* source) override;
@@ -127,6 +129,21 @@ class WebViewImpl final : public WebView,
         // This is called when WebKit tells us that it is done tabbing through
         // controls on the page. Provides a way for WebContentsDelegates to
         // handle this. Returns true if the delegate successfully handled it.
+
+    void EnterFullscreenModeForTab(
+        content::RenderFrameHost* requesting_frame,
+        const blink::mojom::FullscreenOptions& options) override;
+        // Called when the renderer puts a tab into fullscreen mode.
+        // |origin| is the origin of the initiating frame inside the |web_contents|.
+        // |origin| can be empty in which case the |web_contents| last committed
+        // URL's origin should be used.
+
+    void ExitFullscreenModeForTab(content::WebContents*) override;
+        // Called when the renderer puts a tab out of fullscreen mode.
+
+    bool IsFullscreenForTabOrPending(const::content::WebContents* web_contents) override;
+        // This method provides the source of truth for if a webview is in fullscreen mode
+        // or not.
 
     void RequestMediaAccessPermission(
         content::WebContents                  *web_contents,
@@ -235,6 +252,7 @@ class WebViewImpl final : public WebView,
     void setNCHitTestRegion(NativeRegion region) override;
     void enableNCHitTest(bool enabled) override;
     void onNCHitTestResult(int x, int y, int result) override;
+    void onEnterFullscreenModeResult(bool isFullscreen) override;
     void performCustomContextMenuAction(int actionId) override;
     void find(const StringRef& text, bool matchCase, bool forward) override;
     void stopFind(bool preserveSelection) override;
