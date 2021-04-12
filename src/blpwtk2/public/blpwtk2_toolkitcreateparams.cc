@@ -80,8 +80,7 @@ struct ToolkitCreateParamsImpl final
 
 
     // patch section: renderer ui
-
-
+    bool d_rendererUIEnabled;
 
     ToolkitCreateParamsImpl();
 };
@@ -123,9 +122,7 @@ ToolkitCreateParamsImpl::ToolkitCreateParamsImpl()
 
 
     // patch section: renderer ui
-
-
-
+    , d_rendererUIEnabled(false)
 {
 }
 
@@ -309,8 +306,10 @@ void ToolkitCreateParams::setNativeViewManipulationAsync(bool isNativeViewManipu
 
 
 // patch section: renderer ui
-
-
+void ToolkitCreateParams::setRendererUIEnabled(bool rendererUIEnabled)
+{
+    d_impl->d_rendererUIEnabled = rendererUIEnabled;
+}
 
 ThreadMode ToolkitCreateParams::threadMode() const
 {
@@ -458,8 +457,10 @@ bool ToolkitCreateParams::isRendererIOThreadEnabled() const
 
 
 // patch section: renderer ui
-
-
+bool ToolkitCreateParams::rendererUIEnabled() const
+{
+    return d_impl->d_rendererUIEnabled;
+}
 
 }  // close namespace blpwtk2
 
