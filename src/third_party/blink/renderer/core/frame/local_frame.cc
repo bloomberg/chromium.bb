@@ -1052,9 +1052,10 @@ scoped_refptr<InspectorTaskRunner> LocalFrame::GetInspectorTaskRunner() {
 
 void LocalFrame::StartPrinting(const FloatSize& page_size,
                                const FloatSize& original_page_size,
-                               float maximum_shrink_ratio) {
+                               float maximum_shrink_ratio,
+                               bool use_media_selector) {
   DCHECK(!saved_scroll_offsets_);
-  SetPrinting(true, page_size, original_page_size, maximum_shrink_ratio);
+  SetPrinting(true, page_size, original_page_size, maximum_shrink_ratio, use_media_selector);
 }
 
 void LocalFrame::EndPrinting() {
@@ -1065,7 +1066,8 @@ void LocalFrame::EndPrinting() {
 void LocalFrame::SetPrinting(bool printing,
                              const FloatSize& page_size,
                              const FloatSize& original_page_size,
-                             float maximum_shrink_ratio) {
+                             float maximum_shrink_ratio,
+                             bool use_media_selector) {
   // In setting printing, we should not validate resources already cached for
   // the document.  See https://bugs.webkit.org/show_bug.cgi?id=43704
   ResourceCacheValidationSuppressor validation_suppressor(
@@ -1073,7 +1075,9 @@ void LocalFrame::SetPrinting(bool printing,
 
   GetDocument()->SetPrinting(printing ? Document::kPrinting
                                       : Document::kFinishingPrinting);
-  View()->AdjustMediaTypeForPrinting(printing);
+
+  if (use_media_selector)
+    View()->AdjustMediaTypeForPrinting(printing);
 
   if (TextAutosizer* text_autosizer = GetDocument()->GetTextAutosizer())
     text_autosizer->UpdatePageInfo();
@@ -1083,8 +1087,11 @@ void LocalFrame::SetPrinting(bool printing,
                                      maximum_shrink_ratio);
   } else {
     if (LayoutView* layout_view = View()->GetLayoutView()) {
+      if (use_media_selector) {
       layout_view->SetIntrinsicLogicalWidthsDirty();
       layout_view->SetNeedsLayout(layout_invalidation_reason::kPrintingChanged);
+      }
+
       layout_view->InvalidatePaintForViewAndDescendants();
     }
     View()->UpdateLayout();
@@ -1096,7 +1103,8 @@ void LocalFrame::SetPrinting(bool printing,
        child = child->Tree().NextSibling()) {
     if (auto* child_local_frame = DynamicTo<LocalFrame>(child)) {
       if (printing)
-        child_local_frame->StartPrinting();
+        child_local_frame->StartPrinting(FloatSize(), FloatSize(), 0,
+                use_media_selector);
       else
         child_local_frame->EndPrinting();
     }
