@@ -46,6 +46,7 @@
 #include <content/public/browser/browser_task_traits.h>
 #include <content/public/browser/browser_thread.h>
 #include <content/public/browser/site_instance.h>
+#include <ui/gfx/win/rendering_window_manager.h>
 
 
 
@@ -524,6 +525,17 @@ void ProcessHostImpl::setPacUrl(const std::string& url) {
 
 
 // patch section: renderer ui
+void ProcessHostImpl::registerNativeViewForComposition(unsigned int view)
+{
+  gfx::RenderingWindowManager::GetInstance()->RegisterParent(
+      reinterpret_cast<NativeView>(view));
+}
+
+void ProcessHostImpl::unregisterNativeViewForComposition(unsigned int view)
+{
+  gfx::RenderingWindowManager::GetInstance()->UnregisterParent(
+      reinterpret_cast<NativeView>(view));
+}
 
 
 // patch section: gpu

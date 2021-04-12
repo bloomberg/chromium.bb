@@ -499,6 +499,7 @@ void LocalFrame::Trace(Visitor* visitor) const {
 #if defined(OS_MAC)
   visitor->Trace(text_input_host_);
 #endif
+  visitor->Trace(local_frame_host_partial_override_remote_);
   visitor->Trace(local_frame_host_remote_);
   visitor->Trace(back_forward_cache_controller_host_remote_);
   visitor->Trace(receiver_);
@@ -1347,6 +1348,10 @@ String LocalFrame::SelectedTextForClipboard() const {
 void LocalFrame::TextSelectionChanged(const WTF::String& selection_text,
                                       uint32_t offset,
                                       const gfx::Range& range) const {
+  if (local_frame_host_partial_override_remote_.is_bound()) {
+    local_frame_host_partial_override_remote_->TextSelectionChanged(selection_text, offset, range);
+    return;
+  }
   GetLocalFrameHostRemote().TextSelectionChanged(selection_text, offset, range);
 }
 
@@ -3366,5 +3371,11 @@ TextSuggestionController& LocalFrame::GetTextSuggestionController() const {
   DCHECK(DomWindow());
   return DomWindow()->GetTextSuggestionController();
 }
+
+void LocalFrame::SetLocalFrameHostPartialOverride(CrossVariantMojoAssociatedRemote<mojom::blink::LocalFrameHostPartialOverrideInterfaceBase> hostOverride) {
+  local_frame_host_partial_override_remote_.reset();
+  local_frame_host_partial_override_remote_.Bind(std::move(hostOverride), GetTaskRunner(blink::TaskType::kInternalDefault));
+}
+
 
 }  // namespace blink

@@ -141,6 +141,11 @@ void RenderWidget::bbHandleInputEvent(const blink::WebInputEvent& event) {
   bb_OnHandleInputEvent_no_ack_ = false;
 }
 
+void RenderWidget::Redraw() {
+  if (layer_tree_host_)
+    layer_tree_host_->SetNeedsRedrawRect(gfx::Rect(GetWebWidget()->Size()));
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // WebWidgetClient
 
