@@ -387,6 +387,7 @@ static void appendCommonCommandLineSwitches(std::vector<std::string> *switches)
 
 
     // patch section: spellchecker
+    switches->push_back("disable-features=WinUseBrowserSpellChecker");
 
 
     // patch section: web script context
