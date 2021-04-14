@@ -59,6 +59,7 @@ void ParamTraits<PrintParamsPtr>::Write(base::Pickle* m, const param_type& p) {
   WriteParam(m, p->print_scaling_option);
   m->WriteBool(p->print_to_pdf);
   m->WriteBool(p->display_header_footer);
+  m->WriteString16(p->header_footer_html);
   m->WriteString16(p->title);
   m->WriteString16(p->url);
   m->WriteString16(p->header_template);
@@ -126,6 +127,9 @@ bool ParamTraits<PrintParamsPtr>::Read(const base::Pickle* m,
   bool display_header_footer;
   success &= iter->ReadBool(&display_header_footer);
 
+  base::string16 header_footer_html;
+  success &= iter->ReadString16(&header_footer_html);
+
   base::string16 title;
   success &= iter->ReadString16(&title);
 
@@ -159,7 +163,7 @@ bool ParamTraits<PrintParamsPtr>::Read(const base::Pickle* m,
         page_orientation, dpi, scale_factor, document_cookie, selection_only,
         supports_alpha_blend, preview_ui_id, preview_request_id,
         is_first_request, print_scaling_option, print_to_pdf,
-        display_header_footer, title, url, header_template, footer_template,
+        display_header_footer, header_footer_html, title, url, header_template, footer_template,
         rasterize_pdf, should_print_backgrounds, printed_doc_type,
         prefer_css_page_size, pages_per_sheet);
   }

@@ -131,6 +131,11 @@ class PrintRenderFrameHelper
   // printing is build-in. This method is used by CEF.
   static void DisablePreview();
 
+  // Uses the default print settings instead of asking the user everytime.
+  static void UseDefaultPrintSettings();
+
+  static Delegate* CreateEmptyDelegate();
+
   bool IsPrintingEnabled() const;
 
   void PrintNode(const blink::WebNode& node);
@@ -140,6 +145,8 @@ class PrintRenderFrameHelper
   static double GetScaleFactor(double input_scale_factor, bool is_pdf);
 
   const mojo::AssociatedRemote<mojom::PrintManagerHost>& GetPrintManagerHost();
+
+  std::vector<char> PrintToPDF(blink::WebLocalFrame* localframe);
 
  private:
   friend class PrintRenderFrameHelperTestBase;

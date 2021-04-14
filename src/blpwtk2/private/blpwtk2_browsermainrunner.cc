@@ -47,6 +47,10 @@
 #include <content/browser/startup_helper.h>
 #include <services/tracing/public/cpp/trace_startup.h>
 
+namespace printing {
+extern PrintJobManager* g_print_job_manager;
+}
+
 namespace blpwtk2 {
 
                         // -----------------------
@@ -100,10 +104,12 @@ BrowserMainRunner::BrowserMainRunner(
     display::Screen::SetScreenInstance(screen);
     d_viewsDelegate.reset(new ViewsDelegateImpl());
     content::StartBrowserThreadPool();
+    printing::g_print_job_manager = new printing::PrintJobManager();
 }
 
 BrowserMainRunner::~BrowserMainRunner()
 {
+    delete printing::g_print_job_manager;
     Statics::browserMainTaskRunner.reset();
     d_impl->Shutdown();
 }
