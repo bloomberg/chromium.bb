@@ -58,6 +58,8 @@ class PLATFORM_EXPORT V8ThrowException {
                                                   const String& message);
   static v8::Local<v8::Value> CreateWasmRuntimeError(v8::Isolate*,
                                                      const String& message);
+  static v8::Local<v8::Value> CreateAccessError(v8::Isolate*,
+                                              const String& message);
 
   static void ThrowError(v8::Isolate*, const String& message);
   static void ThrowRangeError(v8::Isolate*, const String& message);
@@ -67,6 +69,7 @@ class PLATFORM_EXPORT V8ThrowException {
   static void ThrowWasmCompileError(v8::Isolate*, const String& message);
   static void ThrowWasmLinkError(v8::Isolate*, const String& message);
   static void ThrowWasmRuntimeError(v8::Isolate*, const String& message);
+  static void ThrowAccessError(v8::Isolate*, const String& message);
 };
 
 }  // namespace blink
