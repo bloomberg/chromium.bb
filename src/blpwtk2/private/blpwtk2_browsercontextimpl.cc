@@ -38,6 +38,7 @@
 
 
 // patch section: diagnostics
+#include <blpwtk2_utility.h>
 
 
 // patch section: custom fonts
@@ -453,6 +454,18 @@ void BrowserContextImpl::setPacUrl(const StringRef& url)
 
 
 // patch section: diagnostics
+void BrowserContextImpl::dumpDiagnostics(DiagnosticInfoType type,
+                                         const StringRef&   path)
+{
+    if (DiagnosticInfoType::GPU == type) {
+        DumpGpuInfo(this, std::string(path.data(), path.size()));
+    }
+}
+
+std::string BrowserContextImpl::getGpuInfo()
+{
+    return GetGpuInfo(this);
+}
 
 
 // patch section: embedder ipc
