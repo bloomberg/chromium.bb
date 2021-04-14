@@ -27,6 +27,7 @@
 #include <blpwtk2_contentbrowserclientimpl.h>
 #include <blpwtk2_contentrendererclientimpl.h>
 
+#include <blpwtk2_gpudatalogger.h>
 #include <blpwtk2_browserthread.h>
 #include <blpwtk2_channelinfo.h>
 #include <blpwtk2_desktopstreamsregistry.h>
@@ -61,6 +62,7 @@
 #include <content/public/browser/browser_task_traits.h>
 #include <content/public/browser/browser_thread.h>
 #include <content/public/browser/render_process_host.h>
+#include <content/public/browser/gpu_data_manager.h>
 #include <content/public/common/content_switches.h>
 #include <content/common/in_process_child_thread_params.h>
 #include <content/child/field_trial.h>
@@ -522,6 +524,24 @@ std::string ToolkitImpl::createProcessHost(
     return hostChannel;
 }
 
+void ToolkitImpl::attachGPUDataLogObserver()
+{
+    detachGPUDataLogObserver();
+    // attach the GPU Data logger to the GPU Data manager as observer
+    d_gpuDataLogger = GpuDataLogger::Create();
+    d_gpuDataLogger->AddRef();
+    content::GpuDataManager::GetInstance()->AddObserver(d_gpuDataLogger.get());
+}
+
+void ToolkitImpl::detachGPUDataLogObserver()
+{
+    if (d_gpuDataLogger) {
+         content::GpuDataManager::GetInstance()->RemoveObserver(d_gpuDataLogger.get());
+        d_gpuDataLogger->Release();
+        d_gpuDataLogger = nullptr;
+    }
+}
+
 ToolkitImpl *ToolkitImpl::instance()
 {
     return g_instance;
@@ -619,6 +639,10 @@ ToolkitImpl::ToolkitImpl(const std::string&              dictionaryPath,
     // Start pumping the message loop.
     startMessageLoop(sandboxInfo);
 
+    if (isHost) {
+        attachGPUDataLogObserver();
+    }
+
     if (Statics::isRendererMainThreadMode()) {
         // Initialize the renderer.
         DCHECK(!currentHostChannel.empty());
@@ -641,6 +665,8 @@ ToolkitImpl::~ToolkitImpl()
     Statics::isTerminating = true;
 
     ScopeExitGuard exit_guard{EXIT_TIME_OUT_MS};
+
+    detachGPUDataLogObserver();
 
     if (Statics::isRendererMainThreadMode()) {
         mojo::WaitSet::SetProxy(nullptr);
@@ -794,6 +820,16 @@ void ToolkitImpl::setTraceThreshold(unsigned int timeoutMS)
 
 
 // patch section: gpu
+void ToolkitImpl::getGpuMode(GpuMode& currentMode, GpuMode& startupMode, int& crashCount) const
+{
+    if(Profile* prof = ProfileImpl::anyInstance()) {
+        prof->getGpuMode(currentMode, startupMode, crashCount);
+        return;
+    };
+    currentMode = GpuMode::kUnknown;
+    startupMode = GpuMode::kUnknown;
+    crashCount = 0;
+}
 
 
 // patch section: multi-heap tracer
