@@ -1232,10 +1232,11 @@ cc::LayerTreeHost* WebFrameWidgetBase::InitializeCompositing(
     bool for_child_local_root_frame,
     const ScreenInfo& screen_info,
     std::unique_ptr<cc::UkmRecorderFactory> ukm_recorder_factory,
+    int view_id,
     const cc::LayerTreeSettings* settings) {
   widget_base_->InitializeCompositing(
       main_thread_scheduler, task_graph_runner, for_child_local_root_frame,
-      screen_info, std::move(ukm_recorder_factory), settings);
+      screen_info, std::move(ukm_recorder_factory), view_id, settings);
   GetPage()->AnimationHostInitialized(*AnimationHost(),
                                       GetLocalFrameViewForAnimationScrolling());
   return widget_base_->LayerTreeHost();

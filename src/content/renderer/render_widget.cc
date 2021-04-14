@@ -41,21 +41,22 @@ void RenderWidget::InstallCreateForFrameHook(
 }
 
 std::unique_ptr<RenderWidget> RenderWidget::CreateForFrame(
-    CompositorDependencies* compositor_deps) {
+    CompositorDependencies* compositor_deps, int32_t view_id) {
   if (g_create_render_widget_for_frame) {
-    return g_create_render_widget_for_frame(compositor_deps);
+    return g_create_render_widget_for_frame(compositor_deps, view_id);
   }
 
-  return std::make_unique<RenderWidget>(compositor_deps);
+  return std::make_unique<RenderWidget>(compositor_deps, view_id);
 }
 
 RenderWidget* RenderWidget::CreateForPopup(
-    CompositorDependencies* compositor_deps) {
-  return new RenderWidget(compositor_deps);
+    CompositorDependencies* compositor_deps, int32_t view_id) {
+  return new RenderWidget(compositor_deps, view_id);
 }
 
-RenderWidget::RenderWidget(CompositorDependencies* compositor_deps)
-    : compositor_deps_(compositor_deps) {
+RenderWidget::RenderWidget(CompositorDependencies* compositor_deps, int32_t view_id)
+    : view_id_(view_id),
+    compositor_deps_(compositor_deps) {
   DCHECK(RenderThread::IsMainThread());
   DCHECK(compositor_deps_);
 }
@@ -155,6 +156,7 @@ void RenderWidget::InitCompositing(const blink::ScreenInfo& screen_info) {
       compositor_deps_->GetWebMainThreadScheduler(),
       compositor_deps_->GetTaskGraphRunner(), for_child_local_root_frame_,
       screen_info, compositor_deps_->CreateUkmRecorderFactory(),
+      view_id_,
       /*settings=*/nullptr);
   DCHECK(layer_tree_host_);
 }

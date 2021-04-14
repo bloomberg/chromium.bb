@@ -318,6 +318,7 @@ class CORE_EXPORT WebFrameWidgetBase
       bool for_child_local_root_frame,
       const ScreenInfo& screen_info,
       std::unique_ptr<cc::UkmRecorderFactory> ukm_recorder_factory,
+      int view_id,
       const cc::LayerTreeSettings* settings) override;
   void Close(
       scoped_refptr<base::SingleThreadTaskRunner> cleanup_runner) override;

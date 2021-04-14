@@ -42,6 +42,7 @@
 #include <blpwtk2_webviewproxy.h>
 #include <blpwtk2_utility.h>
 
+#include <base/allocator/partition_allocator/partition_alloc.h>
 #include "base/base_switches.h"
 #include "base/feature_list.h"
 #include <base/command_line.h>
@@ -75,6 +76,7 @@
 //#include <third_party/blink/public/web/blink.h>
 #include <third_party/blink/public/web/web_security_policy.h>
 #include <third_party/blink/public/web/web_script_controller.h>
+#include <third_party/blink/renderer/core/style/computed_style.h>
 #include <third_party/icu/source/common/unicode/locid.h>
 #include <ui/base/ime/init/input_method_initializer.h>
 #include <ui/base/l10n/l10n_util.h>
@@ -632,6 +634,8 @@ ToolkitImpl::ToolkitImpl(const std::string&              dictionaryPath,
     }
 
     setDefaultLocaleIfWindowsLocaleIsNotSupported();
+
+    initializeMetrics(Statics::toolkitDelegate);
 }
 
 ToolkitImpl::~ToolkitImpl()
@@ -641,6 +645,8 @@ ToolkitImpl::~ToolkitImpl()
     Statics::isTerminating = true;
 
     ScopeExitGuard exit_guard{EXIT_TIME_OUT_MS};
+
+    uninitializeMetrics(Statics::toolkitDelegate);
 
     if (Statics::isRendererMainThreadMode()) {
         mojo::WaitSet::SetProxy(nullptr);
@@ -799,6 +805,105 @@ void ToolkitImpl::setTraceThreshold(unsigned int timeoutMS)
 // patch section: multi-heap tracer
 
 
+// patch section: performance monitor
+
+// Register the metrics we will report.
+// Metrics values will subsequently be requested via periodic calls to
+// getMetrics().
+void ToolkitImpl::initializeMetrics(blpwtk2::ToolkitDelegate* delegate) {
+  if (delegate != nullptr) {
+    // Define metrics
+    unsigned int period = 1000;
+    d_metrics.d_computedStyleCount = delegate->registerMetric(
+            "blpwtk2.ComputedStyleCount",
+            "Number of ComputedStyle objects in the blink subsystem",
+            period);
+    d_metrics.d_wtfPartitionsTotalSizeOfCommittedPagesKB =
+        delegate->registerMetric(
+            "blpwtk2.WTFPartitionsTotalSizeOfCommittedPagesKB",
+            "Total size of committed pages in the WTF::Partitions subsystem (KB)",
+            period);
+    d_metrics.d_wtfPartitionsFastMallocKB = delegate->registerMetric(
+            "blpwtk2.WTFPartitionsFastMallocKB",
+            "Total size of FastMalloc memory in the WTF::Partitions subsystem (KB)",
+            period);
+    d_metrics.d_wtfPartitionsArrayBufferKB = delegate->registerMetric(
+            "blpwtk2.WTFPartitionsArrayBufferKB",
+            "Total size of array buffers in the WTF::Partitions subsystem (KB)",
+            period);
+    d_metrics.d_wtfPartitionsBufferKB = delegate->registerMetric(
+            "blpwtk2.WTFPartitionsBufferKB",
+            "Total size of buffer memory in the WTF::Partitions subsystem (KB)",
+            period);
+    d_metrics.d_wtfPartitionsLayoutKB = delegate->registerMetric(
+            "blpwtk2.WTFPartitionsLayoutKB",
+            "Total size of layout memory in the WTF::Partitions subsystem (KB)",
+            period);
+  }
+}
+
+void ToolkitImpl::uninitializeMetrics(blpwtk2::ToolkitDelegate* delegate) {
+  if (delegate != nullptr) {
+    delegate->unregisterMetrics();
+  }
+}
+
+// Request current 'values' of 'count' 'metrics' previously set up
+// via calls to blpwtk2::ToolkitDelegate::registerMetric().
+void ToolkitImpl::getMetrics(
+                        unsigned int   *values,
+                        const int      *metrics,
+                        unsigned int    count) const
+{
+  for (unsigned int i = 0; i < count; ++i) {
+    values[i] = 0;
+    if (metrics[i] == d_metrics.d_computedStyleCount) {
+      values[i] = blink::ComputedStyle::GetObjectCount();
+      continue;
+    }
+    if (metrics[i] ==
+        d_metrics.d_wtfPartitionsTotalSizeOfCommittedPagesKB) {
+      if (WTF::Partitions::ArrayBufferPartition() != nullptr) {
+          // If initialized
+        values[i] = WTF::Partitions::TotalSizeOfCommittedPages() / 1024;
+      }
+      continue;
+    }
+
+    // FastMallocPartition() is private, so derive its memory value from the others
+    if (metrics[i] == d_metrics.d_wtfPartitionsFastMallocKB) {
+      if (WTF::Partitions::ArrayBufferPartition() != nullptr) {
+        values[i] = (WTF::Partitions::TotalSizeOfCommittedPages()
+            - WTF::Partitions::ArrayBufferPartition()->total_size_of_committed_pages
+            - WTF::Partitions::BufferPartition()->total_size_of_committed_pages
+            - WTF::Partitions::LayoutPartition()->total_size_of_committed_pages)
+                / 1024;
+      }
+      continue;
+    }
+    if (metrics[i] == d_metrics.d_wtfPartitionsArrayBufferKB) {
+      base::ThreadSafePartitionRoot* p = WTF::Partitions::ArrayBufferPartition();
+      if (p) {
+        values[i] = p->total_size_of_committed_pages / 1024;
+      }
+      continue;
+    }
+    if (metrics[i] == d_metrics.d_wtfPartitionsBufferKB) {
+      base::ThreadSafePartitionRoot* p = WTF::Partitions::BufferPartition();
+      if (p) {
+        values[i] = p->total_size_of_committed_pages / 1024;
+      }
+      continue;
+    }
+    if (metrics[i] == d_metrics.d_wtfPartitionsLayoutKB) {
+      base::ThreadUnsafePartitionRoot* p = WTF::Partitions::LayoutPartition();
+      if (p) {
+        values[i] = p->total_size_of_committed_pages / 1024;
+      }
+      continue;
+    }
+  }
+}
 
 }  // close namespace blpwtk2
 
