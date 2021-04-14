@@ -543,6 +543,7 @@ ToolkitImpl::ToolkitImpl(const std::string&              dictionaryPath,
     g_instance = this;
     content::InitializeMojo();
     base::CommandLine::Init(0, nullptr);
+    blink::WebScriptController::SetStackCaptureControlledByInspector(false);
 
     // Append common command line switches
     appendCommonCommandLineSwitches(&args);
