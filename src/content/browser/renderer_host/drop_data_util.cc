@@ -89,10 +89,14 @@ blink::mojom::DragDataPtr DropDataToDragData(
     base::FilePath entry_path = file.path;
     NativeFileSystemManagerImpl::PathType path_type =
         MaybeRemapPath(&entry_path);
+
+    // blpwtk2: allow null native_file_system_manager for blpwtk2::RenderWebView
+    if (native_file_system_manager) {
     native_file_system_manager->CreateNativeFileSystemDragDropToken(
         path_type, entry_path, child_id,
         pending_token.InitWithNewPipeAndPassReceiver());
     item->native_file_system_token = std::move(pending_token);
+    }
 
     items.push_back(blink::mojom::DragItem::NewFile(std::move(item)));
   }

@@ -448,6 +448,20 @@ interface LocalFrameHost {
   Detach();
 };
 
+
+
+// patch section: renderer ui
+// override for RenderWebView
+interface LocalFrameHostPartialOverride {
+  // Notification that the text selection has changed.
+  // Note: The second parameter is the character based offset of the
+  // base::string16 text in the document.
+  TextSelectionChanged(mojo_base.mojom.BigString16 text,
+                       uint32 offset,
+                       gfx.mojom.Range range);
+};
+
+
 // Implemented in Blink, this interface defines frame-specific methods that will
 // be invoked from the browser process (e.g. content::RenderFrameHostImpl).
 //
