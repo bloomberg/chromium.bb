@@ -24,6 +24,8 @@
 #include <blpwtk2_contextmenuparams.h>
 #include <blpwtk2_string.h>
 #include <blpwtk2_webviewimpl.h>
+#include <blpwtk2_webviewhostobserver.h>
+#include <blpwtk2_statics.h>
 
 #include <ipc/ipc_message_macros.h>
 #include <windows.h>
@@ -44,6 +46,7 @@ WebViewHostImpl::WebViewHostImpl(
     : d_clientPtr(std::move(clientPtr))
     , d_dragState({})
     , d_processHost(processHost)
+    , d_renderViewRoutingId(-1)
 {
     WebViewProperties properties;
 
@@ -81,6 +84,11 @@ WebViewHostImpl::~WebViewHostImpl()
         impl->destroy();
     }
 
+    if (Statics::webViewHostObserver) {
+        Statics::webViewHostObserver->webViewHostDestroyed(
+            std::to_string(d_processHost->processId()), d_renderViewRoutingId);
+    }
+
     // Disconnect from the WebViewClient
     d_clientPtr.reset();
 }
@@ -95,6 +103,13 @@ void WebViewHostImpl::updateNativeViews(blpwtk2::NativeView webview,
 
 void WebViewHostImpl::gotNewRenderViewRoutingId(int renderViewRoutingId)
 {
+    d_renderViewRoutingId = renderViewRoutingId;
+
+    if (Statics::webViewHostObserver) {
+        Statics::webViewHostObserver->webViewHostCreated(
+            std::to_string(d_processHost->processId()), d_renderViewRoutingId, d_impl);
+    }
+
     d_clientPtr->notifyRoutingId(renderViewRoutingId);
 }
 

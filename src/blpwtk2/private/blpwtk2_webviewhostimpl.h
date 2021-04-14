@@ -78,8 +78,7 @@ class WebViewHostImpl final : private WebViewImplClient
     DragState d_dragState;
 
     scoped_refptr<ProcessHostImpl::Impl> d_processHost;
-        // This object is not used within this class.  This refptr merely
-        // keeps it alive until WebViewHost is ready to be disposed.
+    int d_renderViewRoutingId;
 
     // blpwtk2::WebViewImplClient overrides
     void updateNativeViews(blpwtk2::NativeView webview,
