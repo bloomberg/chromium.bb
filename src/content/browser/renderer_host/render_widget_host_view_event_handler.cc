@@ -990,6 +990,26 @@ bool RenderWidgetHostViewEventHandler::MatchesSynthesizedMovePosition(
 }
 
 void RenderWidgetHostViewEventHandler::SetKeyboardFocus() {
+  // blpwtk2: The next few lines were removed by
+  // https://source.chromium.org/chromium/chromium/src/+/5af4e86a
+  // because the TSF on Windows already focus the top-level window when it
+  // should receive keyboard focus. This works for the Chrome browser because
+  // the top-level window is responsible for handling all input events. For
+  // blpwtk2, webviews may be embedded as a child window and so this assumption
+  // no longer holds. We must explicitly call SetFocus on this child window
+  // instead of relying on TSF to do it.
+
+#if defined(OS_WIN)
+  if (window_ && window_->delegate()->CanFocus()) {
+    aura::WindowTreeHost* host = window_->GetHost();
+    if (host) {
+      gfx::AcceleratedWidget hwnd = host->GetAcceleratedWidget();
+      if (!(::GetWindowLong(hwnd, GWL_EXSTYLE) & WS_EX_NOACTIVATE))
+        ::SetFocus(hwnd);
+    }
+  }
+#endif
+
   // TODO(wjmaclean): can host_ ever be null?
   if (host_ && set_focus_on_mouse_down_or_key_event_) {
     set_focus_on_mouse_down_or_key_event_ = false;
