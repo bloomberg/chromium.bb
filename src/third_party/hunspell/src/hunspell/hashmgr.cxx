@@ -1224,9 +1224,11 @@ hentry* HashMgr::InitHashEntry(hentry* entry,
   // Initialize a hentry struct with the given parameters, and
   // append the given string at the end of this hentry struct.
   memset(entry, 0, item_size);
-  FileMgr af(NULL);
+
+  // blpwtk2: add static to avoid automatical stack variable initialization of large object
+  static FileMgr dummyDictionaryFile(NULL);
   entry->alen = static_cast<short>(
-      const_cast<HashMgr*>(this)->get_aliasf(affix_index, &entry->astr, &af));
+      const_cast<HashMgr*>(this)->get_aliasf(affix_index, &entry->astr, &dummyDictionaryFile));
   entry->blen = static_cast<unsigned char>(word_length);
   memcpy(&entry->word, word, word_length);
 
