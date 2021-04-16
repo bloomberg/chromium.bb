@@ -1,0 +1,117 @@
+<html>
+    <!--
+        The HTML demonstrate a problem that <canvas> with lower z-index
+        sometimes appears on top unexpectedly. It seems to result from a
+        combination of:
+        1. A container with `overflow: hidden`. The problem disappears if
+        `#outer` is `overflow: auto`.
+        2. Certain body size. The problem disappears if the height of `body` is
+        changed to to, say, `670px`.
+        3. `transform: scale` of the `body`. The problem disappears if the
+        `scale(1.1, 1.1)` is removed.
+
+        Note that the problem does *not* disappear if the `translateX/Y`
+        transforms are replaced with `top/left`.
+    -->
+    <head>
+<style>
+    body {
+        font-size: 14px;
+        background: black;
+        color: white;
+    }
+    #outer {
+        overflow: hidden;
+        position: absolute;
+        top: 30px;
+        left: 0px;
+        right: 0px;
+        bottom: 0px;
+        z-index: 1;
+        background: inherit;
+    }
+    #inner {
+        z-index: 1;
+        position: absolute;
+        background: inherit;
+    }
+    .row {
+        position: absolute;
+        left: 0px;
+        right: 0px;
+        top: 0px;
+        background: inherit;
+    }
+    .cell {
+        background: inherit;
+        border: 1px solid blue;
+    }
+    .cell-content {
+        display: block;
+        position: absolute;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        right: 0;
+        text-align: end;
+    }
+    .upper {
+        z-index: 7;
+        margin: 2px;
+        border: 1px solid green;
+    }
+</style>
+    </head>
+    <body style="width: 1000px; height: 660px; position: fixed; transform-origin: 0px 0px; transform: scale(1.1, 1.1);">
+        <button id="the-button">Click: Move the row down and see the canvas bleed to the top</button>
+                <div id="outer" style="right: 7px; bottom: 7px;">
+                    <div id="inner" style="height: 3600px; width: 3600px;">
+                        <div class="row" style="transform: translateY(2020.38px); height: 30px; width: 3600px;">
+                            <div class="cell upper" style="position: absolute; top: 0px; bottom: 0px; width: 200px; transform: translateX(100px);">
+                                <span class="cell-content" style="padding-left: 46px;">0-upper</span>
+                            </div>
+                            <div class="cell upper" style="position: absolute; top: 0px; bottom: 0px; width: 200px; transform: translateX(300px);">
+                                <span class="cell-content">1-upper</span>
+                            </div>
+                            <div class="cell upper" style="position: absolute; top: 0px; bottom: 0px; width: 200px; transform: translateX(500px);">
+                                <span class="label blp-grid2-labelcell cell-content">2-upper</span>
+                            </div>
+                            <div class="cell" style="position: absolute; top: 0px; bottom: 0px; width: 200px; transform: translateX(200px);">
+                                <span class="cell-content">3-under</span>
+                            </div>
+                            <div class="cell" style="position: absolute; top: 0px; bottom: 0px; width: 200px; transform: translateX(400px);">
+                                <div class="cell-content">
+                                    <canvas id="the-canvas" width="200" height="30"></canvas>
+                                </div>
+                            </div>
+                            <div class="cell" style="position: absolute; top: 0px; bottom: 0px; width: 200px; transform: translateX(600px);">
+                                <span class="cell-content">5-under</span>
+                            </div>
+                        </div>
+            </div>
+        </div>
+    </body>
+    <script>
+        let outer = document.getElementById("outer");
+        let canvas = document.getElementById("the-canvas");
+        outer.scrollTop = 1850;
+        let ctx = canvas.getContext('2d');
+        ctx.fillStyle = "red";
+        ctx.font = "13px Verdana";
+        ctx.fillText("4-under-canvas", 1, 20);
+
+        let button = document.getElementById("the-button");
+        let showingProblem = false;
+        button.onclick = () => {
+            if (showingProblem) {
+                outer.scrollTop = 1850;
+                button.innerText = "Click: Move the row down and see the canvas bleed to the top";
+            }
+            else {
+                outer.scrollTop = 1450;
+                button.innerText = "Click: Move the row up and see the canvas goes back under ";
+            }
+            showingProblem ^= true;
+        };
+    </script>
+</html>
