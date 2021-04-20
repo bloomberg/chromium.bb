@@ -616,10 +616,10 @@ bool WebViewFrameWidget::AutoResizeMode() {
 bool WebViewFrameWidget::UpdateScreenRects(
     const gfx::Rect& widget_screen_rect,
     const gfx::Rect& window_screen_rect) {
+  web_view_->DidChangeWindowRect();
   if (!device_emulator_)
     return false;
   device_emulator_->OnUpdateScreenRects(widget_screen_rect, window_screen_rect);
-  web_view_->DidChangeWindowRect();
   return true;
 }
 
