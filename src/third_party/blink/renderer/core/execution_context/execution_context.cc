@@ -217,11 +217,17 @@ void ExecutionContext::DispatchErrorEvent(
 bool ExecutionContext::DispatchErrorEventInternal(
     ErrorEvent* error_event,
     SanitizeScriptErrors sanitize_script_errors) {
+  // blpwtk2: for embedder's log
+  if (SourceLocation* sourceLocation = error_event->Location()) {
+    LOG(ERROR) << error_event->message()
+               << "\nCallstack: " << sourceLocation->ToString();
+  }
+
   EventTarget* target = ErrorEventTarget();
   if (!target)
     return false;
 
-  if (sanitize_script_errors == SanitizeScriptErrors::kSanitize) {
+  if (sanitize_script_errors == SanitizeScriptErrors::kSanitize && ToScriptState(this, *error_event->World())) {
     error_event = ErrorEvent::CreateSanitizedError(
         ToScriptState(this, *error_event->World()));
   }
@@ -279,6 +285,15 @@ scoped_refptr<const DOMWrapperWorld> ExecutionContext::GetCurrentWorld() const {
 
   // This can be called before we enter v8, hence the context might be empty.
   if (v8_context.IsEmpty())
+    return nullptr;
+
+  // blpwtk2: When doing asynchronous tasks, such as HTML resource loading, it's
+  // possible for the embedder to have entered a V8 Context that wasn't
+  // created by blink. Such V8 Context doesn't have an associated
+  // ScriptState. DOMWrapperWorld::Current() call later will try to
+  // access V8 Context's ScriptState and trigger crash. The check added
+  // here is to detect such situation and return early.
+  if (!ScriptState::AccessCheck(v8_context))
     return nullptr;
 
   return &DOMWrapperWorld::Current(isolate);

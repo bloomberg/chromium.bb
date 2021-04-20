@@ -128,6 +128,7 @@
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/scheduler/public/dummy_schedulers.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
+#include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 #include "third_party/blink/renderer/platform/timer.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/widget/frame_widget.h"
@@ -154,6 +155,18 @@ LocalDOMWindow::LocalDOMWindow(LocalFrame& frame, WindowAgent* agent)
           MakeGarbageCollected<
               HeapHashMap<int, Member<ContentSecurityPolicy>>>()),
       token_(LocalFrameToken(frame.GetFrameToken())) {}
+
+LocalDOMWindow::LocalDOMWindow(WindowAgent* agent)
+    : DOMWindow(),
+      ExecutionContext(V8PerIsolateData::MainThreadIsolate(), agent),
+      visualViewport_(MakeGarbageCollected<DOMVisualViewport>(this)),
+      should_print_when_finished_loading_(false),
+      spell_checker_(MakeGarbageCollected<SpellChecker>(*this)),
+      text_suggestion_controller_(
+          MakeGarbageCollected<TextSuggestionController>(*this)),
+      isolated_world_csp_map_(
+          MakeGarbageCollected<
+              HeapHashMap<int, Member<ContentSecurityPolicy>>>()) {}
 
 void LocalDOMWindow::BindContentSecurityPolicy() {
   DCHECK(!GetContentSecurityPolicy()->IsBound());
@@ -298,8 +311,11 @@ ResourceFetcher* LocalDOMWindow::Fetcher() const {
 
 bool LocalDOMWindow::CanExecuteScripts(
     ReasonForCallingCanExecuteScripts reason) {
-  if (!GetFrame())
-    return false;
+  // Allow script execution for a document without a frame, since it may
+  // have been created for a 'web script context':
+  if (!GetFrame()) {
+    return true;
+  }
 
   // Normally, scripts are not allowed in sandboxed contexts that disallow them.
   // However, there is an exception for cases when the script should bypass the
@@ -602,6 +618,9 @@ void LocalDOMWindow::CountUseOnlyInCrossOriginIframe(
 }
 
 bool LocalDOMWindow::HasInsecureContextInAncestors() {
+  if (!GetFrame()) {
+    return false;
+  }
   for (Frame* parent = GetFrame()->Tree().Parent(); parent;
        parent = parent->Tree().Parent()) {
     auto* origin = parent->GetSecurityContext()->GetSecurityOrigin();
@@ -632,6 +651,14 @@ Document* LocalDOMWindow::InstallNewDocument(const DocumentInit& init) {
     GetFrame()->GetPage()->GetChromeClient().InstallSupplements(*GetFrame());
   }
 
+  return document_;
+}
+
+Document* LocalDOMWindow::InstallNewUnintializedDocument(const DocumentInit& init) {
+  DCHECK_EQ(init.GetWindow(), this);
+  DCHECK(!document_);
+  document_ = init.CreateDocument();
+  document_->SetDOMWindow(this);
   return document_;
 }
 
