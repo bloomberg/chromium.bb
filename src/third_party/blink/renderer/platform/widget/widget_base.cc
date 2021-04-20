@@ -437,6 +437,10 @@ void WidgetBase::WasShown(base::TimeTicks show_request_timestamp,
   client_->WasShown(was_evicted);
 }
 
+void WidgetBase::EnableAltDragRubberbanding(bool is_enabled) {
+  client_->EnableAltDragRubberbanding(is_enabled);
+}
+
 void WidgetBase::ApplyViewportChanges(
     const cc::ApplyViewportChangesArgs& args) {
   client_->ApplyViewportChanges(args);
@@ -796,6 +800,14 @@ void WidgetBase::SetCursor(const ui::Cursor& cursor) {
 void WidgetBase::SetToolTipText(const String& tooltip_text, TextDirection dir) {
   widget_host_->SetToolTipText(tooltip_text.IsEmpty() ? "" : tooltip_text,
                                ToBaseTextDirection(dir));
+}
+
+void WidgetBase::SetRubberbandRect(const gfx::Rect& rect) {
+  widget_host_->SetRubberbandRect(rect);
+}
+
+void WidgetBase::HideRubberbandRect() {
+  widget_host_->HideRubberbandRect();
 }
 
 void WidgetBase::ShowVirtualKeyboard() {
