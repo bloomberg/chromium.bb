@@ -90,14 +90,14 @@ class RenderWidgetDelegate;
 class CONTENT_EXPORT RenderWidget
     : public blink::WebPagePopupClient {  // Is-a WebWidgetClient also
  public:
-  explicit RenderWidget(CompositorDependencies* compositor_deps);
+  explicit RenderWidget(CompositorDependencies* compositor_deps, int32_t view_id = 0);
 
   ~RenderWidget() override;
 
   // Convenience type for creation method taken by InstallCreateForFrameHook().
   // The method signature matches the RenderWidget constructor.
   using CreateRenderWidgetFunction =
-      std::unique_ptr<RenderWidget> (*)(CompositorDependencies*);
+      std::unique_ptr<RenderWidget> (*)(CompositorDependencies*, int32_t);
   // Overrides the implementation of CreateForFrame() function below. Used by
   // web tests to return a partial fake of RenderWidget.
   static void InstallCreateForFrameHook(
@@ -107,7 +107,7 @@ class CONTENT_EXPORT RenderWidget
   // Testing infrastructure, such as test_runner, can override this function
   // by calling InstallCreateForFrameHook().
   static std::unique_ptr<RenderWidget> CreateForFrame(
-      CompositorDependencies* compositor_deps);
+      CompositorDependencies* compositor_deps, int32_t view_id = 0);
 
   // Creates a RenderWidget for a popup. This is separate from CreateForFrame()
   // because popups do not not need to be faked out.
@@ -116,7 +116,7 @@ class CONTENT_EXPORT RenderWidget
   // object can request its own destruction via
   // blink::mojom::PopupWidgetHost::RequestClose().
   static RenderWidget* CreateForPopup(
-      CompositorDependencies* compositor_deps);
+      CompositorDependencies* compositor_deps, int32_t view_id = 0);
 
   // Initialize a new RenderWidget for a popup. The |show_callback| is called
   // when RenderWidget::Show() happens. The |opener_widget| is the local root
@@ -200,6 +200,8 @@ class CONTENT_EXPORT RenderWidget
   // a frame (eg popups, pepper), but includes both the main frame
   // (via delegate_) and subframes (via for_child_local_root_frame_).
   bool for_frame() const { return delegate_ || for_child_local_root_frame_; }
+
+  const int32_t view_id_;
 
   // Dependencies for initializing a compositor, including flags for optional
   // features.
