@@ -382,6 +382,7 @@ static bool startsWith(const std::string& hay, const std::string& needle)
 
 static void appendCommonCommandLineSwitches(std::vector<std::string> *switches)
 {
+    switches->push_back("enable-blink-features=CompositingOptimizations");
     switches->push_back("disable-in-process-stack-traces");
 
 
