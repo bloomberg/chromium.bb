@@ -98,6 +98,8 @@ class WebViewHostImpl final : private WebViewImplClient
     void didFinishLoad(WebView *source, const StringRef& url) override;
     void didFailLoad(WebView *source, const StringRef& url) override;
     void focused(WebView* source) override;
+    void enterFullscreenMode(WebView *source) override;
+    void exitFullscreenMode(WebView *source) override;
     void blurred(WebView* source) override;
     void showContextMenu(WebView                  *source,
                          const ContextMenuParams&  params) override;

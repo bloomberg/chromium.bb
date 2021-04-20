@@ -308,7 +308,17 @@ void WebViewProxy::onNCHitTestResult(int x, int y, int result)
     if (!validateClient()) {
         return;
     }
-    d_client->ncHitTestResult(x, y, result);
+    d_client->onNCHitTestResult(x, y, result);
+}
+
+
+void WebViewProxy::onEnterFullscreenModeResult(bool isFullscreen)
+{
+    DCHECK(Statics::isInApplicationMainThread());
+    if (!validateClient()) {
+        return;
+    }
+    d_client->onEnterFullscreenModeResult(isFullscreen);
 }
 
 void WebViewProxy::setNCHitTestRegion(NativeRegion region)
@@ -545,6 +555,20 @@ void WebViewProxy::showContextMenu(const ContextMenuParams& params)
 {
     if (d_delegate) {
         d_delegate->showContextMenu(this, params);
+    }
+}
+
+void WebViewProxy::enterFullscreenMode()
+{
+    if (d_delegate) {
+        d_delegate->enterFullscreenMode(this);
+    }
+}
+
+void WebViewProxy::exitFullscreenMode()
+{
+    if (d_delegate) {
+        d_delegate->exitFullscreenMode(this);
     }
 }
 
