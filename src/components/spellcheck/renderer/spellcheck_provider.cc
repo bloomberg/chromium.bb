@@ -88,6 +88,7 @@ SpellCheckProvider::SpellCheckProvider(
     SpellCheck* spellcheck,
     service_manager::LocalInterfaceProvider* embedder_provider)
     : content::RenderFrameObserver(render_frame),
+      content::RenderFrameObserverTracker<SpellCheckProvider>(render_frame),
       spellcheck_(spellcheck),
       embedder_provider_(embedder_provider) {
   DCHECK(spellcheck_);
@@ -238,6 +239,18 @@ void SpellCheckProvider::OnRespondInitializeDictionaries(
 #endif  // defined(OS_WIN)
 #endif  // BUILDFLAG(USE_BROWSER_SPELLCHECKER)
 
+void SpellCheckProvider::DidFinishLoad() {
+  if (spellcheck_->IsSpellcheckEnabled()) {
+    blink::WebDocument document = render_frame()->GetWebFrame()->GetDocument();
+    if (document.IsNull())
+      return;
+    blink::WebElement documentElement = document.DocumentElement();
+    if (documentElement.IsNull())
+      return;
+    documentElement.requestSpellCheck();
+  }
+}
+
 void SpellCheckProvider::FocusedElementChanged(
     const blink::WebElement& unused) {
 #if defined(OS_ANDROID)
@@ -265,14 +278,13 @@ void SpellCheckProvider::CheckSpelling(
     WebVector<WebString>* optional_suggestions) {
   base::string16 word = text.Utf16();
   const int kWordStart = 0;
-
   if (optional_suggestions) {
 #if defined(OS_WIN) && BUILDFLAG(USE_BROWSER_SPELLCHECKER)
     base::TimeTicks suggestions_start = base::TimeTicks::Now();
 #endif  // defined(OS_WIN) && BUILDFLAG(USE_BROWSER_SPELLCHECKER)
     spellcheck::PerLanguageSuggestions per_language_suggestions;
     spellcheck_->SpellCheckWord(word.c_str(), kWordStart, word.size(),
-                                routing_id(), &offset, &length,
+                                routing_id(), &offset, &length, true,
                                 &per_language_suggestions);
 
 #if defined(OS_WIN) && BUILDFLAG(USE_BROWSER_SPELLCHECKER)
@@ -308,7 +320,7 @@ void SpellCheckProvider::CheckSpelling(
         base::saturated_cast<int>(word.size()));
   } else {
     spellcheck_->SpellCheckWord(word.c_str(), kWordStart, word.size(),
-                                routing_id(), &offset, &length,
+                                routing_id(), &offset, &length, true,
                                 /* optional suggestions vector */ nullptr);
     spellcheck_renderer_metrics::RecordCheckedTextLengthNoSuggestions(
         base::saturated_cast<int>(word.size()));
@@ -322,7 +334,7 @@ void SpellCheckProvider::CheckSpelling(
 void SpellCheckProvider::RequestCheckingOfText(
     const WebString& text,
     std::unique_ptr<WebTextCheckingCompletion> completion) {
-  RequestTextChecking(text.Utf16(), std::move(completion));
+  spellcheck_->RequestTextChecking(text.Utf16(), std::move(completion));
   spellcheck_renderer_metrics::RecordAsyncCheckedTextLength(
       base::saturated_cast<int>(text.length()));
 }
@@ -419,6 +431,19 @@ void SpellCheckProvider::OnRespondTextCheck(
   last_results_.Swap(textcheck_results);
 }
 #endif  // BUILDFLAG(USE_BROWSER_SPELLCHECKER)
+
+void SpellCheckProvider::RequestSpellcheck() {
+  WebLocalFrame* frame = render_frame()->GetWebFrame();
+  DCHECK(frame);
+  DCHECK(IsSpellCheckingEnabled());
+  blink::WebDocument document = frame->GetDocument();
+  if (document.IsNull())
+    return;
+  blink::WebElement documentElement = document.DocumentElement();
+  if (documentElement.IsNull())
+    return;
+  documentElement.requestSpellCheck();
+}
 
 bool SpellCheckProvider::SatisfyRequestFromCache(
     const base::string16& text,

@@ -322,7 +322,6 @@ mojom("interfaces") {
     "resource_usage_reporter.mojom",
     "was_activated_option.mojom",
     "webplugininfo.mojom",
-    "window_container_type.mojom",
   ]
 
   if (is_win) {
@@ -330,6 +329,7 @@ mojom("interfaces") {
   }
 
   deps = [
+    ":window_container_mojom",
     "//mojo/public/mojom/base:base",
     "//services/network/public/mojom",
     "//url/mojom:url_mojom_gurl",
@@ -407,4 +407,8 @@ mojom("renderer_type") {
 
 mojom("service_names") {
   sources = [ "service_names.mojom" ]
+}
+
+mojom("window_container_mojom") {
+   sources = ["window_container_type.mojom"]
 }
