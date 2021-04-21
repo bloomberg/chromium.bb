@@ -254,11 +254,11 @@ std::unique_ptr<ui::OSExchangeData> MakeOSExchangeData(const content::DropData& 
     // SetURL() will itself do SetString() when a string hasn't been set yet,
     // but we want to prefer drop_data.text.string() over the URL string if it
     // exists.
-    if (!drop_data.text.value().empty())
+    if (drop_data.text.has_value() && !drop_data.text.value().empty())
         provider->SetString(drop_data.text.value());
     if (drop_data.url.is_valid())
         provider->SetURL(drop_data.url, drop_data.url_title);
-    if (!drop_data.html.value().empty())
+    if (drop_data.html.has_value() && !drop_data.html.value().empty())
         provider->SetHtml(drop_data.html.value(), drop_data.html_base_url);
     if (!drop_data.filenames.empty())
         provider->SetFilenames(drop_data.filenames);
