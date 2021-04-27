@@ -53,6 +53,10 @@ V8_PLATFORM_EXPORT std::unique_ptr<v8::JobHandle> NewDefaultJobHandle(
     v8::Platform* platform, v8::TaskPriority priority,
     std::unique_ptr<v8::JobTask> job_task, size_t num_worker_threads);
 
+BLPV8_PLATFORM_EXPORT v8::JobHandle* NewDefaultJobHandleRaw(
+    v8::Platform* platform, v8::TaskPriority priority,
+    v8::JobTask* job_task, size_t num_worker_threads);
+
 /**
  * Pumps the message loop for the given isolate.
  *

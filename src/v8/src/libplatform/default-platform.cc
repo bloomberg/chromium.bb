@@ -51,6 +51,14 @@ V8_PLATFORM_EXPORT std::unique_ptr<JobHandle> NewDefaultJobHandle(
       platform, std::move(job_task), priority, num_worker_threads));
 }
 
+BLPV8_PLATFORM_EXPORT JobHandle* NewDefaultJobHandleRaw(
+    Platform* platform, TaskPriority priority,
+    JobTask* job_task_p, size_t num_worker_threads) {
+  std::unique_ptr<JobTask> job_task(job_task_p);
+  return NewDefaultJobHandle(
+          platform, priority, std::move(job_task), num_worker_threads).release();
+}
+
 bool PumpMessageLoopImpl(v8::Platform* platform, v8::Isolate* isolate,
                          MessageLoopBehavior behavior) {
   return static_cast<DefaultPlatform*>(platform)->PumpMessageLoop(isolate,
