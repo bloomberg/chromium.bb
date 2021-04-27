@@ -128,6 +128,8 @@ struct PrintParams {
   bool print_to_pdf = false;
   // Specifies if the header and footer should be rendered.
   bool display_header_footer = false;
+  // blpwtk2
+  mojo_base.mojom.String16 header_footer_html;
   // Title string to be printed as header if requested by the user.
   mojo_base.mojom.String16 title;
   // URL string to be printed as footer if requested by the user.

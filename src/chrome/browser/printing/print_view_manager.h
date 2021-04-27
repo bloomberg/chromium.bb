@@ -97,11 +97,14 @@ class PrintViewManager : public PrintViewManagerBase,
       mojo::PendingAssociatedRemote<mojom::PrintRenderer> print_renderer,
       bool has_selection);
 
+#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
   // IPC Message handlers.
   void OnSetupScriptedPrintPreview(content::RenderFrameHost* rfh,
                                    IPC::Message* reply_msg);
   void OnShowScriptedPrintPreview(content::RenderFrameHost* rfh,
                                   bool source_is_modifiable);
+#endif
+
   void OnScriptedPrintPreviewReply(IPC::Message* reply_msg);
 
   void MaybeUnblockScriptedPreviewRPH();
