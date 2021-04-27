@@ -28,7 +28,10 @@ ViewProp* SetWindowSupportsRerouteMouseWheel(HWND hwnd);
 // experience.  The returns value says whether the mouse wheel message was
 // successfully redirected.
 COMPONENT_EXPORT(UI_BASE)
-bool RerouteMouseWheel(HWND window, WPARAM w_param, LPARAM l_param);
+bool RerouteMouseWheel(HWND window,
+                       WPARAM w_param,
+                       LPARAM l_param,
+                       bool reroute_to_any_related_window);
 
 }  // namespace ui
 
