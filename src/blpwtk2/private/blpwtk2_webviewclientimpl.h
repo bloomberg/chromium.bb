@@ -168,6 +168,9 @@ class WebViewClientImpl final : public WebViewClient
     void didFinishLoadForFrame(int routingId, const std::string& url) override;
     void didFailLoadForFrame(int routingId, const std::string& url) override;
 
+    void didInterceptMessage(didInterceptMessageCallback callback) override;
+        // Notify the client that the host intercepted a window message.
+
     // Mojo callbacks
     void loadStatus(int status);
     void moveAck(int x, int y, int w, int h);
