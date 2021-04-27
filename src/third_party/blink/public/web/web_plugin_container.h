@@ -43,6 +43,7 @@ class Layer;
 namespace blink {
 
 class WebDocument;
+class WebDOMEvent;
 class WebElement;
 class WebPlugin;
 class WebString;
@@ -78,6 +79,7 @@ class WebPluginContainer {
 
   virtual void Invalidate() = 0;
   virtual void InvalidateRect(const WebRect&) = 0;
+  virtual void EnqueueEvent(const WebDOMEvent& event) = 0;
 
   // Schedules an animation of the WebView that contains the plugin, as well as
   // the plugin.
