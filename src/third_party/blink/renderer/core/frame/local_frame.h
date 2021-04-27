@@ -724,6 +724,9 @@ class CORE_EXPORT LocalFrame final
   WebURLLoader::DeferType GetLoadDeferType();
   bool IsLoadDeferred();
 
+  // blpwtk2: for RenderWebView
+  void SetLocalFrameHostPartialOverride(CrossVariantMojoAssociatedRemote<mojom::blink::LocalFrameHostPartialOverrideInterfaceBase> hostOverride);
+
  private:
   friend class FrameNavigationDisabler;
   FRIEND_TEST_ALL_PREFIXES(LocalFrameTest, CharacterIndexAtPointWithPinchZoom);
@@ -903,6 +906,11 @@ class CORE_EXPORT LocalFrame final
   mojom::FrameLifecycleState lifecycle_state_;
 
   std::unique_ptr<WebPrescientNetworking> prescient_networking_;
+
+
+  HeapMojoAssociatedRemote<mojom::blink::LocalFrameHostPartialOverride,
+                           HeapMojoWrapperMode::kWithoutContextObserver>
+      local_frame_host_partial_override_remote_{nullptr};
 
   // LocalFrame can be reused by multiple ExecutionContext.
   HeapMojoAssociatedRemote<mojom::blink::LocalFrameHost,

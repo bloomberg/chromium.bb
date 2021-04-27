@@ -184,6 +184,7 @@ struct ScriptedPrintParams {
   bool is_scripted;
   bool is_modifiable;
   MarginType margin_type;
+  uint32 owner_wnd;
 };
 
 // Interface implemented by a class that desires to render print documents for
@@ -290,7 +291,7 @@ interface PrintManagerHost {
 
   // Request the default print settings.
   [Sync]
-  GetDefaultPrintSettings() => (PrintParams default_settings);
+  GetDefaultPrintSettings(uint32 owner_wnd) => (PrintParams default_settings);
 
   // Update the current print settings with new |job_settings|.
   [Sync]

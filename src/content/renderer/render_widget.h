@@ -165,6 +165,8 @@ class CONTENT_EXPORT RenderWidget
 
   void bbHandleInputEvent(const blink::WebInputEvent& event);
 
+  void Redraw();
+
  protected:
   // Destroy the RenderWidget. The |widget| is the owning pointer of |this|.
   virtual void Close(std::unique_ptr<RenderWidget> widget);

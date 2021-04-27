@@ -636,6 +636,14 @@ class CORE_EXPORT WebFrameWidgetBase
   // Return the focused WebPlugin if there is one.
   WebPlugin* GetFocusedPluginContainer();
 
+  // blpwtk2: for RenderWebView
+  void ResetWidgetInterfaces(
+      CrossVariantMojoAssociatedRemote<mojom::blink::WidgetHostInterfaceBase> widgetHost,
+      CrossVariantMojoAssociatedRemote<mojom::blink::FrameWidgetHostInterfaceBase> frameWidgetHost,
+      CrossVariantMojoAssociatedRemote<mojom::blink::PopupWidgetHostInterfaceBase> popupWidgetHost,
+      CrossVariantMojoAssociatedReceiver<mojom::blink::WidgetInterfaceBase> widget,
+      CrossVariantMojoAssociatedReceiver<mojom::blink::FrameWidgetInterfaceBase> pendingFWReceiver) override;
+
  protected:
   enum DragAction { kDragEnter, kDragOver };
 
