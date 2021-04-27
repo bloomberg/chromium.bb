@@ -141,6 +141,11 @@ void NativeViewWidget::setRegion(blpwtk2::NativeRegion region)
 
 
 // patch section: dwm
+void NativeViewWidget::compositionChanged()
+{
+    DCHECK(d_impl);
+    d_impl->CompositionChanged();
+}
 
 
 // patch section: gpu

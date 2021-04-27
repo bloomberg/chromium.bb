@@ -623,6 +623,11 @@ void DesktopNativeWidgetAura::FrameTypeChanged() {
   UpdateWindowTransparency();
 }
 
+void DesktopNativeWidgetAura::CompositionChanged() {
+  desktop_window_tree_host_->CompositionChanged();
+  UpdateWindowTransparency();
+}
+
 Widget* DesktopNativeWidgetAura::GetWidget() {
   return native_widget_delegate_->AsWidget();
 }

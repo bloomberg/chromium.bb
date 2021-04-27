@@ -812,6 +812,8 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   // Tell the window that something caused the frame type to change.
   void FrameTypeChanged();
 
+  void CompositionChanged();
+
   NonClientView* non_client_view() {
     return const_cast<NonClientView*>(
         const_cast<const Widget*>(this)->non_client_view());
