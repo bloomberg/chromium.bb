@@ -1533,6 +1533,12 @@ WebInputEventResult WebFrameWidgetBase::HandleInputEvent(
     GetPage()->GetVisualViewport().StartTrackingPinchStats();
   }
 
+  auto *view = local_root_->ViewImpl();
+
+  if ((view->rubberbandingForcedOn_ || view->isAltDragRubberbandingEnabled_) &&
+      view->HandleAltDragRubberbandEvent(input_event))
+    return WebInputEventResult::kHandledSystem;
+
   // If a drag-and-drop operation is in progress, ignore input events except
   // PointerCancel.
   if (doing_drag_and_drop_ &&
@@ -2202,6 +2208,14 @@ bool WebFrameWidgetBase::HasFocus() {
 void WebFrameWidgetBase::SetToolTipText(const String& tooltip_text,
                                         TextDirection dir) {
   widget_base_->SetToolTipText(tooltip_text, dir);
+}
+
+void WebFrameWidgetBase::SetRubberbandRect(const gfx::Rect& rect) {
+  widget_base_->SetRubberbandRect(rect);
+}
+
+void WebFrameWidgetBase::HideRubberbandRect() {
+  widget_base_->HideRubberbandRect();
 }
 
 void WebFrameWidgetBase::DidOverscroll(
@@ -2878,6 +2892,10 @@ KURL WebFrameWidgetBase::GetURLForDebugTrace() {
   if (main_frame->IsWebLocalFrame())
     return main_frame->ToWebLocalFrame()->GetDocument().Url();
   return {};
+}
+
+void WebFrameWidgetBase::EnableAltDragRubberbanding(bool is_enabled) {
+  View()->EnableAltDragRubberbanding(is_enabled);
 }
 
 void WebFrameWidgetBase::ReleaseMouseLockAndPointerCaptureForTesting() {
