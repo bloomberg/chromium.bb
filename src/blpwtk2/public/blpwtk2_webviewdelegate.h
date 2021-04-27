@@ -70,6 +70,12 @@ class BLPWTK2_EXPORT WebViewDelegate {
     virtual void blurred(WebView *source);
         // Invoked when the WebView has lost focus.
 
+    virtual void enterFullscreenMode(WebView *source);
+        // Invoked when the WebView should enter fullscreen.
+
+    virtual void exitFullscreenMode(WebView *source);
+        // Invoked when the WebView should exit fullscreen.
+
     virtual void showContextMenu(WebView                  *source,
                                  const ContextMenuParams&  params);
         // Invoked when the user wants a context menu, for example upon
