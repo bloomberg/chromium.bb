@@ -124,6 +124,8 @@ class WebViewHostImpl final : private WebViewImplClient
     void forward(forwardCallback callback) override;
     void reload(reloadCallback callback) override;
     void stop() override;
+    void takeKeyboardFocus() override;
+    void setLogicalFocus(bool focused) override;
     void performCustomContextMenuAction(int id) override;
     void show() override;
     void hide() override;
