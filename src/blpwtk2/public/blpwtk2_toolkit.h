@@ -188,9 +188,9 @@ class Toolkit {
         // If non-zero, defines the time threshold for enabling trace
         // (in milliseconds)
 
-
-
     // patch section: custom-timezone
+    // set the default time zone in ICU using zoneId
+    virtual int setTimeZone(const StringRef& zoneId) = 0;
 
 
     // patch section: embedder ipc
