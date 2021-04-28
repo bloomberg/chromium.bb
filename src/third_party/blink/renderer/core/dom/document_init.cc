@@ -84,11 +84,15 @@ DocumentInit& DocumentInit::WithImportsController(
 }
 
 bool DocumentInit::ShouldSetURL() const {
-  return (window_ && !window_->GetFrame()->IsMainFrame()) || !url_.IsEmpty();
+  return (window_ && window_->GetFrame() && !window_->GetFrame()->IsMainFrame()) || !url_.IsEmpty();
 }
 
 bool DocumentInit::IsSrcdocDocument() const {
-  return window_ && !window_->GetFrame()->IsMainFrame() && is_srcdoc_document_;
+  // blpwtk2: For web script contexts that are not bound to a WebFrame,
+  //          GetFrame() will return null. To workaround this, we reordered
+  //          this condition check so is_srcdoc_document_ is checked before
+  //          calling GetFrame().
+  return window_ && is_srcdoc_document_ && !window_->GetFrame()->IsMainFrame();
 }
 
 DocumentInit& DocumentInit::WithWindow(LocalDOMWindow* window,

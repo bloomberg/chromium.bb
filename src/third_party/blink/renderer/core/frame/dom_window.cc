@@ -50,6 +50,9 @@ DOMWindow::DOMWindow(Frame& frame)
       window_proxy_manager_(frame.GetWindowProxyManager()),
       window_is_closing_(false) {}
 
+DOMWindow::DOMWindow()
+    : window_is_closing_(false) {}
+
 DOMWindow::~DOMWindow() {
   // The frame must be disconnected before finalization.
   DCHECK(!frame_);
