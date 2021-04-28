@@ -89,6 +89,10 @@ class StoragePartition;
 class StoragePartitionConfig;
 class SSLHostStateDelegate;
 
+#if defined(OS_WIN)
+class FontCollection;
+#endif
+
 // This class holds the context needed for a browsing session.
 // It lives on the UI thread. All these methods must only be called on the UI
 // thread.
@@ -317,6 +321,8 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
       std::vector<network::mojom::CorsOriginPatternPtr> allow_patterns,
       std::vector<network::mojom::CorsOriginPatternPtr> block_patterns,
       base::OnceClosure closure);
+
+  virtual FontCollection* GetFontCollection();
 
   // Returns a SharedCorsOriginAccessList instance.
   virtual SharedCorsOriginAccessList* GetSharedCorsOriginAccessList();
