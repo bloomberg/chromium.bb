@@ -131,6 +131,8 @@ class WebViewProxy final : public WebView
     void didFailLoadForFrame(int              routingId,
                              const StringRef& url) override;
     void didParentStatus(int status, NativeView parent) override;
+    void devToolsAgentHostAttached() override;
+    void devToolsAgentHostDetached() override;
 };
 
 }  // close namespace blpwtk2
