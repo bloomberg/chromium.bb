@@ -223,6 +223,14 @@ bool PrintBackendWin::EnumeratePrinters(PrinterList* printer_list) {
 std::string PrintBackendWin::GetDefaultPrinterName() {
   DWORD size = MAX_PATH;
   TCHAR default_printer_name[MAX_PATH];
+
+  const std::string& defaultPrinterName =
+      PrintBackend::GetUserDefaultPrinterName();
+
+  if (!defaultPrinterName.empty()) {
+    return defaultPrinterName;
+  }
+
   std::string ret;
   base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
                                                 base::BlockingType::MAY_BLOCK);
