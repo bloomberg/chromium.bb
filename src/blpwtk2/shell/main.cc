@@ -203,6 +203,14 @@ class ToolkitDelegate : public blpwtk2::ToolkitDelegate {
     ToolkitDelegate()
     {
     }
+    int registerMetric(
+                    const char     *name,
+                    const char     *comment,
+                    unsigned int    reportFrequency) override {
+      return 0;
+    }
+
+    void unregisterMetrics() override {}
 };
 
 class Shell : public blpwtk2::WebViewDelegate {

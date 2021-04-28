@@ -294,7 +294,7 @@ WebLocalFrameImpl* CreateProvisional(WebRemoteFrame& old_frame,
         widget_client->main_thread_scheduler(),
         widget_client->task_graph_runner(), true,
         widget_client->GetInitialScreenInfo(),
-        std::make_unique<cc::TestUkmRecorderFactory>(), &layer_tree_settings));
+        std::make_unique<cc::TestUkmRecorderFactory>(), 0, &layer_tree_settings));
     frame_widget->SetCompositorVisible(true);
   } else if (frame->Parent()->IsWebRemoteFrame()) {
     widget_client = std::make_unique<TestWebWidgetClient>();
@@ -311,7 +311,7 @@ WebLocalFrameImpl* CreateProvisional(WebRemoteFrame& old_frame,
         widget_client->main_thread_scheduler(),
         widget_client->task_graph_runner(), true,
         widget_client->GetInitialScreenInfo(),
-        std::make_unique<cc::TestUkmRecorderFactory>(), &layer_tree_settings));
+        std::make_unique<cc::TestUkmRecorderFactory>(), 0, &layer_tree_settings));
     frame_widget->SetCompositorVisible(true);
     frame_widget->Resize(gfx::Size());
   }
@@ -379,7 +379,7 @@ WebLocalFrameImpl* CreateLocalChild(WebRemoteFrame& parent,
       widget_client->main_thread_scheduler(),
       widget_client->task_graph_runner(), true,
       widget_client->GetInitialScreenInfo(),
-      std::make_unique<cc::TestUkmRecorderFactory>(), &layer_tree_settings));
+      std::make_unique<cc::TestUkmRecorderFactory>(), 0, &layer_tree_settings));
   frame_widget->SetCompositorVisible(true);
   // Set an initial size for subframes.
   if (frame->Parent())
@@ -474,7 +474,7 @@ WebViewImpl* WebViewHelper::InitializeWithOpener(
       test_web_widget_client_->main_thread_scheduler(),
       test_web_widget_client_->task_graph_runner(), true,
       test_web_widget_client_->GetInitialScreenInfo(),
-      std::make_unique<cc::TestUkmRecorderFactory>(), &layer_tree_settings));
+      std::make_unique<cc::TestUkmRecorderFactory>(), 0, &layer_tree_settings));
   widget->SetCompositorVisible(true);
 
   // We inform the WebView when it has a local main frame attached once the
