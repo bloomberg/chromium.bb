@@ -47903,6 +47903,7 @@ Called by update_use_counter_css.py.-->
   <int value="688" label="symbols"/>
   <int value="689" label="additive-symbols"/>
   <int value="690" label="speak-as"/>
+  <int value="691" label="rubberbandable"/>
 </enum>
 
 <enum name="MappedEditingCommands">

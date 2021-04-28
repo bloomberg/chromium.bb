@@ -1847,6 +1847,11 @@ void WebViewImpl::MouseCaptureLost() {
                                   TRACE_ID_LOCAL(this));
   if (page_->DeprecatedLocalMainFrame())
     page_->DeprecatedLocalMainFrame()->Client()->SetMouseCapture(false);
+
+  if ((rubberbandingForcedOn_ || isAltDragRubberbandingEnabled_) &&
+      IsRubberbanding()) {
+    AbortRubberbanding();
+  }
 }
 
 void WebViewImpl::SetFocus(bool enable) {

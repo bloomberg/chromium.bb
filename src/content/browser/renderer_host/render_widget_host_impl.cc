@@ -758,6 +758,12 @@ void RenderWidgetHostImpl::WasShown(
   SynchronizeVisualProperties();
 }
 
+void RenderWidgetHostImpl::EnableAltDragRubberbanding(bool enabled) {
+  if (blink_widget_) {
+    blink_widget_->EnableAltDragRubberbanding(enabled);
+  }
+}
+
 void RenderWidgetHostImpl::RunPendingWasShown(
     base::TimeTicks show_request_timestamp,
     bool is_evicted,
@@ -1961,6 +1967,14 @@ void RenderWidgetHostImpl::SelectionBoundsChanged(
   if (view_)
     view_->SelectionBoundsChanged(anchor_rect, anchor_dir, focus_rect,
                                   focus_dir, is_anchor_first);
+}
+
+void RenderWidgetHostImpl::SetRubberbandRect(const gfx::Rect& rect) {
+  view_->SetRubberbandRect(rect);
+}
+
+void RenderWidgetHostImpl::HideRubberbandRect() {
+  view_->HideRubberbandRect();
 }
 
 void RenderWidgetHostImpl::OnUpdateDragCursor(DragOperation current_op) {

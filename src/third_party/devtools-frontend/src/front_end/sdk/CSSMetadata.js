@@ -646,6 +646,7 @@ const _extraPropertyValues = {
     ]
   },
   'vertical-align': {values: ['top', 'bottom', '-webkit-baseline-middle']},
+  'rubberbandable': {values: ['none', 'text', 'text-with-tab']},
   'page-break-after': {values: ['left', 'right', 'always', 'avoid']},
   '-webkit-text-emphasis-style': {values: ['circle', 'filled', 'open', 'dot', 'double-circle', 'triangle', 'sesame']},
   'transform': {
