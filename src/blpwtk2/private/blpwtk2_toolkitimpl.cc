@@ -326,7 +326,8 @@ static size_t GetSwitchPrefixLength(const base::string16& string)
 
 static bool IsSwitch(const base::string16&  string,
                      base::string16        *switch_string,
-                     base::string16        *switch_value)
+                     base::string16        *switch_value,
+                     bool                   skipPrefixLengthCheck)
 {
     const wchar_t kSwitchValueSeparator[] = FILE_PATH_LITERAL("=");
 
@@ -334,7 +335,7 @@ static bool IsSwitch(const base::string16&  string,
     switch_value->clear();
 
     size_t prefix_length = GetSwitchPrefixLength(string);
-    if (prefix_length == 0 || prefix_length == string.length()) {
+    if (!skipPrefixLengthCheck && (prefix_length == 0 || prefix_length == string.length())) {
         return false;
     }
 
@@ -365,7 +366,7 @@ static void appendCommandLine(const std::vector<std::string>& argv)
         parseSwitches &= (arg != kSwitchTerminator);
 
         base::string16 switch_string, switch_value;
-        if (parseSwitches && IsSwitch(arg, &switch_string, &switch_value)) {
+        if (parseSwitches && IsSwitch(arg, &switch_string, &switch_value, false)) {
             commandLine->AppendSwitchNative(
                     base::UTF16ToASCII(switch_string), switch_value);
         }
@@ -378,6 +379,58 @@ static void appendCommandLine(const std::vector<std::string>& argv)
 static bool startsWith(const std::string& hay, const std::string& needle)
 {
     return hay.compare(0, needle.size(), needle) == 0;
+}
+
+// Concate command line feature switches with the same key.
+// For example, input:
+//  ["disable-features=TSFImeSupport", "--disable-features=WinUseBrowserSpellChecker"]
+// Output:
+//  ["--disable-features=TSFImeSupport,WinUseBrowserSpellChecker"]
+static std::vector<std::string> concateCmdLineFeatureSwitches(const std::vector<std::string>& switches)
+{
+  // Only the following switches are concated
+  const std::vector<std::string> featureKeys = {
+      switches::kDisableFeatures, switches::kEnableFeatures,
+      switches::kDisableBlinkFeatures, switches::kEnableBlinkFeatures};
+  base::string16 switchName16;
+  base::string16 switchValue16;
+  std::vector<std::string> res;
+  std::map<std::string, std::set<std::string>> combinedKeyValues;
+
+  // Gather key value features into combinedKeyValues
+  for (const std::string& swtStringUtf8: switches) {
+    base::string16 swtStringUtf16;
+    base::UTF8ToUTF16(swtStringUtf8.data(), swtStringUtf8.size(), &swtStringUtf16);
+    IsSwitch(swtStringUtf16, &switchName16, &switchValue16, true);
+    std::string switchName = base::UTF16ToASCII(switchName16);
+
+    if (std::find(featureKeys.begin(), featureKeys.end(), switchName) == featureKeys.end()) {
+      res.push_back(swtStringUtf8);
+      continue;
+    }
+    std::string val;
+    std::set<std::string>& valueSet = combinedKeyValues[switchName];
+    std::istringstream iss(base::UTF16ToASCII(switchValue16));
+    while (std::getline(iss, val, ',')) {
+      valueSet.insert(std::move(val));
+    }
+  }
+
+  // Add concated values to res;
+  for (const auto& item : combinedKeyValues) {
+    std::string concatedKeyValues{"--" + item.first + "="};
+    bool isFirst = true;
+    for (const auto& val : item.second) {
+      if (!isFirst) {
+        concatedKeyValues += ",";
+      }
+      concatedKeyValues += val;
+      isFirst = false;
+    }
+    res.push_back(std::move(concatedKeyValues));
+  }
+
+  return res;
 }
 
 static void appendCommonCommandLineSwitches(std::vector<std::string> *switches)
@@ -560,6 +613,7 @@ ToolkitImpl::ToolkitImpl(const std::string&              dictionaryPath,
         command_line->AppendSwitchASCII("enable-features", "NetworkServiceInProcess");
     }
     // Create a process host if we necessary.
+    args = concateCmdLineFeatureSwitches(args);
     if (isHost && Statics::isRendererMainThreadMode()) {
         // Apply command line switches to content.
         applySwitchesToContentMainDelegate(&d_mainDelegate, args);
@@ -595,7 +649,7 @@ ToolkitImpl::ToolkitImpl(const std::string&              dictionaryPath,
             filteredArgs.push_back(arg);
         }
 
-        appendCommandLine(filteredArgs);
+        appendCommandLine(concateCmdLineFeatureSwitches(filteredArgs));
     }
     else {
         if (!isHost) {
