@@ -85,7 +85,7 @@ struct ToolkitCreateParamsImpl final
 
 
 
-    ToolkitCreateParams::LogThrottleType d_logThrottleType {ToolkitCreateParams::LogThrottleType::kWarningThrottle};
+    ToolkitCreateParams::LogThrottleType d_logThrottleType {ToolkitCreateParams::LogThrottleType::kNoThrottle};
 
     ToolkitCreateParamsImpl();
 };

@@ -152,13 +152,14 @@ LogMessageThrottler::LogMessageThrottler(
     ToolkitCreateParams::LogMessageHandler logHandler,
     ToolkitCreateParams::ConsoleLogMessageHandler consoleHander) {
   switch (throttleType) {
+    case ToolkitCreateParams::LogThrottleType::kWarningThrottle:
+      impl_ = std::make_unique<WarningLogMessageThrottler>(logHandler,
+                                                           consoleHander);
     case ToolkitCreateParams::LogThrottleType::kNoThrottle:
+    default:
       impl_ = std::make_unique<NoThrottleLogMessageThrottler>(logHandler,
                                                               consoleHander);
       break;
-    default:
-      impl_ = std::make_unique<WarningLogMessageThrottler>(logHandler,
-                                                           consoleHander);
   }
 }
 
