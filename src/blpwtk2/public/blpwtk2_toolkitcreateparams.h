@@ -55,7 +55,13 @@ class BLPWTK2_EXPORT ToolkitDelegate {
     // patch section: msg interception
 
 
+    // patch section: performance monitor
+    virtual int registerMetric(
+                            const char     *name,
+                            const char     *comment,
+                            unsigned int    reportFrequency) = 0;
 
+    virtual void unregisterMetrics() = 0;
 };
 
                         // =========================

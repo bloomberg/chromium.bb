@@ -57,7 +57,8 @@ class PLATFORM_EXPORT LayerTreeView
                   scoped_refptr<base::SingleThreadTaskRunner> main_thread,
                   scoped_refptr<base::SingleThreadTaskRunner> compositor_thread,
                   cc::TaskGraphRunner* task_graph_runner,
-                  std::unique_ptr<cc::UkmRecorderFactory> ukm_recorder_factory);
+                  std::unique_ptr<cc::UkmRecorderFactory> ukm_recorder_factory,
+                  int routing_id);
 
   // Drops any references back to the delegate in preparation for being
   // destroyed.
