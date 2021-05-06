@@ -560,6 +560,9 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // Whether forwarded WebInputEvents are being ignored.
   bool IsIgnoringInputEvents() const;
 
+  bool ShouldSetKeyboardFocusOnMouseDown() const;
+  bool ShouldSetLogicalFocusOnMouseDown() const;
+
   // Called when the response to a pending mouse lock request has arrived.
   // Returns true if |allowed| is true and the mouse has been successfully
   // locked.
