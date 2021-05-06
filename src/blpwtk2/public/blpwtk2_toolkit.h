@@ -83,6 +83,7 @@
 #include <blpwtk2_config.h>
 
 #include <blpwtk2_webviewcreateparams.h>
+#include <blpwtk2_profile.h>
 #include <v8.h>
 #include <blpwtk2_stringref.h>
 
@@ -206,6 +207,8 @@ class Toolkit {
 
 
     // patch section: gpu
+    virtual void getGpuMode(GpuMode& currentMode, GpuMode& startupMode, int& crashCount) const = 0;
+        // Get the current Gpu mode, the startup Gpu mode, GPU process crash count
 
 
 
