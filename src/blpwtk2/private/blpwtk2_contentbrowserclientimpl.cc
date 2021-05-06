@@ -34,6 +34,7 @@
 
 #include <base/json/json_reader.h>
 #include <base/task/single_thread_task_executor.h>
+#include <base/strings/utf_string_conversions.h>
 #include <base/threading/thread.h>
 #include <base/threading/platform_thread.h>
 #include <content/public/browser/browser_main_parts.h>
@@ -53,6 +54,8 @@
 #include "components/spellcheck/common/spellcheck.mojom.h"
 #include "services/service_manager/public/cpp/manifest_builder.h"
 #include "services/service_manager/public/mojom/service.mojom.h"
+
+#include <chrome/browser/printing/printing_message_filter.h>
 
 namespace blpwtk2 {
 
@@ -87,7 +90,8 @@ bool ContentBrowserClientImpl::ShouldEnableStrictSiteIsolation()
 void ContentBrowserClientImpl::RenderProcessWillLaunch(
     content::RenderProcessHost *host)
 {
-
+    int id = host->GetID();
+    host->AddFilter(new printing::PrintingMessageFilter(id, nullptr));
 }
 
 void ContentBrowserClientImpl::OverrideWebkitPrefs(
@@ -149,7 +153,7 @@ void ContentBrowserClientImpl::ExposeInterfacesToRenderer(
         content::RenderProcessHost* render_process_host)
 {
     ProcessHostImpl::registerMojoInterfaces(registry);
-}            
+}
 
 void ContentBrowserClientImpl::StartInProcessRendererThread(
     mojo::OutgoingInvitation* broker_client_invitation, int renderer_client_id)

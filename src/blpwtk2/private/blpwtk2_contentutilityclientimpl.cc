@@ -38,6 +38,12 @@ void ContentUtilityClientImpl::UtilityThreadStarted() {
 bool ContentUtilityClientImpl::OnMessageReceived(const IPC::Message& message) {
   return chrome_utility_client_->OnMessageReceived(message);
 }
+bool ContentUtilityClientImpl::HandleServiceRequest(
+    const std::string& service_name,
+    mojo::PendingReceiver<service_manager::mojom::Service> receiver) {
+    return chrome_utility_client_->HandleServiceRequest(service_name, std::move(receiver));
+}
+
 void ContentUtilityClientImpl::RegisterNetworkBinders(
     service_manager::BinderRegistry* registry) {
   chrome_utility_client_->RegisterNetworkBinders(registry);

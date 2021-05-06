@@ -15,6 +15,8 @@ printing::PrintBackend* g_print_backend_for_test = nullptr;
 
 namespace printing {
 
+static std::string g_defaultPrinterName;
+
 PrinterBasicInfo::PrinterBasicInfo() = default;
 
 PrinterBasicInfo::PrinterBasicInfo(const PrinterBasicInfo& other) = default;
@@ -90,6 +92,16 @@ PrinterCapsAndDefaults::~PrinterCapsAndDefaults() = default;
 PrintBackend::PrintBackend(const std::string& locale) : locale_(locale) {}
 
 PrintBackend::~PrintBackend() = default;
+
+void PrintBackend::SetUserDefaultPrinterName(std::string printerName)
+{
+    g_defaultPrinterName = std::move(printerName);
+}
+
+const std::string& PrintBackend::GetUserDefaultPrinterName()
+{
+    return g_defaultPrinterName;
+}
 
 // static
 scoped_refptr<PrintBackend> PrintBackend::CreateInstance(
