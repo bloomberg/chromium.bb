@@ -44,6 +44,10 @@ class ContentUtilityClientImpl : public content::ContentUtilityClient {
         service_manager::BinderRegistry* registry) override;
     void ExposeInterfacesToBrowser(mojo::BinderMap* binders) override;
 
+    void PostIOThreadCreated(base::SingleThreadTaskRunner* io_thread_task_runner) override;
+    void RegisterIOThreadServices(mojo::ServiceFactory& services) override;
+    void RegisterMainThreadServices(mojo::ServiceFactory& services) override;
+
   private:
     std::unique_ptr<ChromeContentUtilityClient> chrome_utility_client_;
 

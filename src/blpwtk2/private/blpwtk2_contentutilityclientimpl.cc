@@ -47,6 +47,21 @@ void ContentUtilityClientImpl::ExposeInterfacesToBrowser(mojo::BinderMap* binder
   chrome_utility_client_->ExposeInterfacesToBrowser(binders);
 }
 
+void ContentUtilityClientImpl::PostIOThreadCreated(
+        base::SingleThreadTaskRunner* io_thread_task_runner) {
+  chrome_utility_client_->PostIOThreadCreated(io_thread_task_runner);
+}
+
+void ContentUtilityClientImpl::RegisterIOThreadServices(
+        mojo::ServiceFactory& services) {
+  chrome_utility_client_->RegisterIOThreadServices(services);
+}
+
+void ContentUtilityClientImpl::RegisterMainThreadServices(
+        mojo::ServiceFactory& services) {
+  chrome_utility_client_->RegisterMainThreadServices(services);
+}
+
 }  // close namespace blpwtk2
 
 // vim: ts=4 et
