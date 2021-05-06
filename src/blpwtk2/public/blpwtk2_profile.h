@@ -153,6 +153,11 @@ class Profile
 
 
     // patch section: memory diagnostics
+    virtual std::size_t getDiscardableSharedMemoryBytes() = 0;
+        // Get the discardable shared memory usage
+
+    // patch section: memory diagnostics
+
 
 
     // patch section: gpu

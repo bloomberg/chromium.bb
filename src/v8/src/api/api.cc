@@ -9037,6 +9037,21 @@ void Isolate::RestoreOriginalHeapLimit() {
   // No-op.
 }
 
+// blpwtk2
+void Isolate::ForceGC(GCForcedType forcedType) {
+  i::Isolate* isolate = reinterpret_cast<i::Isolate*>(this);
+  i::Heap* hp = isolate->heap();
+  if (forcedType == kCollectAllGarbage) {
+    hp->CollectAllGarbage(i::Heap::kForcedGC, i::GarbageCollectionReason::kTesting);
+  }
+  else if(forcedType == kCollectAllAvailableGarbage) {
+    hp->CollectAllAvailableGarbage(i::GarbageCollectionReason::kTesting);
+  }
+  else {
+    hp->PreciseCollectAllGarbage(i::Heap::kForcedGC, i::GarbageCollectionReason::kTesting);
+  }
+}
+
 bool Isolate::IsHeapLimitIncreasedForDebugging() { return false; }
 
 void Isolate::SetJitCodeEventHandler(JitCodeEventOptions options,

@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/memory/ref_counted.h"
+#include "base/memory/shared_memory_mapping.h"
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
 #include "base/values.h"
@@ -102,6 +103,11 @@ class CC_EXPORT Proxy {
 
   virtual void SetEnableFrameRateThrottling(
       bool enable_frame_rate_throttling) = 0;
+
+  virtual std::size_t getTileMemoryBytes() const;
+  virtual std::size_t getDefaultTileMemoryLimit() const;
+  virtual void overrideTileMemoryLimit(std::size_t limit);
+  virtual void setTag(std::string tag);
 };
 
 }  // namespace cc
