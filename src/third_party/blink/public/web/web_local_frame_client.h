@@ -259,6 +259,12 @@ class BLINK_EXPORT WebLocalFrameClient {
   // This frame's name has changed.
   virtual void DidChangeName(const WebString& name) {}
 
+  virtual void DidAddMessageToConsoleWithCol(const WebConsoleMessage& message,
+                                             const WebString& source_name,
+                                             unsigned source_line,
+                                             unsigned source_column,
+                                             const WebString& stack_trace);
+
   // Called when a Feature-Policy or Document-Policy or Content-Security-Policy
   // HTTP header (for sandbox flags) is encountered while loading the frame's
   // document.
@@ -724,6 +730,16 @@ class BLINK_EXPORT WebLocalFrameClient {
   // was used for its load or if an unreachable URL was used.
   virtual WebURL LastCommittedUrlForUKM() { return WebURL(); }
 };
+
+inline
+void WebLocalFrameClient::DidAddMessageToConsoleWithCol(
+    const WebConsoleMessage& message,
+    const WebString& source_name,
+    unsigned source_line,
+    unsigned source_column,
+    const WebString& stack_trace) {
+  DidAddMessageToConsole(message, source_name, source_line, stack_trace);
+}
 
 }  // namespace blink
 
