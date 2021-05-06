@@ -170,6 +170,8 @@ component("base") {
     "webui/jstemplate_builder.h",
     "webui/web_ui_util.cc",
     "webui/web_ui_util.h",
+    "win/rubberband_windows.cc",
+    "win/rubberband_windows.h",
     "window_open_disposition.cc",
     "window_open_disposition.h",
   ]
