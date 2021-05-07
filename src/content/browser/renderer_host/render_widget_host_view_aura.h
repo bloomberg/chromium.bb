@@ -62,6 +62,7 @@ namespace ui {
 enum class DomCode;
 class InputMethod;
 class LocatedEvent;
+class RubberbandOutline;
 }
 
 namespace content {
@@ -164,6 +165,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   void UnlockKeyboard() override;
   bool IsKeyboardLocked() override;
   base::flat_map<std::string, std::string> GetKeyboardLayoutMap() override;
+  void SetRubberbandRect(const gfx::Rect& rect) override;
+  void HideRubberbandRect() override;  
   void ResetFallbackToFirstNavigationSurface() override;
   bool RequestRepaintForTesting() override;
   void DidStopFlinging() override;
@@ -676,6 +679,9 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   gfx::SelectionBound selection_end_;
 
   gfx::Insets insets_;
+
+  // The rect to draw the rubberband highlight.
+  std::unique_ptr<ui::RubberbandOutline> rubberband_outline_;
 
   std::unique_ptr<wm::ScopedTooltipDisabler> tooltip_disabler_;
 
