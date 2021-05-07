@@ -113,6 +113,7 @@ class CORE_EXPORT WebRemoteFrameImpl final
   v8::Local<v8::Object> GlobalProxy() const override;
   WebRect GetCompositingRect() override;
   v8::Isolate* ScriptIsolate() const override;
+  void DrawInCanvas(const WebRect&, const WebString&, cc::PaintCanvas*) override;
   WebString UniqueName() const override;
   void InitializeCoreFrame(Page&,
                            FrameOwner*,
