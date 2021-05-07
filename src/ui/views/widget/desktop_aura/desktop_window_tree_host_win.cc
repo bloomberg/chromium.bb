@@ -462,6 +462,10 @@ void DesktopWindowTreeHostWin::FrameTypeChanged() {
   message_handler_->FrameTypeChanged();
 }
 
+void DesktopWindowTreeHostWin::CompositionChanged() {
+  desktop_native_widget_aura_->UpdateWindowTransparency();
+}
+
 void DesktopWindowTreeHostWin::SetFullscreen(bool fullscreen) {
   message_handler_->SetFullscreen(fullscreen);
   // TODO(sky): workaround for ScopedFullscreenVisibility showing window
