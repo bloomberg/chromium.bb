@@ -71,6 +71,7 @@ struct ToolkitCreateParamsImpl final
 
 
     // patch section: discardable sharedmem
+    size_t d_discardableSharedMemorySizeLimit;
 
 
     // patch section: memory diagnostics
@@ -114,6 +115,7 @@ ToolkitCreateParamsImpl::ToolkitCreateParamsImpl()
 
 
     // patch section: discardable sharedmem
+    , d_discardableSharedMemorySizeLimit(0)
 
 
     // patch section: memory diagnostics
@@ -302,6 +304,15 @@ void ToolkitCreateParams::disableIsolatedProfile()
 void ToolkitCreateParams::enableRendererIOThread()
 {
     d_impl->d_rendererIOThreadEnabled = true;
+}
+
+void ToolkitCreateParams::setDiscardableSharedMemorySizeLimit(size_t limit) {
+    d_impl->d_discardableSharedMemorySizeLimit = limit;
+}
+
+size_t ToolkitCreateParams::getDiscardableSharedMemorySizeLimit() const
+{
+  return d_impl->d_discardableSharedMemorySizeLimit;
 }
 
 void ToolkitCreateParams::setNativeViewManipulationAsync(bool isNativeViewManipulationAsync)

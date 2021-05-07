@@ -102,6 +102,7 @@ Toolkit* ToolkitFactory::create(const ToolkitCreateParams& params)
     Statics::isNativeViewManipulationAsync = params.isNativeViewManipulationAsync();
     Statics::toolkitDelegate = params.delegate();
     Statics::isRendererIOThreadEnabled = params.isRendererIOThreadEnabled();
+    Statics::discardableSharedMemorySizeLimit = params.getDiscardableSharedMemorySizeLimit();
 
     std::string tempFolderPath = params.getTempFolderPath().toStdString();
 
