@@ -224,6 +224,10 @@ class ToolkitCreateParams
 
 
 
+    BLPWTK2_EXPORT void setTempFolderPath(const StringRef& path);
+        // By default, wtk2 creates blpwtk2_ folder in the system default temp folder.
+        // Use this method to set a custom temp path.
+
     // patch section: embedder ipc
 
 
@@ -265,6 +269,7 @@ class ToolkitCreateParams
     StringRef profileDirectory() const;
     bool isIsolatedProfile() const;
     bool isRendererIOThreadEnabled() const;
+    StringRef getTempFolderPath() const;
 
 
 

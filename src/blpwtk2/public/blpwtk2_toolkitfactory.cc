@@ -31,6 +31,7 @@
 #include <base/command_line.h>
 #include <base/environment.h>
 #include <base/files/file_path.h>
+#include <base/files/file_util.h>
 #include <base/logging.h>  // for DCHECK
 #include <base/strings/string16.h>
 #include <base/strings/utf_string_conversions.h>
@@ -101,6 +102,15 @@ Toolkit* ToolkitFactory::create(const ToolkitCreateParams& params)
     Statics::isNativeViewManipulationAsync = params.isNativeViewManipulationAsync();
     Statics::toolkitDelegate = params.delegate();
     Statics::isRendererIOThreadEnabled = params.isRendererIOThreadEnabled();
+
+    std::string tempFolderPath = params.getTempFolderPath().toStdString();
+
+    if (tempFolderPath.empty()) {
+        base::GetTempDir(&Statics::tempFolderPath);
+    }
+    else {
+        Statics::tempFolderPath = base::FilePath::FromUTF8Unsafe(tempFolderPath);
+    }
 
     // If this process is the host, then set the environment variable that
     // subprocesses will use to determine which SubProcessMain module should

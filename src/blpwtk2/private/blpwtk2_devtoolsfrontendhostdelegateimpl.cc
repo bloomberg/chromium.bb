@@ -23,6 +23,7 @@
 #include <blpwtk2_devtoolsfrontendhostdelegateimpl.h>
 
 #include <blpwtk2_urlrequestcontextgetterimpl.h>
+#include <blpwtk2_statics.h>
 
 #include <base/containers/span.h>
 #include <base/files/file_path.h>
@@ -133,7 +134,7 @@ DevToolsFrontendHostDelegateImpl::~DevToolsFrontendHostDelegateImpl()
 {
     for (const auto& pair : d_pendingRequests)
         delete pair.first;
-    
+
     // Delete the temporary directory that we created in the constructor.
     // allow IO during deletion of temporary directory
     if (d_requestContextGetter.get()) {
@@ -244,7 +245,8 @@ void DevToolsFrontendHostDelegateImpl::HandleMessageFromDevToolsFrontend(
 
         base::FilePath path;
         base::ThreadRestrictions::ScopedAllowIO allowIO;
-        base::CreateNewTempDirectory(L"blpwtk2_", &path);
+        base::CreateTemporaryDirInDir(Statics::tempFolderPath, L"blpwtk2_", &path);
+
         d_requestContextGetter =
             new blpwtk2::URLRequestContextGetterImpl(path, false, false);
         fetcher->SetRequestContext(d_requestContextGetter.get());
