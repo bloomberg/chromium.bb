@@ -187,6 +187,12 @@ interface WebViewClient {
         // Notify the client when the user attempts to open a context menu
         // (ie. by right-clicking an element).
 
+    enterFullscreenMode() => (bool isFullscreen);
+        // Notify the client that it should fullscreen the current client
+
+    exitFullscreenMode();
+        // Notify the client that it should exit fullscreen for the current client
+    
     notifyNativeViews(uint32 nativeView, uint32 originalParentView);
         // Notify the client about the native views (platform-dependent views).
         // The client can reparent the 'view' under a different
