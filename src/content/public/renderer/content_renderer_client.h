@@ -19,6 +19,8 @@
 #include "base/strings/string16.h"
 #include "base/task/thread_pool/thread_pool_instance.h"
 #include "build/build_config.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "third_party/blink/public/mojom/page/widget.mojom.h"
 #include "content/public/common/content_client.h"
 #include "content/public/renderer/url_loader_throttle_provider.h"
 #include "content/public/renderer/websocket_handshake_throttle_provider.h"
@@ -59,6 +61,10 @@ struct WebPluginParams;
 struct WebURLError;
 enum class ProtocolHandlerSecurityLevel;
 }  // namespace blink
+
+namespace IPC {
+class Message;
+}  // namespace IPC
 
 namespace media {
 class Demuxer;
@@ -421,6 +427,12 @@ class CONTENT_EXPORT ContentRendererClient {
   // The user agent string is given from the browser process. This is called at
   // most once.
   virtual void DidSetUserAgent(const std::string& user_agent);
+
+  // Allows the embedder to intercept IPC messages before they are sent to
+  // the browser. If the function handles the message, it should delete
+  // 'msg' and return 'true'. If the function does not handle the message,
+  // it should return 'false' without deleting 'msg'.
+  virtual bool Dispatch(IPC::Message* msg);
 
   // Returns true if |url| still requires the native HTML Imports feature.
   // Used for Web UI pages.

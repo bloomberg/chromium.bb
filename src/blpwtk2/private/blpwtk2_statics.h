@@ -98,6 +98,8 @@ struct Statics {
 
     static ToolkitDelegate *toolkitDelegate;
 
+    static bool rendererUIEnabled;
+
     // ====== some utility functions =============
 
     static bool isOriginalThreadMode()
